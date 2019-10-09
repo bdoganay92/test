@@ -2,6 +2,7 @@ library(dplyr)
 library(assertthat)
 library(rootSolve)
 library(mvtnorm)
+library(parallel)
 
 path.code <- Sys.getenv("path.code")
 path.input_data <- Sys.getenv("path.input_data")
@@ -13,10 +14,12 @@ source(file.path(path.code, "datagen-utils.R"))
 # Read and prepare input parameters
 # -----------------------------------------------------------------------------
 
-N <- 500  # Total no. of individuals
-tot.time <- 12  # Total no. of time points
-rand.time <- 4  # Time when second randomization occurred (time is 1-indexed)
-cutoff <- 1  # Cutoff in the definition of response status
+input.sim <- seq(1,1000,1)  # Total no. of monte carlo samples
+input.N <- 500  # Total no. of individuals
+input.tot.time <- 12  # Total no. of time points
+input.rand.time <- 4  # Time when second randomization occurred (time is 1-indexed)
+input.cutoff <- 1  # Cutoff in the definition of response status
+input.rho <- seq(0,1,0.1)
 
 # input.means contains mean outcome under each treatment sequence
 # from time 1 until tot.time
@@ -30,57 +33,66 @@ input.prop.zeros <- read.csv(file.path(path.input_data, "input_prop_zeros.csv"),
 # Begin tasks
 # -----------------------------------------------------------------------------
 
-nsim <- 1000
-gridx <- as.list(seq(0, 1, 0.1))  # rho
-list.empirical.corr.max <- list()
-list.empirical.corr.min <- list()
-list.empirical.corr.ave <- list()
+ncore <- detectCores()
+cl <- makeCluster(ncore - 1)
+clusterSetRNGStream(cl, 102399)
+clusterExport(cl, c("input.N",
+                    "input.tot.time","input.rand.time",
+                    "input.cutoff","input.rho",
+                    "input.means","input.prop.zeros",
+                    "path.code","path.input_data",
+                    "input.sim"))
+clusterEvalQ(cl,
+             {
+               library(dplyr)
+               library(assertthat)
+               library(rootSolve)
+               library(mvtnorm)
+               library(geeM)
+               source(file.path(path.code, "input-utils.R"))
+               source(file.path(path.code, "datagen-utils.R"))
+               source(file.path(path.code, "wr-utils.R"))
+               source(file.path(path.code, "analysis-utils.R"))
+             })
 
-for(i in 1:length(gridx)){
-  rho <- gridx[[i]]
-  for(j in 1:nsim){
-    source(file.path(path.code, "sim-po-dat.R"))
-    empirical.corr <- DTRCorrelationPO(df.potential.Yit)
-    
-    empirical.corr.max <- c(i=i, rho=rho, sim=j, empirical.corr$rho.star.max)
-    empirical.corr.max <- t(data.frame(empirical.corr.max))
-    list.empirical.corr.max <- append(list.empirical.corr.max, list(empirical.corr.max))
-    
-    empirical.corr.min <- c(i=i, rho=rho, sim=j, empirical.corr$rho.star.min)
-    empirical.corr.min <- t(data.frame(empirical.corr.min))
-    list.empirical.corr.min <- append(list.empirical.corr.min, list(empirical.corr.min))
-    
-    empirical.corr.ave <- c(i=i, rho=rho, sim=j, empirical.corr$rho.star.ave)
-    empirical.corr.ave <- t(data.frame(empirical.corr.ave))
-    list.empirical.corr.ave <- append(list.empirical.corr.ave, list(empirical.corr.ave))
-  }
-}
+list.df.potential <- clusterMap(cl = cl, 
+                                fun = GeneratePotentialYit,
+                                sim = input.sim,
+                                N = input.N, 
+                                tot.time = input.tot.time,
+                                rand.time = input.rand.time,
+                                cutoff = input.cutoff,
+                                rho = input.rho)
 
-empirical.corr.max <- do.call(rbind, list.empirical.corr.max)
-empirical.corr.min <- do.call(rbind, list.empirical.corr.min)
-empirical.corr.ave <- do.call(rbind, list.empirical.corr.ave)
+list.empirical.corr <- parLapply(cl = cl, 
+                                 X = list.df.potential, 
+                                 fun = DTRCorrelationPO)
 
-est.corr.max <- empirical.corr.max %>%
-  as.data.frame(.) %>% 
-  group_by(i, rho) %>% 
-  summarise(plusplus = mean(plusplus),
-            plusminus = mean(plusminus),
-            minusplus = mean(minusplus),
-            minusminus = mean(minusminus))
+list.empirical.corr <- parLapply(cl = cl,
+                                 X = list.empirical.corr, 
+                                 fun = function(x){
+                                   df <- data.frame(sim = x$sim,
+                                                    rho = x$rho,
+                                                    DTR = c("plusplus", 
+                                                            "plusminus", 
+                                                            "minusplus", 
+                                                            "minusminus"),
+                                                    rho.star.max = x$rho.star.max,
+                                                    rho.star.min = x$rho.star.min,
+                                                    rho.star.ave = x$rho.star.ave)
+                                   return(df)
+                                 })
 
-est.corr.min <- empirical.corr.min %>%
-  as.data.frame(.) %>% 
-  group_by(i, rho) %>% 
-  summarise(plusplus = mean(plusplus),
-            plusminus = mean(plusminus),
-            minusplus = mean(minusplus),
-            minusminus = mean(minusminus))
+stopCluster(cl)
 
-est.corr.ave <- empirical.corr.ave %>%
-  as.data.frame(.) %>% 
-  group_by(i, rho) %>% 
-  summarise(plusplus = mean(plusplus),
-            plusminus = mean(plusminus),
-            minusplus = mean(minusplus),
-            minusminus = mean(minusminus))
+# -----------------------------------------------------------------------------
+# Evaluate estimates
+# -----------------------------------------------------------------------------
+
+empirical.corr <- bind_rows(list.empirical.corr)
+corr.hat <- empirical.corr %>% group_by(DTR, rho) %>%
+  summarise(rho.star.max = mean(rho.star.max),
+            rho.star.min = mean(rho.star.min),
+            rho.star.ave = mean(rho.star.ave))
+
 

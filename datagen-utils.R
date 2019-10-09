@@ -470,7 +470,7 @@ ByGroupToLongData <- function(Y.group, n.group, group, tot.time, rand.time){
   #   tot.time: ADDLATER
   #   rand.time: ADDLATER
   
-  if(group==1 & length(unlist(list.Y$group.01))>0){
+  if(group==1 & length(unlist(Y.group))>0){
     df.group <- data.frame(id = c(1:n.group, rep(1:n.group, each = rand.time-1), rep(1:n.group, each = tot.time-rand.time)),
                            t = c(rep(1,n.group), rep(2:rand.time, times = n.group), rep((rand.time+1):tot.time, times = n.group)),
                            group = rep(1,n.group*tot.time),
@@ -484,7 +484,7 @@ ByGroupToLongData <- function(Y.group, n.group, group, tot.time, rand.time){
                                data.frame(id = df.group$id, t = df.group$t, A1 = -1, A2= +1, Yit = df.group$Y.minusplus, R=1),
                                data.frame(id = df.group$id, t = df.group$t, A1 = -1, A2= -1, Yit = df.group$Y.minusminus, R=1))
     
-  }else if(group==2 & length(unlist(list.Y$group.02))>0){
+  }else if(group==2 & length(unlist(Y.group))>0){
     df.group <- data.frame(id = c(1:n.group, rep(1:n.group, each = rand.time-1), rep(1:n.group, each = tot.time-rand.time)),
                            t = c(rep(1,n.group), rep(2:rand.time, times = n.group), rep((rand.time+1):tot.time, times = n.group)),
                            group = rep(2,n.group*tot.time),
@@ -498,7 +498,7 @@ ByGroupToLongData <- function(Y.group, n.group, group, tot.time, rand.time){
                                data.frame(id = df.group$id, t = df.group$t, A1 = -1, A2= +1, Yit = df.group$Y.minusplus, R=0),
                                data.frame(id = df.group$id, t = df.group$t, A1 = -1, A2= -1, Yit = df.group$Y.minusminus, R=0))
     
-  }else if(group==3 & length(unlist(list.Y$group.03))>0){
+  }else if(group==3 & length(unlist(Y.group))>0){
     df.group <- data.frame(id = c(1:n.group, rep(1:n.group, each = rand.time-1), rep(1:n.group, each = tot.time-rand.time)),
                            t = c(rep(1,n.group), rep(2:rand.time, times = n.group), rep((rand.time+1):tot.time, times = n.group)),
                            group = rep(3,n.group*tot.time),
@@ -512,7 +512,7 @@ ByGroupToLongData <- function(Y.group, n.group, group, tot.time, rand.time){
                                data.frame(id = df.group$id, t = df.group$t, A1 = -1, A2= +1, Yit = df.group$Y.minusplus, R=1),
                                data.frame(id = df.group$id, t = df.group$t, A1 = -1, A2= -1, Yit = df.group$Y.minusminus, R=1))
     
-  }else if(group==4 & length(unlist(list.Y$group.04))>0){
+  }else if(group==4 & length(unlist(Y.group))>0){
     df.group <- data.frame(id = c(1:n.group, rep(1:n.group, each = rand.time-1), rep(1:n.group, each = tot.time-rand.time)),
                            t = c(rep(1,n.group), rep(2:rand.time, times = n.group), rep((rand.time+1):tot.time, times = n.group)),
                            group = rep(4,n.group*tot.time),
@@ -526,19 +526,19 @@ ByGroupToLongData <- function(Y.group, n.group, group, tot.time, rand.time){
                                data.frame(id = df.group$id, t = df.group$t, A1 = -1, A2= +1, Yit = df.group$Y.minusplus, R=0),
                                data.frame(id = df.group$id, t = df.group$t, A1 = -1, A2= -1, Yit = df.group$Y.minusminus, R=0))
     
-  }else if(group==1 & length(unlist(list.Y$group.01))==0){
+  }else if(group==1 & length(unlist(Y.group))==0){
     
     reshaped.df.group <- data.frame(NULL)
     
-  }else if(group==2 & length(unlist(list.Y$group.02))==0){
+  }else if(group==2 & length(unlist(Y.group))==0){
     
     reshaped.df.group <- data.frame(NULL)
     
-  }else if(group==3 & length(unlist(list.Y$group.03))==0){
+  }else if(group==3 & length(unlist(Y.group))==0){
     
     reshaped.df.group <- data.frame(NULL)
     
-  }else if(group==4 & length(unlist(list.Y$group.04))==0){
+  }else if(group==4 & length(unlist(Y.group))==0){
     
     reshaped.df.group <- data.frame(NULL)
     
@@ -547,6 +547,129 @@ ByGroupToLongData <- function(Y.group, n.group, group, tot.time, rand.time){
   }
   
   return(reshaped.df.group)
+}
+
+GeneratePotentialYit <- function(sim, N, tot.time, rand.time, cutoff, rho){
+  
+  ###############################################################################
+  # No manual inputs after this line
+  ###############################################################################
+  
+  # Calculate dimensions of correlation matrices among four groups
+  corrdim.01 <- 2*tot.time - 1
+  corrdim.02 <- 3*tot.time - rand.time - 1
+  corrdim.03 <- 3*tot.time - rand.time - 1
+  corrdim.04 <- 4*tot.time - 2*rand.time - 1
+  
+  # Create correlation matrix for each group
+  list.corrmat <- list(group.01=NULL, group.02=NULL, group.03=NULL, group.04=NULL)
+  list.corrmat$group.01 <- ExchangeableMat(m = corrdim.01, rho = rho)
+  list.corrmat$group.02 <- ExchangeableMat(m = corrdim.02, rho = rho)
+  list.corrmat$group.03 <- ExchangeableMat(m = corrdim.03, rho = rho)
+  list.corrmat$group.04 <- ExchangeableMat(m = corrdim.04, rho = rho)
+  
+  # input.means contains mean outcome under each treatment sequence
+  # from time 1 until tot.time
+  list.mu <- ReadInput(input.df = input.means, tot.time = tot.time, rand.time = rand.time)
+  
+  # input.prop.zeros contains proportion of zeros in the outcome under each 
+  # treatment sequence from time 1 until tot.time
+  list.tau <- ReadInput(input.df = input.prop.zeros, tot.time = tot.time, rand.time = rand.time)
+  
+  # Under the working assumption that the outcome under each treatment sequence
+  # from time 1 until tot.time is negative binomial distributed, we use means
+  # in input.means and proportion of zeros in input.prop.zeros to calculate the
+  # variance in the outcome under each treatment sequence from time 1 until
+  # tot.time
+  list.sigma2 <- list(group.01=NULL, group.02=NULL, group.03=NULL, group.04=NULL)
+  list.sigma2$group.01 <- GetVarianceByGroup(all.mu = list.mu$group.01, all.tau = list.tau$group.01)
+  list.sigma2$group.02 <- GetVarianceByGroup(all.mu = list.mu$group.02, all.tau = list.tau$group.02)
+  list.sigma2$group.03 <- GetVarianceByGroup(all.mu = list.mu$group.03, all.tau = list.tau$group.03)
+  list.sigma2$group.04 <- GetVarianceByGroup(all.mu = list.mu$group.04, all.tau = list.tau$group.04)
+  
+  # Calculate proportion of responders to A1=+1 using cutoff, mean and variance
+  # in outcome at rand.time for treatment sequences beginning with A1=+1
+  use.var <- tail(list.sigma2$group.01$plus, n=1)
+  use.mean <- tail(as.numeric(list.mu$group.01$plus), n=1)
+  p <- pnbinom(q = cutoff, size = 1/use.var, mu = use.mean)
+  remove(use.var, use.mean)
+  
+  # Calculate proportion of responders to A1=-1 using cutoff, mean and variance
+  # in outcome at rand.time for treatment sequences beginning with A1=-1
+  use.var <- tail(list.sigma2$group.01$minus, n=1)
+  use.mean <- tail(as.numeric(list.mu$group.01$minus), n=1)
+  q <- pnbinom(q = cutoff, size = 1/use.var, mu = use.mean)
+  remove(use.var, use.mean)
+  
+  # Calculate number of individuals belonging to each group
+  n4 <- min(ceiling(N*(1-p)), ceiling(N*(1-q)))
+  
+  n.per.group <- solve(a = matrix(c(1,1,1,
+                                    1,1,0,
+                                    1,0,1), 
+                                  ncol = 3, byrow = TRUE),
+                       b = matrix(c(N-n4,
+                                    N*p,
+                                    N*q), 
+                                  ncol = 1, byrow = TRUE)
+  )
+  
+  n1 <- ceiling(n.per.group[1])
+  n2 <- ceiling(n.per.group[2])
+  n3 <- ceiling(n.per.group[3])
+  
+  n.generated <- n1+n2+n3+n4
+  
+  ###############################################################################
+  # Checks in between to ensure that calculations are performed as expected
+  ###############################################################################
+  
+  assert_that(abs((n1+n2)/N - p) < 0.01, msg = "Emprical proportion of responders is incorrect")
+  assert_that(abs((n1+n3)/N - q) < 0.01, msg = "Emprical proportion of responders is incorrect")
+  assert_that(abs((n3+n4)/N - (1-p)) < 0.01, msg = "Emprical proportion of non-responders is incorrect")
+  assert_that(abs((n2+n4)/N - (1-q)) < 0.01, msg = "Emprical proportion of non-responders is incorrect")
+  
+  # -----------------------------------------------------------------------------
+  # Simulate potential outcomes
+  # -----------------------------------------------------------------------------
+  
+  # Generate U matrix
+  list.U <- list(group.01=NULL, group.02=NULL, group.03=NULL, group.04=NULL)
+  list.U$group.01 <- ByGroupGenerateU(n.group = n1, corrdim = corrdim.01, corrmat = list.corrmat$group.01)
+  list.U$group.02 <- ByGroupGenerateU(n.group = n2, corrdim = corrdim.02, corrmat = list.corrmat$group.02)
+  list.U$group.03 <- ByGroupGenerateU(n.group = n3, corrdim = corrdim.03, corrmat = list.corrmat$group.03)
+  list.U$group.04 <- ByGroupGenerateU(n.group = n4, corrdim = corrdim.04, corrmat = list.corrmat$group.04)
+  
+  # In preparation for obtaining Y, obtain subsets of elements of U matrix and 
+  # rearrange into list
+  list.U$group.01 <- ByGroupMatrixToList(mat = list.U$group.01, group = 1, rand.time = rand.time, tot.time = tot.time)
+  list.U$group.02 <- ByGroupMatrixToList(mat = list.U$group.02, group = 2, rand.time = rand.time, tot.time = tot.time)
+  list.U$group.03 <- ByGroupMatrixToList(mat = list.U$group.03, group = 3, rand.time = rand.time, tot.time = tot.time)
+  list.U$group.04 <- ByGroupMatrixToList(mat = list.U$group.04, group = 4, rand.time = rand.time, tot.time = tot.time)
+  
+  # Generate Y matrix
+  list.Y <- list(group.01=NULL, group.02=NULL, group.03=NULL, group.04=NULL)
+  list.Y$group.01 <- ByGroupGenerateY(list.U=list.U, group=1, list.mu=list.mu, list.sigma2=list.sigma2, cutoff=cutoff)
+  list.Y$group.02 <- ByGroupGenerateY(list.U=list.U, group=2, list.mu=list.mu, list.sigma2=list.sigma2, cutoff=cutoff)
+  list.Y$group.03 <- ByGroupGenerateY(list.U=list.U, group=3, list.mu=list.mu, list.sigma2=list.sigma2, cutoff=cutoff)
+  list.Y$group.04 <- ByGroupGenerateY(list.U=list.U, group=4, list.mu=list.mu, list.sigma2=list.sigma2, cutoff=cutoff)
+  
+  # Reshape Y from list to data frame
+  list.Y$group.01 <- ByGroupToLongData(Y.group = list.Y$group.01, n.group=n1, group=1, tot.time=tot.time, rand.time=rand.time)
+  list.Y$group.02 <- ByGroupToLongData(Y.group = list.Y$group.02, n.group=n2, group=2, tot.time=tot.time, rand.time=rand.time)
+  list.Y$group.03 <- ByGroupToLongData(Y.group = list.Y$group.03, n.group=n3, group=3, tot.time=tot.time, rand.time=rand.time)
+  list.Y$group.04 <- ByGroupToLongData(Y.group = list.Y$group.04, n.group=n4, group=4, tot.time=tot.time, rand.time=rand.time)
+  
+  list.Y$group.02$id <- n1 + list.Y$group.02$id
+  list.Y$group.03$id <- n1 + n2 + list.Y$group.03$id
+  list.Y$group.04$id <- n1 + n2 + n3 + list.Y$group.04$id
+  
+  # Finally, we have a data frame with the potential outcomes
+  df.potential.Yit <- bind_rows(list.Y)
+  df.potential.Yit <- df.potential.Yit %>% arrange(id, desc(A1), desc(A2), t)
+  df.potential.Yit <- df.potential.Yit %>% mutate(sim = sim) %>% mutate(rho = rho)
+  
+  return(df.potential.Yit)
 }
 
 DTRCorrelationPO <- function(df){
@@ -592,11 +715,42 @@ DTRCorrelationPO <- function(df){
   rho.star.min <- apply(rho.star, 2, min)
   rho.star.ave <- colMeans(rho.star)
   
-  list.out <- list(rho.star.max = rho.star.max, 
+  list.out <- list(sim = df$sim[1],
+                   rho = df$rho[1],
+                   rho.star.max = rho.star.max, 
                    rho.star.min = rho.star.min,
                    rho.star.ave = rho.star.ave)
   
   return(list.out)
 }
 
-
+GenerateObservedYit <- function(df.potential.Yit){
+  
+  N <- max(df.potential.Yit$id)
+  obsdf <- data.frame(id = seq(1,N),
+                      observed.A1 = rep(NA, times = N),
+                      observed.A2 = rep(NA, times = N))
+  obsdf$observed.A1 <- base::sample(x = c(-1,1), size = nrow(obsdf), replace = TRUE, prob = c(0.5, 0.5))
+  # Later on, we will set observed.A2 to NA for those who responded to A1
+  obsdf$observed.A2 <- base::sample(x = c(-1,1), size = nrow(obsdf), replace = TRUE, prob = c(0.5, 0.5))
+  obsdf <- obsdf %>% arrange(id)
+  
+  df.potential.Yit <- left_join(df.potential.Yit, obsdf, by = c("id"))
+  df.potential.Yit <- df.potential.Yit %>% mutate(observed.A2 = replace(observed.A2, R==1, NA))
+  # whichDTR is an indicator for which among the four sets of potential outcomes was actually observed
+  df.potential.Yit <- df.potential.Yit %>% 
+    mutate(whichDTR = case_when(A1 == observed.A1 & R == 1 ~ 1, 
+                                A1 == observed.A1 & R == 0 & A2 == observed.A2 ~ 1,
+                                TRUE ~ 0))
+  df.observed.Yit <- df.potential.Yit %>% filter(whichDTR == 1) %>%
+    select(id, t, observed.A1, observed.A2, R, Yit)
+  
+  # df.observed.Yit contains duplicate rows for responders to first stage intervention
+  # we remove those duplicate rows
+  df.observed.Yit <- unique(df.observed.Yit)
+  df.observed.Yit <- df.observed.Yit %>% arrange(id, t)
+  df.observed.Yit <- apply(df.observed.Yit, 2, as.numeric)
+  df.observed.Yit <- as.data.frame(df.observed.Yit)
+  
+  return(df.observed.Yit)
+}
