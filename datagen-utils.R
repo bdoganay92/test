@@ -587,9 +587,16 @@ DTRCorrelationPO <- function(df){
                          plusminus = cormat.plusminus[upper.tri(cormat.plusminus)],
                          minusplus = cormat.minusplus[upper.tri(cormat.minusplus)],
                          minusminus = cormat.minusminus[upper.tri(cormat.minusminus)])
-  rho.star <- colMeans(rho.star)
   
-  return(rho.star)
+  rho.star.max <- apply(rho.star, 2, max)
+  rho.star.min <- apply(rho.star, 2, min)
+  rho.star.ave <- colMeans(rho.star)
+  
+  list.out <- list(rho.star.max = rho.star.max, 
+                   rho.star.min = rho.star.min,
+                   rho.star.ave = rho.star.ave)
+  
+  return(list.out)
 }
 
 
