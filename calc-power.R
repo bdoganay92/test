@@ -36,26 +36,81 @@ input.prop.zeros <- read.csv(file.path(path.input_data, "input_prop_zeros.csv"),
 # Calculate marginal means implied by input parameters
 # -----------------------------------------------------------------------------
 
-input.marg.params <- CalcMarginalParams(means = input.means, 
-                                        prop.zeros = input.prop.zeros, 
-                                        cutoff = input.cutoff, 
-                                        tot.time = input.tot.time, 
-                                        rand.time = input.rand.time)
+input.marg.params <- CalcTrueMarginalParams(means = input.means, 
+                                            prop.zeros = input.prop.zeros, 
+                                            cutoff = input.cutoff, 
+                                            tot.time = input.tot.time, 
+                                            rand.time = input.rand.time)
 
-idx.time.1 <- which(colnames(true.beta)=="time.1")
-idx.tot.time <- input.tot.time + (idx.time.1-1)
-idx.rand.time <- input.rand.time + (idx.time.1-1)
+# Reshape true.beta from square data frame to column matrix
+true.beta <- MeltBeta(df.rectangle = input.marg.params$true.beta, 
+                      tot.time = input.tot.time,
+                      rand.time = input.rand.time)
 
-true.beta <- input.marg.params$true.beta
-true.beta <- c(true.beta[true.beta$DTR=="plusplus", idx.time.1],
-               true.beta[true.beta$DTR=="plusplus", (idx.time.1+1):idx.rand.time],
-               true.beta[true.beta$DTR=="minusplus", (idx.time.1+1):idx.rand.time],
-               true.beta[true.beta$DTR=="plusplus", (idx.rand.time+1):idx.tot.time],
-               true.beta[true.beta$DTR=="plusminus", (idx.rand.time+1):idx.tot.time],
-               true.beta[true.beta$DTR=="minusplus", (idx.rand.time+1):idx.tot.time],
-               true.beta[true.beta$DTR=="minusminus", (idx.rand.time+1):idx.tot.time])
+# Quantities involving a linear combination of marginal means at each time
+# point for every given DTR
+blank.marginal.df <- data.frame(DTR = c("plusplus","plusminus","minusplus","minusminus"),
+                                matrix(rep(NA, 4*input.tot.time), nrow=4, 
+                                       dimnames = list(c(NULL),
+                                                       c(paste("time.",1:input.tot.time,sep=""))
+                                       )
+                                )
+)
 
-true.beta <- as.matrix(true.beta)
+# -----------------------------------------------------------------------------
+# Set up contrast matrix and calculate true values of contrasts
+# -----------------------------------------------------------------------------
+
+input.C <- as.list(1:input.tot.time)
+names(input.C) <- paste("MargMean.",1:input.tot.time,sep="")
+
+input.C <- lapply(input.C, function(x, 
+                                    tot.time = input.tot.time, 
+                                    init.df = blank.marginal.df){
+  time.now <- x
+  x <- init.df
+  x[,paste("time.",time.now,sep="")] <- 1
+  
+  if(time.now == 1){
+    x[,paste("time.",2:tot.time,sep="")] <- 0
+  }else if(time.now > 1 & time.now < tot.time){
+    x[,paste("time.",1:(time.now-1),sep="")] <- 0
+    x[,paste("time.",(time.now+1):tot.time,sep="")] <- 0
+  }else{
+    x[,paste("time.",1:(tot.time-1),sep="")] <- 0
+  }
+  
+  return(x)
+}
+)
+
+melted.input.C <- lapply(input.C, MeltC, 
+                         tot.time = input.tot.time, 
+                         rand.time = input.rand.time)
+
+# -----------------------------------------------------------------------------
+# Calculate true values of contrasts
+# -----------------------------------------------------------------------------
+
+true.addbeta <- c(true.beta[1], true.beta[2:length(true.beta)] + true.beta[1])
+true.addbeta <- as.matrix(true.addbeta)
+
+true.margmeans <- lapply(melted.input.C, function(x, use.addbeta = true.addbeta){
+  return(exp(x %*% use.addbeta))
+})
+
+true.margmeans <- bind_cols(true.margmeans)
+
+# AUC
+input.L <- list(AUC = NULL)
+input.L$AUC <- blank.marginal.df
+input.L$AUC[,"time.1"] <- 1/2
+input.L$AUC[,paste("time.",input.tot.time,sep="")] <- 1/2
+input.L$AUC[,paste("time.",2:(input.tot.time-1),sep="")] <- 1
+
+# Resulting quantities
+true.margquantities <- list(AUC = NULL)
+true.margquantities$AUC <- rowSums(input.L$AUC[,2:ncol(input.L$AUC)] * true.margmeans)
 
 # -----------------------------------------------------------------------------
 # Begin tasks
@@ -131,6 +186,7 @@ list.out <- lapply(list.df.est,
 df.out <- bind_rows(list.out)
 df.out.summary <- df.out %>% filter(converged==1) %>% 
   group_by(coefnames) %>% summarise(est.bias = mean(bias))
+
 
 
 
