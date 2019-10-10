@@ -42,11 +42,11 @@ input.marg.params <- CalcMarginalParams(means = input.means,
                                         tot.time = input.tot.time, 
                                         rand.time = input.rand.time)
 
-true.beta <- input.marg.params$true.beta
 idx.time.1 <- which(colnames(true.beta)=="time.1")
 idx.tot.time <- input.tot.time + (idx.time.1-1)
 idx.rand.time <- input.rand.time + (idx.time.1-1)
 
+true.beta <- input.marg.params$true.beta
 true.beta <- c(true.beta[true.beta$DTR=="plusplus", idx.time.1],
                true.beta[true.beta$DTR=="plusplus", (idx.time.1+1):idx.rand.time],
                true.beta[true.beta$DTR=="minusplus", (idx.time.1+1):idx.rand.time],
@@ -129,7 +129,8 @@ list.out <- lapply(list.df.est,
 )
 
 df.out <- bind_rows(list.out)
-df.out <- df.out %>% group_by(coefnames) %>% summarise(est.bias = mean(bias))
+df.out.summary <- df.out %>% filter(converged==1) %>% 
+  group_by(coefnames) %>% summarise(est.bias = mean(bias))
 
 
 

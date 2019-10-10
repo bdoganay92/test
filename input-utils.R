@@ -34,12 +34,12 @@ ReadInput <- function(input.df, tot.time, rand.time){
   assert_that(min(first.rand)==max(first.rand), msg = "All entries must be equal")
   
   # Quantities after first randomization until re-randomization are equal
-  pre.rerand.plus <- input.df[1:3,paste("time.",2:rand.time,sep="")]
+  pre.rerand.plus <- as.matrix(input.df[1:3,paste("time.",2:rand.time,sep="")])
   check.equal <- apply(pre.rerand.plus,2,min) == apply(pre.rerand.plus,2,max)
   assert_that(sum(check.equal)==rand.time-1, msg = "All entries must be equal")
   
   # Quantities after first randomization until re-randomization are equal
-  pre.rerand.minus <- input.df[4:6,paste("time.",2:rand.time,sep="")]
+  pre.rerand.minus <- as.matrix(input.df[4:6,paste("time.",2:rand.time,sep="")])
   check.equal <- apply(pre.rerand.minus,2,min) == apply(pre.rerand.minus,2,max)
   assert_that(sum(check.equal)==rand.time-1, msg = "All entries must be equal")
   

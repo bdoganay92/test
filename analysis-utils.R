@@ -122,20 +122,22 @@ CalcMarginalParams <- function(means, prop.zeros, cutoff, tot.time, rand.time){
   true.gamma <- means
   true.gamma[,idx.time.1:idx.tot.time] <- NA 
   true.gamma[,idx.time.1] <- log(means[,idx.time.1])
-  true.gamma[,idx.time.1:idx.tot.time] <- log(means[,idx.time.1:idx.tot.time]) - log(means[,idx.time.1])
+  true.gamma[,(idx.time.1+1):idx.tot.time] <- log(means[,(idx.time.1+1):idx.tot.time]) - log(means[,idx.time.1])
   
   # True value of betas
   true.beta <- matrix(rep(NA_real_,4*tot.time), byrow=TRUE, ncol=tot.time)
   colnames(true.beta) <- paste("time.",1:tot.time,sep="")
   true.beta <- data.frame(DTR = dtr.names, true.beta)
   
-  g.plus <- true.gamma[true.gamma$seq=="plus.r", idx.time.1:idx.rand.time]
-  g.minus <- true.gamma[true.gamma$seq=="minus.r", idx.time.1:idx.rand.time]
+  true.beta[,idx.time.1] <- true.gamma[1:4, idx.time.1]
   
-  true.beta[true.beta$DTR=="plusplus", idx.time.1:idx.rand.time] <- g.plus
-  true.beta[true.beta$DTR=="plusminus", idx.time.1:idx.rand.time] <- g.plus
-  true.beta[true.beta$DTR=="minusplus", idx.time.1:idx.rand.time] <- g.minus
-  true.beta[true.beta$DTR=="minusminus", idx.time.1:idx.rand.time] <- g.minus
+  g.plus <- true.gamma[true.gamma$seq=="plus.r", (idx.time.1+1):idx.rand.time]
+  g.minus <- true.gamma[true.gamma$seq=="minus.r", (idx.time.1+1):idx.rand.time]
+  
+  true.beta[true.beta$DTR=="plusplus", (idx.time.1+1):idx.rand.time] <- g.plus
+  true.beta[true.beta$DTR=="plusminus", (idx.time.1+1):idx.rand.time] <- g.plus
+  true.beta[true.beta$DTR=="minusplus", (idx.time.1+1):idx.rand.time] <- g.minus
+  true.beta[true.beta$DTR=="minusminus", (idx.time.1+1):idx.rand.time] <- g.minus
   
   g.plus.r <- true.gamma[true.gamma$seq=="plus.r", (idx.rand.time+1):idx.tot.time]
   g.plus.nr.plus <- true.gamma[true.gamma$seq=="plus.nr.plus", (idx.rand.time+1):idx.tot.time]

@@ -19,6 +19,7 @@ WeightAndReplicate <- function(DataLongFormat, tot.time){
   DataLongFormat$KnownWeight <- DataLongFormat$KnownWeight1 * DataLongFormat$KnownWeight2
   
   # Create "replications"
+  DataLongFormat$ActualTime <- DataLongFormat$t
   RowsToReplicate <- DataLongFormat[which(DataLongFormat$R==1),]
   PlusOnePseudodata <- RowsToReplicate
   PlusOnePseudodata$observed.A2 <- 1

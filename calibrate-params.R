@@ -93,6 +93,7 @@ empirical.corr <- bind_rows(list.empirical.corr)
 corr.hat <- empirical.corr %>% group_by(DTR, rho) %>%
   summarise(rho.star.max = mean(rho.star.max),
             rho.star.min = mean(rho.star.min),
-            rho.star.ave = mean(rho.star.ave))
+            rho.star.ave = mean(rho.star.ave)) %>%
+  arrange(rho, desc(DTR))
 
 
