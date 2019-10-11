@@ -98,19 +98,77 @@ true.addbeta <- as.matrix(true.addbeta)
 true.margmeans <- lapply(melted.input.C, function(x, use.addbeta = true.addbeta){
   return(exp(x %*% use.addbeta))
 })
-
 true.margmeans <- bind_cols(true.margmeans)
 
-# AUC
-input.L <- list(AUC = NULL)
+input.L <- list(AUC = NULL, EndOfStudyMeans = NULL)
 input.L$AUC <- blank.marginal.df
 input.L$AUC[,"time.1"] <- 1/2
 input.L$AUC[,paste("time.",input.tot.time,sep="")] <- 1/2
 input.L$AUC[,paste("time.",2:(input.tot.time-1),sep="")] <- 1
 
+input.L$EndOfStudyMeans <- blank.marginal.df
+input.L$EndOfStudyMeans[,paste("time.",input.tot.time,sep="")] <- 1
+input.L$EndOfStudyMeans[,paste("time.",1:(input.tot.time-1),sep="")] <- 0
+
 # Resulting quantities
-true.margquantities <- list(AUC = NULL)
-true.margquantities$AUC <- rowSums(input.L$AUC[,2:ncol(input.L$AUC)] * true.margmeans)
+true.margquantities <- as.list(rep(NA, length(input.L)))
+names(true.margquantities) <- names(input.L)
+
+for(i in 1:length(input.L)){
+  mat <- input.L[[i]][,2:ncol(input.L[[i]])]
+  true.margquantities[[i]] <- mat * true.margmeans
+  true.margquantities[[i]] <- rowSums(true.margquantities[[i]])
+  true.margquantities[[i]] <- as.matrix(true.margquantities[[i]])
+}
+
+# Differences between DTRs
+input.D <- as.list(rep(NA, length(input.L)))
+names(input.D) <- names(input.L)
+for(i in 1:length(input.L)){
+  these.cols <- 2:ncol(input.L[[i]])
+  names1 <- colnames(input.L[[i]][,these.cols])
+  names2 <- names1
+  names1 <- paste("d1.",names1,sep="")
+  names2 <- paste("d2.",names2,sep="")
+  
+  these.elements <- input.L[[i]][1,these.cols]
+  mat1 <- rbind(these.elements, these.elements, these.elements,
+                these.elements, these.elements, these.elements)
+  mat2 <- -1*mat1
+  
+  input.D[[i]]<- cbind(c("plusplus.plusminus",
+                         "plusplus.minusplus",
+                         "plusplus.minusminus",
+                         "plusminus.minusplus",
+                         "plusminus.minusminus",
+                         "minusplus.minusminus"),
+                       mat1, mat2)
+  colnames(input.D[[i]]) <- c("diff",names1,names2)
+}
+
+# Resulting quantities
+true.diffs <- as.list(rep(NA, length(input.D)))
+names(true.diffs) <- names(input.D)
+
+for(i in 1:length(input.D)){
+  mat1 <- input.D[[i]][,2:ncol(input.D[[i]])]
+  
+  plusplus.plusminus <- cbind(true.margmeans[1,],true.margmeans[2,])
+  plusplus.minusplus <- cbind(true.margmeans[1,],true.margmeans[3,])
+  plusplus.minusminus <- cbind(true.margmeans[1,],true.margmeans[4,])
+  plusminus.minusplus <- cbind(true.margmeans[2,],true.margmeans[3,])
+  plusminus.minusminus <- cbind(true.margmeans[2,],true.margmeans[4,])
+  minusplus.minusminus <- cbind(true.margmeans[3,],true.margmeans[4,])
+  
+  mat2 <- rbind(plusplus.plusminus, plusplus.minusplus,
+                plusplus.minusminus, plusminus.minusplus,
+                plusminus.minusminus, minusplus.minusminus)
+  
+  true.diffs[[i]] <- mat1 * mat2
+  true.diffs[[i]] <- rowSums(true.diffs[[i]])
+  true.diffs[[i]] <- as.matrix(true.diffs[[i]])
+}
+
 
 # -----------------------------------------------------------------------------
 # Begin tasks
@@ -119,12 +177,12 @@ true.margquantities$AUC <- rowSums(input.L$AUC[,2:ncol(input.L$AUC)] * true.marg
 ncore <- detectCores()
 cl <- makeCluster(ncore - 1)
 clusterSetRNGStream(cl, 102399)
-clusterExport(cl, c("input.N",
+clusterExport(cl, c("nsim", "input.N",
                     "input.tot.time","input.rand.time",
                     "input.cutoff","input.rho",
                     "input.means","input.prop.zeros",
                     "path.code","path.input_data",
-                    "nsim"))
+                    "melted.input.C","input.L","input.D"))
 clusterEvalQ(cl,
              {
                library(dplyr)
@@ -156,11 +214,96 @@ list.df.wr <- parLapply(cl = cl,
                         fun = WeightAndReplicate, 
                         tot.time = input.tot.time)
 
-list.df.est <- parLapply(cl = cl, 
-                         X = list.df.wr, 
-                         fun = AnalyzeData, 
-                         tot.time = input.tot.time, 
-                         rand.time = input.rand.time)
+list.df.est.beta <- parLapply(cl = cl, 
+                              X = list.df.wr, 
+                              fun = AnalyzeData, 
+                              tot.time = input.tot.time, 
+                              rand.time = input.rand.time)
+
+list.df.est.margmean <- parLapply(cl=cl,
+                                  X = list.df.est.beta,
+                                  fun = function(x, list.C = melted.input.C){
+                                    if(x$converged==0){
+                                      out <- NULL
+                                    }else{
+                                      est.beta <- as.matrix(x$est.beta)
+                                      est.addbeta <- est.beta
+                                      these.rows <- 2:nrow(est.addbeta)
+                                      est.addbeta[these.rows] <- est.addbeta[these.rows] + est.beta[1] 
+                                      out <- lapply(list.C, 
+                                                    function(mat, b = est.addbeta){
+                                                      return(exp(mat%*%b))
+                                                    })
+                                    }
+                                    return(out)
+                                  })
+
+list.df.est.margmean <- parLapply(cl=cl,
+                                  X = list.df.est.margmean,
+                                  fun = function(x){
+                                    if(is.null(x)){
+                                      out <- NULL
+                                    }else{
+                                      out <- bind_cols(x)
+                                    }
+                                    return(out)
+                                  })
+
+list.df.est.margquantities <-  parLapply(cl=cl,
+                                         X = list.df.est.margmean,
+                                         fun = function(x, 
+                                                        list.L = input.L){
+                                           if(is.null(x)){
+                                             out <- NULL
+                                           }else{
+                                             out <- as.list(rep(NA, length(list.L)))
+                                             names(out) <- names(list.L)
+                                             for(i in 1:length(list.L)){
+                                               mat <- list.L[[i]][,2:ncol(list.L[[i]])]
+                                               out[[i]] <- mat*x
+                                               out[[i]] <- rowSums(out[[i]])
+                                               out[[i]] <- as.matrix(out[[i]])
+                                             }
+                                           }
+                                           return(out)
+                                         })
+
+list.df.est.diffs <- parLapply(cl=cl,
+                               X = list.df.est.margmean, 
+                               fun = function(x,list.D = input.D){
+                                 if(is.null(x)){
+                                   out <- NULL
+                                 }else{
+                                   out <- as.list(rep(NA, length(list.D)))
+                                   names(out) <- names(list.D)
+                                   for(i in 1:length(list.D)){
+                                     mat1 <- list.D[[i]][,2:ncol(list.D[[i]])]
+                                     
+                                     plusplus.plusminus <- cbind(x[1,],x[2,])
+                                     plusplus.minusplus <- cbind(x[1,],x[3,])
+                                     plusplus.minusminus <- cbind(x[1,],x[4,])
+                                     plusminus.minusplus <- cbind(x[2,],x[3,])
+                                     plusminus.minusminus <- cbind(x[2,],x[4,])
+                                     minusplus.minusminus <- cbind(x[3,],x[4,])
+                                     
+                                     mat2 <- rbind(plusplus.plusminus, plusplus.minusplus,
+                                                   plusplus.minusminus, plusminus.minusplus,
+                                                   plusminus.minusminus, minusplus.minusminus)
+                                     
+                                     out[[i]] <- mat1 * mat2
+                                     out[[i]] <- rowSums(out[[i]])
+                                     out[[i]] <- as.matrix(out[[i]])
+                                     out[[i]] <- data.frame(DTRPair = c("plusplus.plusminus",
+                                                                        "plusplus.minusplus",
+                                                                        "plusplus.minusminus",
+                                                                        "plusminus.minusplus",
+                                                                        "plusminus.minusminus",
+                                                                        "minusplus.minusminus"),
+                                                            d = out[[i]])
+                                   }
+                                 }
+                                 return(out)
+                               })
 
 stopCluster(cl)
 
@@ -168,14 +311,14 @@ stopCluster(cl)
 # Evaluate estimates
 # -----------------------------------------------------------------------------
 
-list.out <- lapply(list.df.est, 
+list.out <- lapply(list.df.est.beta, 
                    function(x, list.true.vals = list(true.beta = true.beta)){
                      
                      outdf <- data.frame(converged = x$converged,
                                          coefnames = x$coefnames,
                                          est.beta = x$est.beta,
                                          true.beta = as.numeric(list.true.vals$true.beta)
-                                         )
+                     )
                      
                      outdf$bias <- outdf$true.beta - outdf$est.beta
                      
@@ -186,7 +329,5 @@ list.out <- lapply(list.df.est,
 df.out <- bind_rows(list.out)
 df.out.summary <- df.out %>% filter(converged==1) %>% 
   group_by(coefnames) %>% summarise(est.bias = mean(bias))
-
-
 
 
