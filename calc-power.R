@@ -19,8 +19,8 @@ source(file.path(path.code, "analysis-utils.R"))
 
 nsim <- 1000  # Total no. of monte carlo samples
 input.N <- 500  # Total no. of individuals
-input.tot.time <- 12  # Total no. of time points
-input.rand.time <- 4  # Time when second randomization occurred (time is 1-indexed)
+input.tot.time <- 11  # Total no. of time points
+input.rand.time <- 7  # Time when second randomization occurred (time is 1-indexed)
 input.cutoff <- 1  # Cutoff in the definition of response status
 input.rho <- 0.7  # Dependence parameter
 
@@ -308,7 +308,7 @@ list.df.est.diffs <- parLapply(cl=cl,
 stopCluster(cl)
 
 # -----------------------------------------------------------------------------
-# Evaluate estimates
+# Evaluate estimates: betas
 # -----------------------------------------------------------------------------
 
 list.out <- lapply(list.df.est.beta, 
@@ -327,7 +327,143 @@ list.out <- lapply(list.df.est.beta,
 )
 
 df.out <- bind_rows(list.out)
-df.out.summary <- df.out %>% filter(converged==1) %>% 
-  group_by(coefnames) %>% summarise(est.bias = mean(bias))
+df.out <- df.out %>% filter(converged==1) %>% 
+  group_by(coefnames) %>% 
+  summarise(est.bias = mean(bias))
+
+bias.betas <- df.out
+remove(df.out, list.out)
+
+# -----------------------------------------------------------------------------
+# Evaluate estimates: marginal means
+# -----------------------------------------------------------------------------
+
+list.out <- lapply(list.df.est.margmean,
+                   function(x, list.true.vals = list(true.margmeans = true.margmeans)){
+                     
+                     outdf <- list.true.vals$true.margmeans - x
+                     outdf <- as.matrix(outdf)
+                     return(outdf)
+                   }
+                   )
+
+df.out <- matrix(rep(0, 4*input.tot.time), nrow=4)
+n.converged <- 0
+for(i in 1:length(list.out)){
+  
+  this.mat <- list.out[[i]]
+  if(nrow(this.mat)>0){
+   df.out <- df.out + this.mat 
+   n.converged <- n.converged + 1
+  }else{
+    next
+  }
+}
+
+df.out <- df.out/n.converged
+
+bias.margmean <- df.out
+remove(df.out, list.out)
+
+# -----------------------------------------------------------------------------
+# Evaluate estimates: resulting quantities
+# -----------------------------------------------------------------------------
+
+list.out <- lapply(list.df.est.margquantities,
+                   function(x, list.true.vals = list(true.margquantities = true.margquantities)){
+                     if(length(x)==1){
+                       if(nrow(x)==0){
+                         outlist <- data.frame(NULL)
+                       }else{
+                         outlist[[i]] <- x[[i]] - list.true.vals$true.margquantities[[i]]
+                       }
+                     }else{
+                       num.quantities <- length(true.margquantities)
+                       outlist <- as.list(rep(NA), num.quantities)
+                       for(i in 1:num.quantities){
+                         outlist[[i]] <- x[[i]] - list.true.vals$true.margquantities[[i]]
+                       }
+                     }
+                     return(outlist)
+                   }
+)
+
+list.out <- lapply(list.out, function(x){
+  return(bind_cols(x))
+})
+
+df.out <- matrix(rep(0, 4*length(true.margquantities)), nrow=4)
+n.converged <- 0
+
+for(i in 1:length(list.out)){
+  
+  this.mat <- list.out[[i]]
+  if(nrow(this.mat)>0){
+    df.out <- df.out + this.mat 
+    n.converged <- n.converged + 1
+  }else{
+    next
+  }
+}
+
+df.out <- df.out/n.converged
+
+bias.margquantities <- df.out
+remove(df.out, list.out)
+
+# -----------------------------------------------------------------------------
+# Evaluate estimates: resulting differences
+# -----------------------------------------------------------------------------
+
+list.out <- lapply(list.df.est.diffs,
+                   function(x, list.true.vals = list(true.diffs = true.diffs)){
+                     if(length(x)==1){
+                       if(nrow(x)==0){
+                         outlist <- data.frame(NULL)
+                       }else{
+                         outlist[[i]] <- x[[i]][,"d"] - list.true.vals$true.diffs[[i]]
+                       }
+                     }else{
+                       num.quantities <- length(true.diffs)
+                       outlist <- as.list(rep(NA), num.quantities)
+                       for(i in 1:num.quantities){
+                         outlist[[i]] <- x[[i]][,"d"] - list.true.vals$true.diffs[[i]]
+                       }
+                     }
+                     return(outlist)
+                   }
+)
+
+
+df.out <- matrix(rep(0, 6*length(true.diffs)), nrow=6)
+n.converged <- 0
+
+for(i in 1:length(list.out)){
+  
+  this.mat <- bind_cols(list.out[[i]])
+  if(nrow(this.mat)>0){
+    df.out <- df.out + this.mat 
+    n.converged <- n.converged + 1
+  }else{
+    next
+  }
+}
+
+df.out <- df.out/n.converged
+
+bias.diffs <- df.out
+remove(df.out, list.out)
+
+# -----------------------------------------------------------------------------
+# Print out calculated quantities
+# -----------------------------------------------------------------------------
+
+df.out.bias <- data.frame(max.bias.betas = max(bias.betas$est.bias),
+                          max.bias.margmean = max(bias.margmean),
+                          max.bias.margquantities = max(bias.margquantities),
+                          max.bias.diffs = max(bias.diffs)
+                          )
+df.out.bias  
+
 
 
