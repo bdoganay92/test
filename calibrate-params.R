@@ -14,7 +14,7 @@ source(file.path(path.code, "datagen-utils.R"))
 # Read and prepare input parameters
 # -----------------------------------------------------------------------------
 
-input.sim <- seq(1,1000,1)  # Total no. of monte carlo samples
+nsim <- seq(1,1000,1)  # Total no. of monte carlo samples
 input.N <- 500  # Total no. of individuals
 input.tot.time <- 11  # Total no. of time points
 input.rand.time <- 7  # Time when second randomization occurred (time is 1-indexed)
@@ -29,6 +29,23 @@ input.means <- read.csv(file.path(path.input_data, "input_means.csv"), header = 
 # treatment sequence from time 1 until tot.time
 input.prop.zeros <- read.csv(file.path(path.input_data, "input_prop_zeros.csv"), header = TRUE)
 
+# Combine all inputs into a grid
+gridx <- expand.grid(nsim=nsim, 
+                     input.N=input.N, 
+                     input.tot.time=input.tot.time,
+                     input.rand.time=input.rand.time,
+                     input.cutoff=input.cutoff,
+                     input.rho=input.rho)
+
+list.gridx <- apply(gridx, 1, as.list)
+list.gridx <- lapply(list.gridx, function(this.list, 
+                                          means=input.means,
+                                          prop.zeros=input.prop.zeros){
+  this.list$input.means <- input.means
+  this.list$input.prop.zeros <- input.prop.zeros
+  return(this.list)
+})
+
 # -----------------------------------------------------------------------------
 # Begin tasks
 # -----------------------------------------------------------------------------
@@ -36,12 +53,7 @@ input.prop.zeros <- read.csv(file.path(path.input_data, "input_prop_zeros.csv"),
 ncore <- detectCores()
 cl <- makeCluster(ncore - 1)
 clusterSetRNGStream(cl, 102399)
-clusterExport(cl, c("input.N",
-                    "input.tot.time","input.rand.time",
-                    "input.cutoff","input.rho",
-                    "input.means","input.prop.zeros",
-                    "path.code","path.input_data",
-                    "input.sim"))
+clusterExport(cl, c("list.gridx","path.code","path.input_data"))
 clusterEvalQ(cl,
              {
                library(dplyr)
@@ -55,14 +67,19 @@ clusterEvalQ(cl,
                source(file.path(path.code, "analysis-utils.R"))
              })
 
-list.df.potential <- clusterMap(cl = cl, 
-                                fun = GeneratePotentialYit,
-                                sim = input.sim,
-                                N = input.N, 
-                                tot.time = input.tot.time,
-                                rand.time = input.rand.time,
-                                cutoff = input.cutoff,
-                                rho = input.rho)
+list.df.potential <- parLapply(cl=cl,
+                               X=list.gridx,
+                               fun=function(this.gridx){
+                                 df <- GeneratePotentialYit(sim=this.gridx$nsim, 
+                                                            N=this.gridx$input.N, 
+                                                            tot.time=this.gridx$input.tot.time, 
+                                                            rand.time=this.gridx$input.rand.time, 
+                                                            cutoff=this.gridx$input.cutoff, 
+                                                            rho=this.gridx$input.rho, 
+                                                            input.prop.zeros=this.gridx$input.prop.zeros, 
+                                                            input.means=this.gridx$input.means)
+                                 return(df)
+                               })
 
 list.empirical.corr <- parLapply(cl = cl, 
                                  X = list.df.potential, 
