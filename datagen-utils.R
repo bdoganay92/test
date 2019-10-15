@@ -241,7 +241,7 @@ qUpperTruncNB <- function(p, lambda, sigma2, cutoff){
   assert_that(p>=0 & p<=1)
   assert_that(lambda>0)
   assert_that(sigma2>0)
-  assert_that(cutoff>0)
+  assert_that(cutoff>=0)
   
   # ---------------------------------------------------------------------------
   # Begin tasks
@@ -280,7 +280,7 @@ qLowerTruncNB <- function(p, lambda, sigma2, cutoff){
   assert_that(p>=0 & p<=1)
   assert_that(lambda>0)
   assert_that(sigma2>0)
-  assert_that(cutoff>0)
+  assert_that(cutoff>=0)
   
   # ---------------------------------------------------------------------------
   # Begin tasks
@@ -549,7 +549,7 @@ ByGroupToLongData <- function(Y.group, n.group, group, tot.time, rand.time){
   return(reshaped.df.group)
 }
 
-GeneratePotentialYit <- function(sim, N, tot.time, rand.time, cutoff, rho){
+GeneratePotentialYit <- function(sim, N, tot.time, rand.time, cutoff, rho, input.prop.zeros, input.means){
   
   ###############################################################################
   # No manual inputs after this line

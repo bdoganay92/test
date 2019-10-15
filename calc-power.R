@@ -69,16 +69,18 @@ input.C <- lapply(input.C, function(x,
                                     init.df = blank.marginal.df){
   time.now <- x
   x <- init.df
-  x[,paste("time.",time.now,sep="")] <- 1
   
   if(time.now == 1){
     x[,paste("time.",2:tot.time,sep="")] <- 0
   }else if(time.now > 1 & time.now < tot.time){
-    x[,paste("time.",1:(time.now-1),sep="")] <- 0
+    x[,paste("time.",2:(time.now-1),sep="")] <- 0
     x[,paste("time.",(time.now+1):tot.time,sep="")] <- 0
-  }else{
-    x[,paste("time.",1:(tot.time-1),sep="")] <- 0
+  }else{  # if time.now==tot.time
+    x[,paste("time.",2:(tot.time-1),sep="")] <- 0
   }
+  
+  x[,"time.1"] <- 1
+  x[,paste("time.",time.now,sep="")] <- 1
   
   return(x)
 }
@@ -92,11 +94,8 @@ melted.input.C <- lapply(input.C, MeltC,
 # Calculate true values of contrasts
 # -----------------------------------------------------------------------------
 
-true.addbeta <- c(true.beta[1], true.beta[2:length(true.beta)] + true.beta[1])
-true.addbeta <- as.matrix(true.addbeta)
-
-true.margmeans <- lapply(melted.input.C, function(x, use.addbeta = true.addbeta){
-  return(exp(x %*% use.addbeta))
+true.margmeans <- lapply(melted.input.C, function(x, use.beta = true.beta){
+  return(exp(x %*% use.beta))
 })
 true.margmeans <- bind_cols(true.margmeans)
 
@@ -203,7 +202,9 @@ list.df.potential <- parLapply(cl = cl,
                                tot.time=input.tot.time,
                                rand.time=input.rand.time,
                                cutoff=input.cutoff,
-                               rho=input.rho)
+                               rho=input.rho,
+                               input.means=input.means,
+                               input.prop.zeros=input.prop.zeros)
 
 list.df.observed <- parLapply(cl = cl, 
                               X = list.df.potential, 
@@ -227,11 +228,8 @@ list.df.est.margmean <- parLapply(cl=cl,
                                       out <- NULL
                                     }else{
                                       est.beta <- as.matrix(x$est.beta)
-                                      est.addbeta <- est.beta
-                                      these.rows <- 2:nrow(est.addbeta)
-                                      est.addbeta[these.rows] <- est.addbeta[these.rows] + est.beta[1] 
                                       out <- lapply(list.C, 
-                                                    function(mat, b = est.addbeta){
+                                                    function(mat, b = est.beta){
                                                       return(exp(mat%*%b))
                                                     })
                                     }
