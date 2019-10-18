@@ -2,19 +2,31 @@ library(dplyr)
 library(assertthat)  # All functions will require assertthat
 library(rootSolve)
 library(mvtnorm)
-
+  
 CalcTrueMarginalParams <- function(means, prop.zeros, cutoff, tot.time, rand.time){
   
   # Args:
-  #   means: ADDLATER
-  #   prop.zeros: ADDLATER
-  #   cutoff: ADDLATER
+  #   means: data frame with each row corresponding to one treatment sequence
+  #          and columns corresponding to mean outcome per time point
+  #   prop.zeros: data frame with each row corresponding to one treatment
+  #               sequence and columns corresponding to mean outcome per
+  #               time point
+  #   cutoff: cutoff in the definition of response status
+  #   tot.time: total number of time points
+  #   rand.time: time when randomization to second-stage intervention
+  #              occurred (time is 1-indexed)
   
   # ---------------------------------------------------------------------------
   # Check validity of inputs
   # ---------------------------------------------------------------------------
   
-  #ADDLATER
+  assert_that(tot.time == ncol(means)-1, 
+              msg = "Number of columns in means does not match tot.time")
+  assert_that(tot.time == ncol(prop.zeros)-1, 
+              msg = "Number of columns in prop.zeros does not match tot.time")
+  assert_that(cutoff>=0, msg = "cutoff must be greater than or equal to 0")
+  assert_that(tot.time>0, msg = "tot.time must be greater than 0")
+  assert_that(rand.time>0, msg = "rand.time must be greater than 0")
   
   # ---------------------------------------------------------------------------
   # Begin tasks
@@ -30,20 +42,14 @@ CalcTrueMarginalParams <- function(means, prop.zeros, cutoff, tot.time, rand.tim
   dtr.names <- c("plusplus","plusminus","minusplus","minusminus")
   
   blank.conditional.df <- data.frame(seq = seq.names,
-                                     matrix(rep(NA, 6*input.tot.time), nrow=6, 
-                                            dimnames = list(c(NULL),
-                                                            c(paste("time.",1:tot.time,sep=""))
-                                            )
-                                     )
-  )
+                                     matrix(rep(NA, 6*input.tot.time), nrow=6))
+  colnames(blank.conditional.df) <- c("seq",
+                                      paste("time.",1:tot.time,sep=""))
   
   blank.marginal.df <- data.frame(DTR = dtr.names,
-                                  matrix(rep(NA, 4*input.tot.time), nrow=4, 
-                                         dimnames = list(c(NULL),
-                                                         c(paste("time.",1:tot.time,sep=""))
-                                         )
-                                  )
-  )
+                                  matrix(rep(NA, 4*input.tot.time), nrow=4))
+  colnames(blank.marginal.df) <- c("DTR",
+                                   paste("time.",1:tot.time,sep=""))
   
   sigma2 <- means
   sigma2[,idx.time.1:idx.tot.time] <- NA 
@@ -191,9 +197,12 @@ AnalyzeData <- function(df.replicated.observed.Yit, tot.time, rand.time){
 MeltBeta <- function(df.rectangle, tot.time, rand.time){
   
   # Args:
-  #   df.rectangle: ADDLATER
-  #   tot.time: ADDLATER
-  #   rand.time: ADDLATER
+  #   df.rectangle: data frame with each row corresponding to one DTR
+  #                 and each column corresponding to value of parameter beta
+  #                 at each time point
+  #   tot.time: total number of time points
+  #   rand.time: time when randomization to second-stage intervention
+  #              occurred (time is 1-indexed)
   
   # ---------------------------------------------------------------------------
   # Check validity of inputs

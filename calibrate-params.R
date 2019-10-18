@@ -16,10 +16,10 @@ source(file.path(path.code, "datagen-utils.R"))
 
 nsim <- seq(1,1000,1)  # Total no. of monte carlo samples
 input.N <- 500  # Total no. of individuals
-input.tot.time <- 11  # Total no. of time points
-input.rand.time <- 7  # Time when second randomization occurred (time is 1-indexed)
-input.cutoff <- 1  # Cutoff in the definition of response status
-input.rho <- seq(0,1,0.1)
+input.tot.time <- 6  # Total no. of time points
+input.rand.time <- 2  # Time when second randomization occurred (time is 1-indexed)
+input.cutoff <- 0  # Cutoff in the definition of response status
+input.rho <- seq(0,1,0.01)
 
 # input.means contains mean outcome under each treatment sequence
 # from time 1 until tot.time
