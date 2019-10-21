@@ -17,7 +17,7 @@ source(file.path(path.code, "analysis-utils.R"))
 # Read and prepare input parameters
 # -----------------------------------------------------------------------------
 
-nsim <- 1000  # Total no. of monte carlo samples
+nsim <- 3  # Total no. of monte carlo samples
 input.N <- 500  # Total no. of individuals
 input.tot.time <- 6  # Total no. of time points
 input.rand.time <- 2  # Time when second randomization occurred (time is 1-indexed)
@@ -31,6 +31,34 @@ input.means <- read.csv(file.path(path.input_data, "input_means.csv"), header = 
 # input.prop.zeros contains proportion of zeros in the outcome under each 
 # treatment sequence from time 1 until tot.time
 input.prop.zeros <- read.csv(file.path(path.input_data, "input_prop_zeros.csv"), header = TRUE)
+
+# Initialize data frame to contain values of quantities corresponding
+# to each treatment sequence
+blank.conditional.df <- data.frame(DTR = c("plus.r","plus.nr.plus","plus.nr.minus",
+                                           "minus.r","minus.nr.plus","minus.nr.minus"),
+                                   matrix(rep(NA, 6*input.tot.time), nrow=6, 
+                                          dimnames = list(c(NULL),
+                                                          c(paste("time.",1:input.tot.time,sep=""))
+                                          )
+                                   )
+)
+
+user.inputs <- list(input.means = input.means, 
+                    input.prop.zeros = input.prop.zeros)
+
+# Calculate variance under assumption that outcomes under each treatment
+# sequence are negative binomial distributed
+theoretical.sigma2.conditional <- blank.conditional.df
+theoretical.variance.conditional <- blank.conditional.df
+
+for(i in 1:6){
+  this.sigma2 <- GetVarianceByGroup(all.mu = input.means[i,paste("time.",1:6,sep="")], 
+                     all.tau = input.prop.zeros[i,paste("time.",1:6,sep="")])
+  theoretical.sigma2.conditional[i,paste("time.",1:6,sep="")] <- this.sigma2
+  this.mean <- input.means[i,paste("time.",1:6,sep="")]
+  this.variance <- this.mean + this.sigma2*this.mean*this.mean
+  theoretical.variance.conditional[i,paste("time.",1:6,sep="")] <- this.variance
+}
 
 # -----------------------------------------------------------------------------
 # Calculate marginal means implied by input parameters
@@ -90,14 +118,76 @@ melted.input.C <- lapply(input.C, MeltC,
                          tot.time = input.tot.time,  
                          rand.time = input.rand.time)
 
+melted.input.C.plusplus <- list()
+melted.input.C.plusminus <- list()
+melted.input.C.minusplus <- list()
+melted.input.C.minusminus <- list()
+
+for(i in 1:length(melted.input.C)){
+  this.time <- melted.input.C[[i]]
+  this.time.plusplus <- this.time[row.names(this.time)=="plusplus",]
+  this.time.plusminus <- this.time[row.names(this.time)=="plusminus",]
+  this.time.minusplus <- this.time[row.names(this.time)=="minusplus",]
+  this.time.minusminus <- this.time[row.names(this.time)=="minusminus",]
+  
+  this.time.plusplus <- t(as.matrix(this.time.plusplus))
+  this.time.plusminus <- t(as.matrix(this.time.plusminus))
+  this.time.minusplus <- t(as.matrix(this.time.minusplus))
+  this.time.minusminus <- t(as.matrix(this.time.minusminus))
+  
+  row.names(this.time.plusplus) <- paste("time.",i,sep="")
+  row.names(this.time.plusminus) <- paste("time.",i,sep="")
+  row.names(this.time.minusplus) <- paste("time.",i,sep="")
+  row.names(this.time.minusminus) <- paste("time.",i,sep="")
+  
+  this.time.plusplus <- list(this.time.plusplus)
+  this.time.plusminus <- list(this.time.plusminus)
+  this.time.minusplus <- list(this.time.minusplus)
+  this.time.minusminus <- list(this.time.minusminus)
+  
+  melted.input.C.plusplus <- append(melted.input.C.plusplus, this.time.plusplus)
+  melted.input.C.plusminus <- append(melted.input.C.plusminus, this.time.plusminus)
+  melted.input.C.minusplus <- append(melted.input.C.minusplus, this.time.minusplus)
+  melted.input.C.minusminus <- append(melted.input.C.minusminus, this.time.minusminus)
+}
+
+melted.input.C.plusplus <- do.call(rbind, melted.input.C.plusplus)
+melted.input.C.plusminus <- do.call(rbind, melted.input.C.plusminus)
+melted.input.C.minusplus <- do.call(rbind, melted.input.C.minusplus)
+melted.input.C.minusminus <- do.call(rbind, melted.input.C.minusminus)
+
+stacked.C.plusplus.minusminus <- rbind(melted.input.C.plusplus, melted.input.C.minusminus)
+stacked.C.plusplus.minusminus <- rbind(melted.input.C.plusplus, melted.input.C.minusminus)
+stacked.C.plusplus.minusminus <- rbind(melted.input.C.plusplus, melted.input.C.minusminus)
+stacked.C.plusplus.minusminus <- rbind(melted.input.C.plusplus, melted.input.C.minusminus)
+stacked.C.plusplus.minusminus <- rbind(melted.input.C.plusplus, melted.input.C.minusminus)
+stacked.C.plusplus.minusminus <- rbind(melted.input.C.plusplus, melted.input.C.minusminus)
+
+
+L <- t(as.matrix(rep(NA, input.tot.time)))
+colnames(L) <- paste("time.",1:input.tot.time,sep="")
+
+L[,"time.1"] <- 0.5
+L[,2:(input.tot.time-1)] <- 1
+L[,input.tot.time] <- 0.5
+
+D <- cbind(L, -L)
+
 # -----------------------------------------------------------------------------
 # Calculate true values of contrasts
 # -----------------------------------------------------------------------------
 
-true.margmeans <- lapply(melted.input.C, function(x, use.beta = true.beta){
-  return(exp(x %*% use.beta))
-})
-true.margmeans <- bind_cols(true.margmeans)
+true.margmeans.plusplus <- exp(melted.input.C.plusplus %*% true.beta)
+true.margmeans.plusminus <- exp(melted.input.C.plusminus %*% true.beta)
+true.margmeans.minusplus <- exp(melted.input.C.minusplus %*% true.beta)
+true.margmeans.minusminus <- exp(melted.input.C.minusminus %*% true.beta)
+
+true.margmeans.plusplus.plusminus <- exp(stacked.C.plusplus.plusminus  %*% true.beta)
+
+true.margmeans.plusplus.minusminus <- exp(stacked.C.plusplus.minusminus  %*% true.beta)
+
+true.diff.plusplus.minusminus <- D %*% true.margmeans.plusplus.minusminus
+
 
 # -----------------------------------------------------------------------------
 # Begin tasks
@@ -111,7 +201,13 @@ clusterExport(cl, c("nsim", "input.N",
                     "input.cutoff","input.rho",
                     "input.means","input.prop.zeros",
                     "path.code","path.input_data",
-                    "melted.input.C"))
+                    "melted.input.C.plusplus",
+                    "melted.input.C.plusminus",
+                    "melted.input.C.minusplus",
+                    "melted.input.C.minusminus",
+                    "stacked.C.plusplus.minusminus",
+                    "D"))
+
 clusterEvalQ(cl,
              {
                library(dplyr)
@@ -151,32 +247,95 @@ list.df.est.beta <- parLapply(cl = cl,
                               tot.time = input.tot.time, 
                               rand.time = input.rand.time)
 
-list.df.est.margmean <- parLapply(cl=cl,
-                                  X = list.df.est.beta,
-                                  fun = function(x, list.C = melted.input.C){
-                                    if(x$converged==0){
-                                      out <- NULL
-                                    }else{
-                                      est.beta <- as.matrix(x$est.beta)
-                                      out <- lapply(list.C, 
-                                                    function(mat, b = est.beta){
-                                                      return(exp(mat%*%b))
-                                                    })
-                                    }
-                                    return(out)
-                                  })
+list.df.est.margmean.plusplus <- parLapply(cl=cl,
+                                           X = list.df.est.beta,
+                                           fun = function(x, C = melted.input.C.plusplus){
+                                             if(x$converged==0){
+                                               out <- NULL
+                                             }else{
+                                               est.beta <- x$est.beta
+                                               out <- exp(C %*% est.beta)
+                                             }
+                                             return(out)
+                                           })
 
-list.df.est.margmean <- parLapply(cl=cl,
-                                  X = list.df.est.margmean,
-                                  fun = function(x){
-                                    if(is.null(x)){
-                                      out <- NULL
-                                    }else{
-                                      out <- bind_cols(x)
-                                    }
-                                    return(out)
-                                  })
+list.df.est.margmean.plusminus <- parLapply(cl=cl,
+                                            X = list.df.est.beta,
+                                            fun = function(x, C = melted.input.C.plusminus){
+                                              if(x$converged==0){
+                                                out <- NULL
+                                              }else{
+                                                est.beta <- x$est.beta
+                                                out <- exp(C %*% est.beta)
+                                              }
+                                              return(out)
+                                            })
 
+list.df.est.margmean.minusplus <- parLapply(cl=cl,
+                                            X = list.df.est.beta,
+                                            fun = function(x, C = melted.input.C.minusplus){
+                                              if(x$converged==0){
+                                                out <- NULL
+                                              }else{
+                                                est.beta <- x$est.beta
+                                                out <- exp(C %*% est.beta)
+                                              }
+                                              return(out)
+                                            })
+
+list.df.est.margmean.minusminus <- parLapply(cl=cl,
+                                             X = list.df.est.beta,
+                                             fun = function(x, C = melted.input.C.minusminus){
+                                               if(x$converged==0){
+                                                 out <- NULL
+                                               }else{
+                                                 est.beta <- x$est.beta
+                                                 out <- exp(C %*% est.beta)
+                                               }
+                                               return(out)
+                                             })
+
+list.df.est.diff.plusplus.minusminus <- parLapply(cl=cl,
+                                           X = list.df.est.beta,
+                                           fun = function(x, 
+                                                          stacked.C = stacked.C.plusplus.minusminus,
+                                                          Dmat = D){
+                                             if(x$converged==0){
+                                               out <- NULL
+                                             }else{
+                                               est.beta <- x$est.beta
+                                               out <- Dmat %*% exp(stacked.C %*% est.beta)
+                                             }
+                                             return(out)
+                                           })
+
+list.df.est.cov.diff.plusplus.minusminus <- parLapply(cl=cl,
+                                                      X = list.df.est.beta,
+                                                      fun = function(x, 
+                                                                     stacked.C = stacked.C.plusplus.minusminus,
+                                                                     Dmat = D){
+                                                        if(x$converged==0){
+                                                          out <- data.frame(NULL)
+                                                        }else{
+                                                          est.beta <- x$est.beta
+                                                          est.cov.beta <- x$est.cov.beta
+                                                          u <- exp(stacked.C %*% est.beta)
+                                                          U <- diag(c(u))
+                                                          out <- (Dmat %*% U %*% stacked.C) %*% est.cov.beta %*% t(Dmat %*% U %*% stacked.C)
+                                                        }
+                                                        return(out)
+                                                      })
+
+list.df.est.se.diff.plusplus.minusminus <- parLapply(cl=cl,
+                                                      X = list.df.est.cov.diff.plusplus.minusminus,
+                                                      fun = function(x){
+                                                        if(nrow(x)==0){
+                                                          out <- data.frame(NULL)
+                                                        }else{
+                                                          out <- sqrt(x)
+                                                        }
+                                                        return(out)
+                                                      })
 
 stopCluster(cl)
 

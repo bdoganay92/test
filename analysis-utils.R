@@ -146,11 +146,11 @@ AnalyzeData <- function(df.replicated.observed.Yit, tot.time, rand.time){
   # ---------------------------------------------------------------------------
   
   fo.int <- "1"
-  fo.plus <- paste("I(ActualTime==", 2:rand.time, " & A1==1)", sep="")
+  fo.plus <- paste("I(ActualTime==", 2:rand.time, " & A1==+1)", sep="")
   fo.minus <- paste("I(ActualTime==", 2:rand.time, " & A1==-1)", sep="")
-  fo.plusplus <- paste("I(ActualTime==", (rand.time+1):tot.time, " & A1==1 & A2==1)", sep="") 
-  fo.plusminus <- paste("I(ActualTime==", (rand.time+1):tot.time, " & A1==1 & A2==-1)", sep="") 
-  fo.minusplus <- paste("I(ActualTime==", (rand.time+1):tot.time, " & A1==-1 & A2==1)", sep="") 
+  fo.plusplus <- paste("I(ActualTime==", (rand.time+1):tot.time, " & A1==+1 & A2==+1)", sep="") 
+  fo.plusminus <- paste("I(ActualTime==", (rand.time+1):tot.time, " & A1==+1 & A2==-1)", sep="") 
+  fo.minusplus <- paste("I(ActualTime==", (rand.time+1):tot.time, " & A1==-1 & A2==+1)", sep="") 
   fo.minusminus <- paste("I(ActualTime==", (rand.time+1):tot.time, " & A1==-1 & A2==-1)", sep="") 
   
   fo.all <- c(fo.plus, fo.minus, 
@@ -176,7 +176,7 @@ AnalyzeData <- function(df.replicated.observed.Yit, tot.time, rand.time){
   
   if(model$converged == TRUE){
     # Calculate estimates of the mean per DTR and time
-    est.beta <- (model$beta)
+    est.beta <- as.matrix(model$beta)
     coefnames <- (model$coefnames)
     est.cov.beta <- (model$var)
     converged <- 1*(model$converged==TRUE)
@@ -227,6 +227,20 @@ MeltBeta <- function(df.rectangle, tot.time, rand.time){
                   df.rectangle[df.rectangle$DTR=="minusminus", (idx.rand.time+1):idx.tot.time])
   
   mat.column <- as.matrix(unlist(mat.column))
+  
+  fo.int <- "1"
+  fo.plus <- paste("I(ActualTime==", 2:rand.time, " & A1==+1)", sep="")
+  fo.minus <- paste("I(ActualTime==", 2:rand.time, " & A1==-1)", sep="")
+  fo.plusplus <- paste("I(ActualTime==", (rand.time+1):tot.time, " & A1==+1 & A2==+1)", sep="") 
+  fo.plusminus <- paste("I(ActualTime==", (rand.time+1):tot.time, " & A1==+1 & A2==-1)", sep="") 
+  fo.minusplus <- paste("I(ActualTime==", (rand.time+1):tot.time, " & A1==-1 & A2==+1)", sep="") 
+  fo.minusminus <- paste("I(ActualTime==", (rand.time+1):tot.time, " & A1==-1 & A2==-1)", sep="") 
+  
+  fo.all <- c(fo.int, fo.plus, fo.minus, 
+              fo.plusplus, fo.plusminus, 
+              fo.minusplus, fo.minusminus)
+  
+  row.names(mat.column) <- fo.all
   return(mat.column)
 }
 
