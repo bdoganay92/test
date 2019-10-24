@@ -14,7 +14,7 @@ source(file.path(path.code,"analysis-utils.R"))
 # -----------------------------------------------------------------------------
 # Read and prepare input data
 # -----------------------------------------------------------------------------
-input.tot.time <- 6  # Total no. of measurement occasions
+input.tot.time <- 3  # Total no. of measurement occasions
 input.rand.time <- 2  # Time when second randomization occurred (time is 1-indexed)
 # input.means contains mean of time-specific outcomes under each 
 # treatment sequence from time 1 until tot.time
@@ -27,8 +27,8 @@ CheckInputData(input.df=input.prop.zeros, rand.time=input.rand.time, tot.time=in
 # -----------------------------------------------------------------------------
 # Specify data generating parameters
 # -----------------------------------------------------------------------------
-idx.nsim <- 1:500  # Total no. of monte carlo samples
-input.N <- 1500  # Total no. of individuals
+idx.nsim <- 1:2000  # Total no. of monte carlo samples
+input.N <- 2000  # Total no. of individuals
 input.cutoff <- 0  # Cutoff in the definition of response status
 input.rho <- 0.7  # Dependence parameter
 
@@ -517,10 +517,11 @@ list.out <- lapply(list.df.est.beta,
                      return(outdf)
                    })
 
-out <- do.call(cbind, list.out)
+out <- bind_cols(list.out)
 n.converged <- ncol(out)
 summarise.out <- rowMeans(out)/n.converged
 summarise.out <- round(summarise.out, digits = 3)
+print(summarise.out)
 
 # -----------------------------------------------------------------------------
 # Evaluate estimates: bias of estimated means of time-specific outcomes
@@ -537,10 +538,11 @@ list.out <- lapply(list.est.u.plusplus,
                      return(outdf)
                    })
 
-out <- do.call(cbind, list.out)
+out <- bind_cols(list.out)
 n.converged <- ncol(out)
 summarise.out <- rowMeans(out)/n.converged
 summarise.out <- round(summarise.out, digits = 3)
+print(summarise.out)
 
 ##### DTR (+1,-1) #############################################################
 list.out <- lapply(list.est.u.plusminus, 
@@ -553,10 +555,11 @@ list.out <- lapply(list.est.u.plusminus,
                      return(outdf)
                    })
 
-out <- do.call(cbind, list.out)
+out <- bind_cols(list.out)
 n.converged <- ncol(out)
 summarise.out <- rowMeans(out)/n.converged
 summarise.out <- round(summarise.out, digits = 3)
+print(summarise.out)
 
 ##### DTR (-1,+1) #############################################################
 list.out <- lapply(list.est.u.minusplus, 
@@ -569,10 +572,11 @@ list.out <- lapply(list.est.u.minusplus,
                      return(outdf)
                    })
 
-out <- do.call(cbind, list.out)
+out <- bind_cols(list.out)
 n.converged <- ncol(out)
 summarise.out <- rowMeans(out)/n.converged
 summarise.out <- round(summarise.out, digits = 3)
+print(summarise.out)
 
 ##### DTR (-1,-1) #############################################################
 list.out <- lapply(list.est.u.minusminus, 
@@ -585,10 +589,11 @@ list.out <- lapply(list.est.u.minusminus,
                      return(outdf)
                    })
 
-out <- do.call(cbind, list.out)
+out <- bind_cols(list.out)
 n.converged <- ncol(out)
 summarise.out <- rowMeans(out)/n.converged
 summarise.out <- round(summarise.out, digits = 3)
+print(summarise.out)
 
 # -----------------------------------------------------------------------------
 # Estimate the value of differences in end of study means for pairs of DTRs
@@ -606,10 +611,11 @@ list.out <- lapply(list.est.eos.means.diff.plusplus.minusminus,
                      return(outdf)
                    })
 
-out <- do.call(cbind, list.out)
+out <- bind_cols(list.out)
 n.converged <- ncol(out)
 summarise.out <- rowMeans(out)/n.converged
 summarise.out <- round(summarise.out, digits = 3)
+print(summarise.out)
 
 # -----------------------------------------------------------------------------
 # Estimates of the value of differences in AUC for pairs of DTRs
@@ -627,10 +633,11 @@ list.out <- lapply(list.est.AUC.diff.plusplus.minusminus,
                      return(outdf)
                    })
 
-out <- do.call(cbind, list.out)
+out <- bind_cols(list.out)
 n.converged <- ncol(out)
 summarise.out <- rowMeans(out)/n.converged
 summarise.out <- round(summarise.out, digits = 3)
+print(summarise.out)
 
 # -----------------------------------------------------------------------------
 # Standard error of estimates of the value of differences in AUC for pairs of
@@ -648,10 +655,11 @@ list.out <- lapply(list.est.stderr.AUC.diff.plusplus.minusminus,
                      return(outdf)
                    })
 
-out <- do.call(cbind, list.out)
+out <- bind_cols(list.out)
 n.converged <- ncol(out)
 summarise.out <- rowMeans(out)/n.converged
 summarise.out <- round(summarise.out, digits = 3)
+print(summarise.out)
 
 
 

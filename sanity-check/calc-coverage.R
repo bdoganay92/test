@@ -98,3 +98,56 @@ coverage <- ((as.numeric(AUC.diff.plusplus.minusminus)>LB) & (as.numeric(AUC.dif
 coverage <- mean(coverage)
 print(coverage)
 
+
+power <- (0>LB) & (0<UB)
+power <- 1-mean(power)
+print(power)
+
+
+
+
+
+
+
+ncore <- detectCores()
+cl <- makeCluster(ncore - 1)
+clusterSetRNGStream(cl, 102399)
+clusterExport(cl, c("path.code",
+                    "path.input_data",
+                    "list.gridx",
+                    "L.AUC",
+                    "L.eos.means"))
+clusterEvalQ(cl,
+             {
+               library(dplyr)
+               library(assertthat)
+               library(rootSolve)
+               library(mvtnorm)
+               library(geeM)
+               source(file.path(path.code, "input-utils.R"))
+               source(file.path(path.code, "datagen-utils.R"))
+               source(file.path(path.code, "analysis-utils.R"))
+             })
+
+list.delta.AUC <- parLapply(cl=cl, list.df.potential, CalcDeltaj, L=L.AUC)
+list.delta.eos.means <- parLapply(cl=cl, list.df.potential, CalcDeltaj, L=L.eos.means)
+
+stopCluster(cl)
+
+
+
+delta.AUC <- bind_cols(list.delta.AUC)
+delta.AUC <- rowMeans(delta.AUC)
+delta.AUC <- t(delta.AUC)
+
+
+delta.eos.means <- bind_cols(list.delta.eos.means)
+delta.eos.means <- rowMeans(delta.eos.means)
+delta.eos.means <- t(delta.eos.means)
+
+
+print(delta.AUC)
+print(delta.eos.means)
+
+
+

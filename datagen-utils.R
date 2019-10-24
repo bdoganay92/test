@@ -851,6 +851,90 @@ DTRCorrelationPO <- function(df){
   return(list.out)
 }
 
+CalcDeltaj <- function(df, L){
+  
+  # Args:
+  #   df: ADDLATER
+  #   L: ADDLATER
+  
+  # DTR (++)
+  widedat.plusplus <- df %>% filter(A1==1 & A2==1) %>% select(id, t, Yit) %>%
+    reshape(data = ., timevar = "t", idvar = "id", direction = "wide") %>%
+    select(-id)
+  
+  Q.plusplus <- apply(widedat.plusplus, 1, function(this.participant.row, Lmat=L){
+    return(Lmat %*% this.participant.row)
+  })
+  
+  meanQ.plusplus <- mean(Q.plusplus)
+  varQ.plusplus <- var(Q.plusplus)
+  
+  # DTR (+-)
+  widedat.plusminus <- df %>% filter(A1==1 & A2==-1) %>% select(id, t, Yit) %>%
+    reshape(data = ., timevar = "t", idvar = "id", direction = "wide") %>%
+    select(-id)
+  
+  Q.plusminus <- apply(widedat.plusminus, 1, function(this.participant.row, Lmat=L){
+    return(Lmat %*% this.participant.row)
+  })
+  
+  meanQ.plusminus <- mean(Q.plusminus)
+  varQ.plusminus <- var(Q.plusminus)
+  
+  # DTR (-+)
+  widedat.minusplus <- df %>% filter(A1==-1 & A2==1) %>% select(id, t, Yit) %>%
+    reshape(data = ., timevar = "t", idvar = "id", direction = "wide") %>%
+    select(-id)
+  
+  Q.minusplus <- apply(widedat.minusplus, 1, function(this.participant.row, Lmat=L){
+    return(Lmat %*% this.participant.row)
+  })
+  
+  meanQ.minusplus <- mean(Q.minusplus)
+  varQ.minusplus <- var(Q.minusplus)
+  
+  # DTR (--)
+  widedat.minusminus <- df %>% filter(A1==-1 & A2==-1) %>% select(id, t, Yit) %>%
+    reshape(data = ., timevar = "t", idvar = "id", direction = "wide") %>%
+    select(-id)
+  
+  Q.minusminus <- apply(widedat.minusminus, 1, function(this.participant.row, Lmat=L){
+    return(Lmat %*% this.participant.row)
+  })
+  
+  meanQ.minusminus <- mean(Q.minusminus)
+  varQ.minusminus <- var(Q.minusminus)
+  
+  #############################################################################
+  # Calculate delta_j
+  #############################################################################
+  delta.plusplus.plusminus <- (meanQ.plusplus - meanQ.plusminus)/sqrt((varQ.plusplus + varQ.plusminus)/2)
+  delta.plusplus.minusplus <- (meanQ.plusplus - meanQ.minusplus)/sqrt((varQ.plusplus + varQ.minusplus)/2)
+  delta.plusplus.minusminus <- (meanQ.plusplus - meanQ.minusminus)/sqrt((varQ.plusplus + varQ.minusminus)/2)
+  delta.plusminus.minusplus <- (meanQ.plusminus - meanQ.minusplus)/sqrt((varQ.plusminus + varQ.minusplus)/2)
+  delta.plusminus.minusminus <- (meanQ.plusminus - meanQ.minusminus)/sqrt((varQ.plusminus + varQ.minusminus)/2)
+  delta.minusminus.minusplus <- (meanQ.minusminus - meanQ.minusplus)/sqrt((varQ.minusminus + varQ.minusplus)/2)
+  
+  delta.plusplus.plusminus <- abs(delta.plusplus.plusminus)
+  delta.plusplus.minusplus <- abs(delta.plusplus.minusplus)
+  delta.plusplus.minusminus <- abs(delta.plusplus.minusminus)
+  delta.plusminus.minusplus <- abs(delta.plusminus.minusplus)
+  delta.plusminus.minusminus <- abs(delta.plusminus.minusminus)
+  delta.minusminus.minusplus <- abs(delta.minusminus.minusplus)
+  
+  outdf <- c(delta.plusplus.plusminus=delta.plusplus.plusminus,
+             delta.plusplus.minusplus=delta.plusplus.minusplus,
+             delta.plusplus.minusminus=delta.plusplus.minusminus,
+             delta.plusminus.minusplus=delta.plusminus.minusplus,
+             delta.plusminus.minusminus=delta.plusminus.minusminus,
+             delta.minusminus.minusplus=delta.minusminus.minusplus)
+  outdf <- as.matrix(outdf)
+  
+  return(outdf)
+}
+
+
+
 
 
 
