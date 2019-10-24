@@ -1,131 +1,59 @@
 library(dplyr)
-library(assertthat)  # All functions will require assertthat
+library(assertthat)
 library(rootSolve)
 library(mvtnorm)
   
-CalcTrueMarginalParams <- function(means, prop.zeros, cutoff, tot.time, rand.time){
+WeightAndReplicate <- function(DataLongFormat, tot.time){
   
+  # This function weights and replicates observations of participants 
+  # who have undergone a SMART
+  #
   # Args:
-  #   means: data frame with each row corresponding to one treatment sequence
-  #          and columns corresponding to mean outcome per time point
-  #   prop.zeros: data frame with each row corresponding to one treatment
-  #               sequence and columns corresponding to mean outcome per
-  #               time point
-  #   cutoff: cutoff in the definition of response status
-  #   tot.time: total number of time points
-  #   rand.time: time when randomization to second-stage intervention
-  #              occurred (time is 1-indexed)
+  #   DataLongFormat -- dataset in long format, as returned by the 
+  #   GenerateData function
+  #
+  # Returns:
+  #   data.for.analysis -- weighted and replicated dataset in long format,
+  #   ready to be used for analysis in R package geeM
   
-  # ---------------------------------------------------------------------------
-  # Check validity of inputs
-  # ---------------------------------------------------------------------------
+  nwaves <- tot.time
+  DataLongFormat$KnownWeight1 <- 2
+  DataLongFormat$KnownWeight2 <- 2*(DataLongFormat$R==0)+1*(DataLongFormat$R==1)
   
-  assert_that(tot.time == ncol(means)-1, 
-              msg = "Number of columns in means does not match tot.time")
-  assert_that(tot.time == ncol(prop.zeros)-1, 
-              msg = "Number of columns in prop.zeros does not match tot.time")
-  assert_that(cutoff>=0, msg = "cutoff must be greater than or equal to 0")
-  assert_that(tot.time>0, msg = "tot.time must be greater than 0")
-  assert_that(rand.time>0, msg = "rand.time must be greater than 0")
+  # that is, IF (R = 0) THEN known_wt2 = 2, ELSE known_wt2 = 1
+  DataLongFormat$KnownWeight <- DataLongFormat$KnownWeight1 * DataLongFormat$KnownWeight2
   
-  # ---------------------------------------------------------------------------
-  # Begin tasks
-  # ---------------------------------------------------------------------------
+  # Create "replications"
+  DataLongFormat$ActualTime <- DataLongFormat$t
+  RowsToReplicate <- DataLongFormat[which(DataLongFormat$R==1),]
+  PlusOnePseudodata <- RowsToReplicate
+  PlusOnePseudodata$observed.A2 <- 1
+  MinusOnePseudodata <- RowsToReplicate
+  MinusOnePseudodata$observed.A2 <- -1
+  MinusOnePseudodata$t <- MinusOnePseudodata$t + nwaves
   
-  idx.time.1 <- which(colnames(means)=="time.1")
-  idx.tot.time <- tot.time + (idx.time.1-1)
-  idx.rand.time <- rand.time + (idx.time.1-1)
-  means[,"seq"] <- as.character(means[,"seq"])
-  prop.zeros[,"seq"] <- as.character(prop.zeros[,"seq"])
-  seq.names <- c("plus.r", "plus.nr.plus", "plus.nr.minus",
-                 "minus.r", "minus.nr.plus", "minus.nr.minus")
-  dtr.names <- c("plusplus","plusminus","minusplus","minusminus")
+  RowsNotToReplicate <- DataLongFormat[which(DataLongFormat$R==0),]
+  DummyRowsNotToReplicate <- RowsNotToReplicate
+  DummyRowsNotToReplicate$t <- DummyRowsNotToReplicate$t + nwaves 
+  DummyRowsNotToReplicate$Yit <- NA
+  DummyRowsNotToReplicate$KnownWeight1 <- 0
+  DummyRowsNotToReplicate$KnownWeight2 <- 0
+  DummyRowsNotToReplicate$KnownWeight <- 0
   
-  blank.conditional.df <- data.frame(seq = seq.names,
-                                     matrix(rep(NA, 6*input.tot.time), nrow=6))
-  colnames(blank.conditional.df) <- c("seq",
-                                      paste("time.",1:tot.time,sep=""))
+  # We keep the same subject ID to show that we don't really have all those
+  # new participants. So we have to distinguish the new observations somehow,
+  # and so we treat them as new waves of data on the same person.
+  # Create the final analysis dataset including replicates.
+  data.for.analysis <- rbind(PlusOnePseudodata, 
+                             MinusOnePseudodata, 
+                             RowsNotToReplicate, 
+                             DummyRowsNotToReplicate)
+  data.for.analysis <- data.for.analysis[order(data.for.analysis$id,data.for.analysis$t),] 
   
-  blank.marginal.df <- data.frame(DTR = dtr.names,
-                                  matrix(rep(NA, 4*input.tot.time), nrow=4))
-  colnames(blank.marginal.df) <- c("DTR",
-                                   paste("time.",1:tot.time,sep=""))
+  colnames(data.for.analysis) <- c("id", "wave", "A1", "A2", "R", "Y", 
+                                   "KnownWeight1", "KnownWeight2", "KnownWeight", "ActualTime")
   
-  sigma2 <- means
-  sigma2[,idx.time.1:idx.tot.time] <- NA 
-  for(i in 1:nrow(means)){
-    use.mu <- as.numeric(means[i,idx.time.1:idx.tot.time])
-    use.prop.zeros <- as.numeric(prop.zeros[i,idx.time.1:idx.tot.time])
-    sigma2[,idx.time.1:idx.tot.time] <- mapply(FUN=GetVariance, 
-                                               input.mu = use.mu, 
-                                               input.prop.zeros = use.prop.zeros)
-  }
-  
-  # Calculate probabilities of response
-  # Calculate proportion of responders to A1=+1 using cutoff, mean and variance
-  # in outcome at rand.time for treatment sequences beginning with A1=+1
-  use.var <- sigma2[sigma2$seq=="plus.r",paste("time.",rand.time,sep="")]
-  use.mean <- means[means$seq=="plus.r",paste("time.",rand.time,sep="")]
-  p <- pnbinom(q = cutoff, size = 1/use.var, mu = use.mean)
-  remove(use.var, use.mean)
-  
-  # Calculate proportion of responders to A1=-1 using cutoff, mean and variance
-  # in outcome at rand.time for treatment sequences beginning with A1=-1
-  use.var <- sigma2[sigma2$seq=="minus.r",paste("time.",rand.time,sep="")]
-  use.mean <- means[means$seq=="minus.r",paste("time.",rand.time,sep="")]
-  q <- pnbinom(q = cutoff, size = 1/use.var, mu = use.mean)
-  remove(use.var, use.mean)
-  
-  # True value of gammas
-  true.gamma <- blank.conditional.df
-  
-  true.gamma[,idx.time.1] <- log(means[,idx.time.1])
-  true.gamma[,(idx.time.1+1):idx.tot.time] <- log(means[,(idx.time.1+1):idx.tot.time]) - log(means[,idx.time.1])
-  
-  # True value of conditional means
-  true.conditionalmeans <- blank.conditional.df
-  
-  true.conditionalmeans[,idx.time.1] <- exp(true.gamma[,idx.time.1])
-  true.conditionalmeans[,(idx.time.1+1):idx.tot.time] <- exp(true.gamma[,idx.time.1] + true.gamma[,(idx.time.1+1):idx.tot.time])
-  
-  # True value of betas
-  true.beta <- blank.marginal.df
-  
-  true.beta[,idx.time.1] <- true.gamma[1:4, idx.time.1]
-  
-  g.plus <- true.gamma[true.gamma$seq=="plus.r", (idx.time.1+1):idx.rand.time]
-  g.minus <- true.gamma[true.gamma$seq=="minus.r", (idx.time.1+1):idx.rand.time]
-  
-  true.beta[true.beta$DTR=="plusplus", (idx.time.1+1):idx.rand.time] <- g.plus
-  true.beta[true.beta$DTR=="plusminus", (idx.time.1+1):idx.rand.time] <- g.plus
-  true.beta[true.beta$DTR=="minusplus", (idx.time.1+1):idx.rand.time] <- g.minus
-  true.beta[true.beta$DTR=="minusminus", (idx.time.1+1):idx.rand.time] <- g.minus
-  
-  g.plus.r <- true.gamma[true.gamma$seq=="plus.r", (idx.rand.time+1):idx.tot.time]
-  g.plus.nr.plus <- true.gamma[true.gamma$seq=="plus.nr.plus", (idx.rand.time+1):idx.tot.time]
-  g.plus.nr.minus <- true.gamma[true.gamma$seq=="plus.nr.minus", (idx.rand.time+1):idx.tot.time]
-  
-  g.minus.r <- true.gamma[true.gamma$seq=="minus.r", (idx.rand.time+1):idx.tot.time]
-  g.minus.nr.plus <- true.gamma[true.gamma$seq=="minus.nr.plus", (idx.rand.time+1):idx.tot.time]
-  g.minus.nr.minus <- true.gamma[true.gamma$seq=="minus.nr.minus", (idx.rand.time+1):idx.tot.time]
-  
-  true.beta[true.beta$DTR=="plusplus", (idx.rand.time+1):idx.tot.time] <- log(p*exp(g.plus.r) + (1-p)*exp(g.plus.nr.plus))
-  true.beta[true.beta$DTR=="plusminus", (idx.rand.time+1):idx.tot.time] <- log(p*exp(g.plus.r) + (1-p)*exp(g.plus.nr.minus))
-  true.beta[true.beta$DTR=="minusplus", (idx.rand.time+1):idx.tot.time] <- log(q*exp(g.minus.r) + (1-q)*exp(g.minus.nr.plus))
-  true.beta[true.beta$DTR=="minusminus", (idx.rand.time+1):idx.tot.time] <- log(q*exp(g.minus.r) + (1-q)*exp(g.minus.nr.minus))
-  
-  # True value of marginal means
-  true.marginalmeans <- blank.marginal.df
-  
-  true.marginalmeans[,idx.time.1] <- exp(true.beta[,idx.time.1])
-  true.marginalmeans[,(idx.time.1+1):idx.tot.time] <- exp(true.beta[,idx.time.1] + true.beta[,(idx.time.1+1):idx.tot.time])
-  
-  out.all <- list(true.beta = true.beta, 
-                  true.gamma = true.gamma, 
-                  true.conditionalmeans = true.conditionalmeans,
-                  true.marginalmeans = true.marginalmeans)
-  
-  return(out.all)
+  return(data.for.analysis)
 }
 
 AnalyzeData <- function(df.replicated.observed.Yit, tot.time, rand.time){
@@ -194,123 +122,9 @@ AnalyzeData <- function(df.replicated.observed.Yit, tot.time, rand.time){
   return(est)
 }
 
-MeltBeta <- function(df.rectangle, tot.time, rand.time){
-  
-  # Args:
-  #   df.rectangle: data frame with each row corresponding to one DTR
-  #                 and each column corresponding to value of parameter beta
-  #                 at each time point
-  #   tot.time: total number of time points
-  #   rand.time: time when randomization to second-stage intervention
-  #              occurred (time is 1-indexed)
-  
-  # ---------------------------------------------------------------------------
-  # Check validity of inputs
-  # ---------------------------------------------------------------------------
-  
-  #ADDLATER
-  
-  # ---------------------------------------------------------------------------
-  # Begin tasks
-  # ---------------------------------------------------------------------------
-  
-  idx.time.1 <- which(colnames(df.rectangle)=="time.1")
-  idx.tot.time <- tot.time + (idx.time.1-1)
-  idx.rand.time <- rand.time + (idx.time.1-1)
-  
-  mat.column <- c(df.rectangle[df.rectangle$DTR=="plusplus", idx.time.1],
-                  df.rectangle[df.rectangle$DTR=="plusplus", (idx.time.1+1):idx.rand.time],
-                  df.rectangle[df.rectangle$DTR=="minusplus", (idx.time.1+1):idx.rand.time],
-                  df.rectangle[df.rectangle$DTR=="plusplus", (idx.rand.time+1):idx.tot.time],
-                  df.rectangle[df.rectangle$DTR=="plusminus", (idx.rand.time+1):idx.tot.time],
-                  df.rectangle[df.rectangle$DTR=="minusplus", (idx.rand.time+1):idx.tot.time],
-                  df.rectangle[df.rectangle$DTR=="minusminus", (idx.rand.time+1):idx.tot.time])
-  
-  mat.column <- as.matrix(unlist(mat.column))
-  
-  fo.int <- "1"
-  fo.plus <- paste("I(ActualTime==", 2:rand.time, " & A1==+1)", sep="")
-  fo.minus <- paste("I(ActualTime==", 2:rand.time, " & A1==-1)", sep="")
-  fo.plusplus <- paste("I(ActualTime==", (rand.time+1):tot.time, " & A1==+1 & A2==+1)", sep="") 
-  fo.plusminus <- paste("I(ActualTime==", (rand.time+1):tot.time, " & A1==+1 & A2==-1)", sep="") 
-  fo.minusplus <- paste("I(ActualTime==", (rand.time+1):tot.time, " & A1==-1 & A2==+1)", sep="") 
-  fo.minusminus <- paste("I(ActualTime==", (rand.time+1):tot.time, " & A1==-1 & A2==-1)", sep="") 
-  
-  fo.all <- c(fo.int, fo.plus, fo.minus, 
-              fo.plusplus, fo.plusminus, 
-              fo.minusplus, fo.minusminus)
-  
-  row.names(mat.column) <- fo.all
-  return(mat.column)
-}
 
-MeltC <- function(df.rectangle, tot.time, rand.time){
-  
-  # Args:
-  #   df.rectangle: ADDLATER
-  #   tot.time: ADDLATER
-  #   rand.time: ADDLATER
-  
-  # ---------------------------------------------------------------------------
-  # Check validity of inputs
-  # ---------------------------------------------------------------------------
-  
-  #ADDLATER
-  
-  # ---------------------------------------------------------------------------
-  # Begin tasks
-  # ---------------------------------------------------------------------------
-  
-  idx.time.1 <- which(colnames(df.rectangle)=="time.1")
-  idx.tot.time <- tot.time + (idx.time.1-1)
-  idx.rand.time <- rand.time + (idx.time.1-1)
-  
-  mat.row.plusplus <- c(df.rectangle[df.rectangle$DTR=="plusplus", idx.time.1],
-                        df.rectangle[df.rectangle$DTR=="plusplus", (idx.time.1+1):idx.rand.time],
-                        rep(0, idx.rand.time-idx.time.1),
-                        df.rectangle[df.rectangle$DTR=="plusplus", (idx.rand.time+1):idx.tot.time],
-                        rep(0, idx.tot.time-idx.rand.time),
-                        rep(0, idx.tot.time-idx.rand.time),
-                        rep(0, idx.tot.time-idx.rand.time))
-  
-  mat.row.plusminus <- c(df.rectangle[df.rectangle$DTR=="plusplus", idx.time.1],
-                         df.rectangle[df.rectangle$DTR=="plusplus", (idx.time.1+1):idx.rand.time],
-                         rep(0, idx.rand.time-idx.time.1),
-                         rep(0, idx.tot.time-idx.rand.time),
-                         df.rectangle[df.rectangle$DTR=="plusminus", (idx.rand.time+1):idx.tot.time],
-                         rep(0, idx.tot.time-idx.rand.time),
-                         rep(0, idx.tot.time-idx.rand.time))
-  
-  mat.row.minusplus <- c(df.rectangle[df.rectangle$DTR=="plusplus", idx.time.1],
-                         rep(0, idx.rand.time-idx.time.1),
-                         df.rectangle[df.rectangle$DTR=="minusplus", (idx.time.1+1):idx.rand.time],
-                         rep(0, idx.tot.time-idx.rand.time),
-                         rep(0, idx.tot.time-idx.rand.time),
-                         df.rectangle[df.rectangle$DTR=="minusplus", (idx.rand.time+1):idx.tot.time],
-                         rep(0, idx.tot.time-idx.rand.time))
-  
-  mat.row.minusminus <- c(df.rectangle[df.rectangle$DTR=="plusplus", idx.time.1],
-                          rep(0, idx.rand.time-idx.time.1),
-                          df.rectangle[df.rectangle$DTR=="minusplus", (idx.time.1+1):idx.rand.time],
-                          rep(0, idx.tot.time-idx.rand.time),
-                          rep(0, idx.tot.time-idx.rand.time),
-                          rep(0, idx.tot.time-idx.rand.time),
-                          df.rectangle[df.rectangle$DTR=="minusminus", (idx.rand.time+1):idx.tot.time])
-  
-  mat.row.plusplus <- t(as.matrix(unlist(mat.row.plusplus)))
-  mat.row.plusminus <- t(as.matrix(unlist(mat.row.plusminus)))
-  mat.row.minusplus <- t(as.matrix(unlist(mat.row.minusplus)))
-  mat.row.minusminus <- t(as.matrix(unlist(mat.row.minusminus)))
-  
-  mat.out <- rbind(mat.row.plusplus,
-                   mat.row.plusminus,
-                   mat.row.minusplus,
-                   mat.row.minusminus)
-  
-  row.names(mat.out) <- c("plusplus", "plusminus", "minusplus", "minusminus")
-  colnames(mat.out) <- NULL
-  
-  return(mat.out)
-}
+
+
+
 
 

@@ -1,5 +1,5 @@
 library(dplyr)
-library(assertthat)  # All functions will require assertthat
+library(assertthat)
 library(rootSolve)
 library(mvtnorm)
 
@@ -12,7 +12,7 @@ IdentityMat <- function(m){
   # Check validity of inputs
   # ---------------------------------------------------------------------------
   assert_that(is.scalar(m), msg = "m must be a scalar")
-  assert_that((m>0) & (as.integer(m)==m), msg = "m must be positive integer")
+  assert_that((m>0) & (as.integer(m)==m), msg = "m must be a positive integer")
   
   # ---------------------------------------------------------------------------
   # Begin tasks
@@ -29,7 +29,7 @@ IdentityCol <- function(m){
   # Check validity of inputs
   # ---------------------------------------------------------------------------
   assert_that(is.scalar(m), msg = "m must be a scalar")
-  assert_that((m>0) & (as.integer(m)==m), msg = "m must be positive integer")
+  assert_that((m>0) & (as.integer(m)==m), msg = "m must be a positive integer")
   
   # ---------------------------------------------------------------------------
   # Begin tasks
@@ -70,14 +70,107 @@ ExchangeableMat <- function(m, rho){
   # ---------------------------------------------------------------------------
   # Begin tasks
   # ---------------------------------------------------------------------------
-  
   mat <- IdentityMat(m) + rho*(IdentityCol(m)%*%t(IdentityCol(m)) - IdentityMat(m))
   return(mat)
 }
 
+eCol <- function(i,n){
+  
+  # Args:
+  #   i: ith element of column vector e_{i,n} is equal to 1 while
+  #      all other elements are equal to zero
+  #   n: number of rows column vector e_{i,n} will have
+  
+  # ---------------------------------------------------------------------------
+  # Check validity of inputs
+  # ---------------------------------------------------------------------------
+  assert_that(is.scalar(i) & is.scalar(n), msg = "i and n must be scalars")
+  assert_that((i>0) & (as.integer(i)==i), msg = "i must be a positive integer")
+  assert_that((n>0) & (as.integer(n)==n), msg = "n must be a positive integer")
+  
+  # ---------------------------------------------------------------------------
+  # Begin tasks
+  # ---------------------------------------------------------------------------
+  evec <- rep(0,n)
+  evec[i] <- 1
+  evec <- as.matrix(evec)
+  return(evec)
+}
+
+SolveForSigmaSquared <- function(input.mu, input.prop.zeros){
+  
+  # Requires library: rootSolve
+  # Args:
+  #   input.mu: Mean of a negative binomial distributed random variable
+  #   input.prop.zeros: Proportion of zeros of a negative binomial
+  #                     distributed random variable
+  
+  # ---------------------------------------------------------------------------
+  # Check validity of inputs
+  # ---------------------------------------------------------------------------
+  assert_that(is.scalar(input.mu), msg = "input.mu must be a scalar")
+  assert_that(is.scalar(input.prop.zeros), msg = "input.prop.zeros must be a scalar")
+  assert_that(input.mu>0, msg = "input.mu must be positive")
+  assert_that((input.prop.zeros>=0) & (input.prop.zeros<=1), 
+              msg = "input.prop.zeros must be between 0 and 1")
+  
+  # ---------------------------------------------------------------------------
+  # Begin tasks
+  # ---------------------------------------------------------------------------
+  k <- multiroot(f = function(x, prop.zeros, mu){
+    ans <- prop.zeros - (x/(mu+x))^x
+    return(ans)
+  }, start = 0, prop.zeros = input.prop.zeros, mu = input.mu)
+  
+  sigma2 <- 1/k$root
+  
+  return(sigma2)
+}
+
+SolveForSigmaSquaredByGroup <- function(all.mu, all.tau){
+  
+  # Requires library: rootSolve
+  #
+  # Args:
+  #   all.mu: list of means of negative binomial distributed random variables
+  #   all.prop.zeros: list of proportion of zeros of a negative binomial
+  #                   distributed random variables
+  
+  # ---------------------------------------------------------------------------
+  # Check validity of inputs
+  # ---------------------------------------------------------------------------
+  assert_that(length(all.mu) == length(all.tau), 
+              msg = "number of means and proportion of zeros must be equal")
+  
+  # ---------------------------------------------------------------------------
+  # Begin tasks
+  # ---------------------------------------------------------------------------  
+  all.sigma2 <- list()
+  
+  for(i in 1:length(all.mu)){
+    nam <- names(all.mu[i])
+    these.mu <- unlist(all.mu[i])
+    these.tau <- unlist(all.tau[i])
+    these.sigma2 <- list()
+    
+    for(j in 1:length(these.mu)){
+      this.sigma2 <- SolveForSigmaSquared(input.mu = these.mu[j], 
+                                          input.prop.zeros = these.tau[j])
+      these.sigma2 <- append(these.sigma2, list(this.sigma2))
+    }
+    
+    these.sigma2 <- unlist(these.sigma2)
+    these.sigma2 <- list(these.sigma2)
+    names(these.sigma2) <- nam
+    all.sigma2 <- append(all.sigma2, these.sigma2)
+  }
+  
+  return(all.sigma2)
+}
+
 ByGroupGenerateU <- function(n.group, corrdim, corrmat){
   
-  # Requires mvtnorm
+  # Requires library: mvtnorm
   #
   # Args:
   #   n.group: no. of individuals in group
@@ -305,6 +398,13 @@ qLowerTruncNB <- function(p, lambda, sigma2, cutoff){
 }
 
 ByGroupGenerateY <- function(list.U, group, list.mu, list.sigma2, cutoff){
+  
+  # Args:
+  #   list.U: 
+  #   group:
+  #   list.mu:
+  #   list.sigma2:
+  #   cutoff:
   
   if(group==1 & length(unlist(list.U$group.01))>0){
     
@@ -551,10 +651,6 @@ ByGroupToLongData <- function(Y.group, n.group, group, tot.time, rand.time){
 
 GeneratePotentialYit <- function(sim, N, tot.time, rand.time, cutoff, rho, input.prop.zeros, input.means){
   
-  ###############################################################################
-  # No manual inputs after this line
-  ###############################################################################
-  
   # Calculate dimensions of correlation matrices among four groups
   corrdim.01 <- 2*tot.time - 1
   corrdim.02 <- 3*tot.time - rand.time - 1
@@ -582,10 +678,10 @@ GeneratePotentialYit <- function(sim, N, tot.time, rand.time, cutoff, rho, input
   # variance in the outcome under each treatment sequence from time 1 until
   # tot.time
   list.sigma2 <- list(group.01=NULL, group.02=NULL, group.03=NULL, group.04=NULL)
-  list.sigma2$group.01 <- GetVarianceByGroup(all.mu = list.mu$group.01, all.tau = list.tau$group.01)
-  list.sigma2$group.02 <- GetVarianceByGroup(all.mu = list.mu$group.02, all.tau = list.tau$group.02)
-  list.sigma2$group.03 <- GetVarianceByGroup(all.mu = list.mu$group.03, all.tau = list.tau$group.03)
-  list.sigma2$group.04 <- GetVarianceByGroup(all.mu = list.mu$group.04, all.tau = list.tau$group.04)
+  list.sigma2$group.01 <- SolveForSigmaSquaredByGroup(all.mu = list.mu$group.01, all.tau = list.tau$group.01)
+  list.sigma2$group.02 <- SolveForSigmaSquaredByGroup(all.mu = list.mu$group.02, all.tau = list.tau$group.02)
+  list.sigma2$group.03 <- SolveForSigmaSquaredByGroup(all.mu = list.mu$group.03, all.tau = list.tau$group.03)
+  list.sigma2$group.04 <- SolveForSigmaSquaredByGroup(all.mu = list.mu$group.04, all.tau = list.tau$group.04)
   
   # Calculate proportion of responders to A1=+1 using cutoff, mean and variance
   # in outcome at rand.time for treatment sequences beginning with A1=+1
@@ -672,6 +768,37 @@ GeneratePotentialYit <- function(sim, N, tot.time, rand.time, cutoff, rho, input
   return(df.potential.Yit)
 }
 
+GenerateObservedYit <- function(df.potential.Yit){
+  
+  N <- max(df.potential.Yit$id)
+  obsdf <- data.frame(id = seq(1,N),
+                      observed.A1 = rep(NA, times = N),
+                      observed.A2 = rep(NA, times = N))
+  obsdf$observed.A1 <- base::sample(x = c(-1,1), size = nrow(obsdf), replace = TRUE, prob = c(0.5, 0.5))
+  # Later on, we will set observed.A2 to NA for those who responded to A1
+  obsdf$observed.A2 <- base::sample(x = c(-1,1), size = nrow(obsdf), replace = TRUE, prob = c(0.5, 0.5))
+  obsdf <- obsdf %>% arrange(id)
+  
+  df.potential.Yit <- left_join(df.potential.Yit, obsdf, by = c("id"))
+  df.potential.Yit <- df.potential.Yit %>% mutate(observed.A2 = replace(observed.A2, R==1, NA))
+  # whichDTR is an indicator for which among the four sets of potential outcomes was actually observed
+  df.potential.Yit <- df.potential.Yit %>% 
+    mutate(whichDTR = case_when(A1 == observed.A1 & R == 1 ~ 1, 
+                                A1 == observed.A1 & R == 0 & A2 == observed.A2 ~ 1,
+                                TRUE ~ 0))
+  df.observed.Yit <- df.potential.Yit %>% filter(whichDTR == 1) %>%
+    select(id, t, observed.A1, observed.A2, R, Yit)
+  
+  # df.observed.Yit contains duplicate rows for responders to first stage intervention
+  # we remove those duplicate rows
+  df.observed.Yit <- unique(df.observed.Yit)
+  df.observed.Yit <- df.observed.Yit %>% arrange(id, t)
+  df.observed.Yit <- apply(df.observed.Yit, 2, as.numeric)
+  df.observed.Yit <- as.data.frame(df.observed.Yit)
+  
+  return(df.observed.Yit)
+}
+
 DTRCorrelationPO <- function(df){
   
   # Args:
@@ -724,33 +851,6 @@ DTRCorrelationPO <- function(df){
   return(list.out)
 }
 
-GenerateObservedYit <- function(df.potential.Yit){
-  
-  N <- max(df.potential.Yit$id)
-  obsdf <- data.frame(id = seq(1,N),
-                      observed.A1 = rep(NA, times = N),
-                      observed.A2 = rep(NA, times = N))
-  obsdf$observed.A1 <- base::sample(x = c(-1,1), size = nrow(obsdf), replace = TRUE, prob = c(0.5, 0.5))
-  # Later on, we will set observed.A2 to NA for those who responded to A1
-  obsdf$observed.A2 <- base::sample(x = c(-1,1), size = nrow(obsdf), replace = TRUE, prob = c(0.5, 0.5))
-  obsdf <- obsdf %>% arrange(id)
-  
-  df.potential.Yit <- left_join(df.potential.Yit, obsdf, by = c("id"))
-  df.potential.Yit <- df.potential.Yit %>% mutate(observed.A2 = replace(observed.A2, R==1, NA))
-  # whichDTR is an indicator for which among the four sets of potential outcomes was actually observed
-  df.potential.Yit <- df.potential.Yit %>% 
-    mutate(whichDTR = case_when(A1 == observed.A1 & R == 1 ~ 1, 
-                                A1 == observed.A1 & R == 0 & A2 == observed.A2 ~ 1,
-                                TRUE ~ 0))
-  df.observed.Yit <- df.potential.Yit %>% filter(whichDTR == 1) %>%
-    select(id, t, observed.A1, observed.A2, R, Yit)
-  
-  # df.observed.Yit contains duplicate rows for responders to first stage intervention
-  # we remove those duplicate rows
-  df.observed.Yit <- unique(df.observed.Yit)
-  df.observed.Yit <- df.observed.Yit %>% arrange(id, t)
-  df.observed.Yit <- apply(df.observed.Yit, 2, as.numeric)
-  df.observed.Yit <- as.data.frame(df.observed.Yit)
-  
-  return(df.observed.Yit)
-}
+
+
+
