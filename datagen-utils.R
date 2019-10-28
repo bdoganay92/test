@@ -763,12 +763,17 @@ GeneratePotentialYit <- function(sim, N, tot.time, rand.time, cutoff, rho, input
   # Finally, we have a data frame with the potential outcomes
   df.potential.Yit <- bind_rows(list.Y)
   df.potential.Yit <- df.potential.Yit %>% arrange(id, desc(A1), desc(A2), t)
-  df.potential.Yit <- df.potential.Yit %>% mutate(sim = sim) %>% mutate(rho = rho)
   
-  return(df.potential.Yit)
+  out.list <- list(datagen.params = data.frame(N=N, rho=rho, sim=sim),
+                   df.potential.Yit = df.potential.Yit)
+  
+  return(out.list)
 }
 
-GenerateObservedYit <- function(df.potential.Yit){
+GenerateObservedYit <- function(df.list){
+  
+  datagen.params <- df.list$datagen.params
+  df.potential.Yit <- df.list$df.potential.Yit
   
   N <- max(df.potential.Yit$id)
   obsdf <- data.frame(id = seq(1,N),
@@ -796,7 +801,10 @@ GenerateObservedYit <- function(df.potential.Yit){
   df.observed.Yit <- apply(df.observed.Yit, 2, as.numeric)
   df.observed.Yit <- as.data.frame(df.observed.Yit)
   
-  return(df.observed.Yit)
+  out.list <- list(datagen.params = datagen.params,
+                   df.observed.Yit = df.observed.Yit)
+  
+  return(out.list)
 }
 
 DTRCorrelationPO <- function(df){
@@ -851,11 +859,14 @@ DTRCorrelationPO <- function(df){
   return(list.out)
 }
 
-CalcDeltaj <- function(df, L){
+CalcDeltaj <- function(list.df, L){
   
   # Args:
   #   df: ADDLATER
   #   L: ADDLATER
+  
+  datagen.params <- list.df$datagen.params
+  df <- list.df$df.potential.Yit
   
   # DTR (++)
   widedat.plusplus <- df %>% filter(A1==1 & A2==1) %>% select(id, t, Yit) %>%
@@ -915,26 +926,22 @@ CalcDeltaj <- function(df, L){
   delta.plusminus.minusminus <- (meanQ.plusminus - meanQ.minusminus)/sqrt((varQ.plusminus + varQ.minusminus)/2)
   delta.minusminus.minusplus <- (meanQ.minusminus - meanQ.minusplus)/sqrt((varQ.minusminus + varQ.minusplus)/2)
   
-  delta.plusplus.plusminus <- abs(delta.plusplus.plusminus)
-  delta.plusplus.minusplus <- abs(delta.plusplus.minusplus)
-  delta.plusplus.minusminus <- abs(delta.plusplus.minusminus)
-  delta.plusminus.minusplus <- abs(delta.plusminus.minusplus)
-  delta.plusminus.minusminus <- abs(delta.plusminus.minusminus)
-  delta.minusminus.minusplus <- abs(delta.minusminus.minusplus)
+  delta.plusplus.plusminus <- delta.plusplus.plusminus
+  delta.plusplus.minusplus <- delta.plusplus.minusplus
+  delta.plusplus.minusminus <- delta.plusplus.minusminus
+  delta.plusminus.minusplus <- delta.plusminus.minusplus
+  delta.plusminus.minusminus <- delta.plusminus.minusminus
+  delta.minusminus.minusplus <- delta.minusminus.minusplus
   
-  outdf <- c(delta.plusplus.plusminus=delta.plusplus.plusminus,
-             delta.plusplus.minusplus=delta.plusplus.minusplus,
-             delta.plusplus.minusminus=delta.plusplus.minusminus,
-             delta.plusminus.minusplus=delta.plusminus.minusplus,
-             delta.plusminus.minusminus=delta.plusminus.minusminus,
-             delta.minusminus.minusplus=delta.minusminus.minusplus)
-  outdf <- as.matrix(outdf)
+  outdf <- list(plusplus.plusminus = list(datagen.params = datagen.params, estimates=data.frame(delta.plusplus.plusminus=delta.plusplus.plusminus)),
+                plusplus.minusplus = list(datagen.params = datagen.params, estimates=data.frame(delta.plusplus.minusplus=delta.plusplus.minusplus)),
+                plusplus.minusminus = list(datagen.params = datagen.params, estimates=data.frame(delta.plusplus.minusminus=delta.plusplus.minusminus)),
+                plusminus.minusplus = list(datagen.params = datagen.params, estimates=data.frame(delta.plusminus.minusplus=delta.plusminus.minusplus)),
+                plusminus.minusminus = list(datagen.params = datagen.params, estimates=data.frame(delta.plusminus.minusminus=delta.plusminus.minusminus)),
+                minusminus.minusplus = list(datagen.params = datagen.params, estimates=data.frame(delta.minusminus.minusplus=delta.minusminus.minusplus)))
   
   return(outdf)
 }
-
-
-
 
 
 
