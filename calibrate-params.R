@@ -19,17 +19,6 @@ idx.nsim <- 1:1000  # Total no. of monte carlo samples
 input.cutoff <- 0  # Cutoff in the definition of response status
 
 # -----------------------------------------------------------------------------
-# Read and prepare input data
-# -----------------------------------------------------------------------------
-# input.means contains mean of time-specific outcomes under each 
-# treatment sequence from time 1 until tot.time
-input.means <- read.csv(file.path(path.input_data, "6-months/input_means.csv"), header = TRUE)
-input.prop.zeros <- read.csv(file.path(path.input_data, "6-months/input_prop_zeros.csv"), header = TRUE)
-# Check whether input data are in the correct format
-CheckInputData(input.df=input.means, rand.time=input.rand.time, tot.time=input.tot.time)
-CheckInputData(input.df=input.prop.zeros, rand.time=input.rand.time, tot.time=input.tot.time)
-
-# -----------------------------------------------------------------------------
 # Specify data generating parameters
 # -----------------------------------------------------------------------------
 # Held fixed at all times
@@ -120,40 +109,23 @@ list.empirical.corr <- lapply(list.empirical.corr,
                               function(x){
                                 datagen.params <- x$datagen.params
                                 df <- x$estimates
-                                df$DTR <- row.names(df)
                                 row.names(df) <- NULL
                                 outlist <- list(datagen.params = datagen.params,
                                                 estimates = df)
                                 return(outlist)
                               })
 
-by.DTR.empirical.corr <- lapply(list.empirical.corr, 
-                                function(x){
-                                  datagen.params <- x$datagen.params
-                                  estimates <- x$estimates
-                                  outdf <- data.frame(datagen.params = datagen.params,
-                                                      estimates = estimates)
-                                  return(outdf)
-                                })
-
-by.DTR.empirical.corr <- bind_rows(by.DTR.empirical.corr)
-by.DTR.empirical.corr <- by.DTR.empirical.corr %>% 
-  group_by(datagen.params.N, datagen.params.rho, DTR=estimates.DTR) %>%
-  summarise(tau.max = mean(estimates.tau.max, na.rm=TRUE),
-            tau.min = mean(estimates.tau.min, na.rm=TRUE),
-            tau.ave = mean(estimates.tau.ave, na.rm=TRUE)) %>%
-  arrange(datagen.params.N, datagen.params.rho, desc(DTR))
-
-empirical.corr <- by.DTR.empirical.corr %>%
+empirical.corr <- bind_rows(by.DTR.empirical.corr)
+empirical.corr <- empirical.corr %>%
   group_by(datagen.params.N, datagen.params.rho) %>%
-  summarise(hat.tau = min(tau.min, na.rm=TRUE)) %>%
+  summarise(hat.tau = mean(tau.mean, na.rm=TRUE)) %>%
   arrange(datagen.params.N, datagen.params.rho)
 
 # -----------------------------------------------------------------------------
 # Plot ghat
 # -----------------------------------------------------------------------------
 gg.base <- ggplot(empirical.corr, aes(datagen.params.rho,hat.tau))
-gg <- gg.base + xlab("rho") + ylab("tau_MIN")
+gg <- gg.base + xlab("rho") + ylab("tau_MEAN")
 gg <- gg + scale_x_continuous(limits = c(-0.2,0.9), breaks = seq(-0.2,1,0.1)) + scale_y_continuous(limits = c(-0.2,0.9), breaks = seq(-0.2,1,0.1))
 gg <- gg + geom_abline(slope=1, intercept=0)
 gg <- gg + geom_point(size=2, na.rm=TRUE)

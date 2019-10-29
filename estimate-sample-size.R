@@ -21,6 +21,17 @@ input.tau.max <- 0.2  # Maximum correlation between time-specific outcomes under
 input.alpha <- 0.05  # Type-I error rate
 
 # -----------------------------------------------------------------------------
+# Read and prepare input data
+# -----------------------------------------------------------------------------
+# input.means contains mean of time-specific outcomes under each 
+# treatment sequence from time 1 until tot.time
+input.means <- read.csv(file.path(path.input_data, "6-months/input_means.csv"), header = TRUE)
+input.prop.zeros <- read.csv(file.path(path.input_data, "6-months/input_prop_zeros.csv"), header = TRUE)
+# Check whether input data are in the correct format
+CheckInputData(input.df=input.means, rand.time=input.rand.time, tot.time=input.tot.time)
+CheckInputData(input.df=input.prop.zeros, rand.time=input.rand.time, tot.time=input.tot.time)
+
+# -----------------------------------------------------------------------------
 # Calibration step
 # -----------------------------------------------------------------------------
 source(file.path(path.code, "calibrate-params.R"))

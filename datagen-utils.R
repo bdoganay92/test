@@ -844,19 +844,20 @@ DTRCorrelationPO <- function(df.list){
   cormat.minusminus <- cor(widedat.minusminus)
   
   # Across all DTRs
-  tau <- data.frame(plusplus = cormat.plusplus[upper.tri(cormat.plusplus)],
-                    plusminus = cormat.plusminus[upper.tri(cormat.plusminus)],
-                    minusplus = cormat.minusplus[upper.tri(cormat.minusplus)],
-                    minusminus = cormat.minusminus[upper.tri(cormat.minusminus)])
+  plusplus = c(cormat.plusplus[upper.tri(cormat.plusplus)],
+               cormat.plusplus[lower.tri(cormat.plusplus)])
+  plusminus = c(cormat.plusminus[upper.tri(cormat.plusminus)],
+                cormat.plusminus[lower.tri(cormat.plusminus)])
+  minusplus = c(cormat.minusplus[upper.tri(cormat.minusplus)],
+                cormat.minusplus[lower.tri(cormat.minusplus)])
+  minusminus = c(cormat.minusminus[upper.tri(cormat.minusminus)],
+                 cormat.minusminus[lower.tri(cormat.minusminus)])
   
-  tau.max <- apply(tau, 2, max)
-  tau.min <- apply(tau, 2, min)
-  tau.ave <- colMeans(tau)
+  all.DTRs <- c(plusplus, plusminus, minusplus, minusminus)
+  tau.ave <- mean(all.DTRs)
   
   list.out <- list(datagen.params = datagen.params,
-                   estimates = data.frame(tau.max = tau.max, 
-                                          tau.min = tau.min,
-                                          tau.ave = tau.ave))
+                   estimates = data.frame(tau.ave = tau.ave))
   
   return(list.out)
 }
