@@ -16,6 +16,7 @@ source(file.path(path.code,"analysis-utils.R"))
 # -----------------------------------------------------------------------------
 input.tot.time <- 6  # Total no. of measurement occasions
 input.rand.time <- 2  # Time when second randomization occurred (time is 1-indexed)
+input.alpha <- 0.05  # Type-I error rate
 
 # input.means contains mean of time-specific outcomes under each 
 # treatment sequence from time 1 until tot.time
@@ -50,11 +51,11 @@ D.AUC <- cbind(L.AUC,-L.AUC)
 # Specify data generating parameters
 # -----------------------------------------------------------------------------
 # Vary inputs here
-input.N <- c(300)  # Total no. of individuals
+input.N <- c(500)  # Total no. of individuals
 input.rho <- c(0.7)  # Dependence parameter
 
 # Held fixed at all times
-idx.nsim <- 1:1000  # Total no. of monte carlo samples
+idx.nsim <- 1:3  # Total no. of monte carlo samples
 input.cutoff <- 0  # Cutoff in the definition of response status
 
 # Combine all inputs into a grid
@@ -275,15 +276,15 @@ stopCluster(cl)
 list.est.diff.eos.means.plusplus.plusminus <- lapply(list.df.est.diff.eos.means, function(x){return(x["plusplus.plusminus"])})
 list.est.diff.eos.means.plusplus.minusplus <- lapply(list.df.est.diff.eos.means, function(x){return(x["plusplus.minusplus"])})
 list.est.diff.eos.means.plusplus.minusminus <- lapply(list.df.est.diff.eos.means, function(x){return(x["plusplus.minusminus"])})
-list.est.diff.eos.means.minusplus.plusminus <- lapply(list.df.est.diff.eos.means, function(x){return(x["minusplus.plusminus"])})
-list.est.diff.eos.means.minusplus.minusminus <- lapply(list.df.est.diff.eos.means, function(x){return(x["minusplus.minusminus"])})
+list.est.diff.eos.means.plusminus.minusplus <- lapply(list.df.est.diff.eos.means, function(x){return(x["plusminus.minusplus"])})
+list.est.diff.eos.means.plusminus.minusminus <- lapply(list.df.est.diff.eos.means, function(x){return(x["plusminus.minusminus"])})
 list.est.diff.eos.means.minusminus.minusplus <- lapply(list.df.est.diff.eos.means, function(x){return(x["minusminus.minusplus"])})
 
 list.est.diff.AUC.plusplus.plusminus <- lapply(list.df.est.diff.AUC, function(x){return(x["plusplus.plusminus"])})
 list.est.diff.AUC.plusplus.minusplus <- lapply(list.df.est.diff.AUC, function(x){return(x["plusplus.minusplus"])})
 list.est.diff.AUC.plusplus.minusminus <- lapply(list.df.est.diff.AUC, function(x){return(x["plusplus.minusminus"])})
-list.est.diff.AUC.minusplus.plusminus <- lapply(list.df.est.diff.AUC, function(x){return(x["minusplus.plusminus"])})
-list.est.diff.AUC.minusplus.minusminus <- lapply(list.df.est.diff.AUC, function(x){return(x["minusplus.minusminus"])})
+list.est.diff.AUC.plusminus.minusplus <- lapply(list.df.est.diff.AUC, function(x){return(x["plusminus.minusplus"])})
+list.est.diff.AUC.plusminus.minusminus <- lapply(list.df.est.diff.AUC, function(x){return(x["plusminus.minusminus"])})
 list.est.diff.AUC.minusminus.minusplus <- lapply(list.df.est.diff.AUC, function(x){return(x["minusminus.minusplus"])})
 
 # -----------------------------------------------------------------------------
@@ -432,23 +433,36 @@ stacked.C.minusminus.minusplus <- rbind(C.minusminus, C.minusplus)
 ###############################################################################
 # Differences in end-of-study means
 ###############################################################################
-eos.means.diff.plusplus.plusminus <- D.eos.means %*% exp(stacked.C.plusplus.plusminus %*% beta.vec)
-eos.means.diff.plusplus.minusplus <- D.eos.means %*% exp(stacked.C.plusplus.minusplus %*% beta.vec)
-eos.means.diff.plusplus.minusminus <- D.eos.means %*% exp(stacked.C.plusplus.minusminus %*% beta.vec)
-eos.means.diff.plusminus.minusplus <- D.eos.means %*% exp(stacked.C.plusminus.minusplus %*% beta.vec)
-eos.means.diff.plusminus.minusminus <- D.eos.means %*% exp(stacked.C.plusminus.minusminus %*% beta.vec)
-eos.means.diff.minusminus.minusplus <- D.eos.means %*% exp(stacked.C.minusminus.minusplus %*% beta.vec)
+diff.eos.means.plusplus.plusminus <- D.eos.means %*% exp(stacked.C.plusplus.plusminus %*% beta.vec)
+diff.eos.means.plusplus.minusplus <- D.eos.means %*% exp(stacked.C.plusplus.minusplus %*% beta.vec)
+diff.eos.means.plusplus.minusminus <- D.eos.means %*% exp(stacked.C.plusplus.minusminus %*% beta.vec)
+diff.eos.means.plusminus.minusplus <- D.eos.means %*% exp(stacked.C.plusminus.minusplus %*% beta.vec)
+diff.eos.means.plusminus.minusminus <- D.eos.means %*% exp(stacked.C.plusminus.minusminus %*% beta.vec)
+diff.eos.means.minusminus.minusplus <- D.eos.means %*% exp(stacked.C.minusminus.minusplus %*% beta.vec)
 
 ###############################################################################
 # Differences in AUC
 ###############################################################################
-AUC.diff.plusplus.plusminus <- D.AUC %*% exp(stacked.C.plusplus.plusminus %*% beta.vec)
-AUC.diff.plusplus.minusplus <- D.AUC %*% exp(stacked.C.plusplus.minusplus %*% beta.vec)
-AUC.diff.plusplus.minusminus <- D.AUC %*% exp(stacked.C.plusplus.minusminus %*% beta.vec)
-AUC.diff.plusminus.minusplus <- D.AUC %*% exp(stacked.C.plusminus.minusplus %*% beta.vec)
-AUC.diff.plusminus.minusminus <- D.AUC %*% exp(stacked.C.plusminus.minusminus %*% beta.vec)
-AUC.diff.minusminus.minusplus <- D.AUC %*% exp(stacked.C.minusminus.minusplus %*% beta.vec)
+diff.AUC.plusplus.plusminus <- D.AUC %*% exp(stacked.C.plusplus.plusminus %*% beta.vec)
+diff.AUC.plusplus.minusplus <- D.AUC %*% exp(stacked.C.plusplus.minusplus %*% beta.vec)
+diff.AUC.plusplus.minusminus <- D.AUC %*% exp(stacked.C.plusplus.minusminus %*% beta.vec)
+diff.AUC.plusminus.minusplus <- D.AUC %*% exp(stacked.C.plusminus.minusplus %*% beta.vec)
+diff.AUC.plusminus.minusminus <- D.AUC %*% exp(stacked.C.plusminus.minusminus %*% beta.vec)
+diff.AUC.minusminus.minusplus <- D.AUC %*% exp(stacked.C.minusminus.minusplus %*% beta.vec)
 
+# -----------------------------------------------------------------------------
+# Calculate bias in estimates of betaj and other quantities
+# -----------------------------------------------------------------------------
+source(file.path(path.code,"sanity-check/calc-bias.R"))
 
+print(list.all)
 
+# -----------------------------------------------------------------------------
+# Calculate bais in estimates of standard errors and coverage
+# -----------------------------------------------------------------------------
+source(file.path(path.code,"sanity-check/calc-coverage.R"))
 
+print(bias.est.stderr.diff.eos.means)
+print(bias.est.stderr.diff.AUC)
+print(coverage.diff.eos.means)
+print(coverage.diff.AUC)

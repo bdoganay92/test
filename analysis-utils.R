@@ -528,6 +528,20 @@ EstimateStdErrDiffs <- function(list.df, D, list.C){
   return(list.est.stderr.diff)
 }
 
-
+ReshapeList <- function(x){
+  
+  datagen.params <- x[[1]]$datagen.params
+  estimates <- x[[1]]$estimates
+  
+  if(length(estimates)>0){
+    colnames(estimates) <- "estimates"
+    outdf <- data.frame(datagen.params = datagen.params,
+                        estimates = estimates)
+  }else{
+    outdf <- NULL
+  }
+  
+  return(outdf)
+}
 
 

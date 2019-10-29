@@ -807,10 +807,13 @@ GenerateObservedYit <- function(df.list){
   return(out.list)
 }
 
-DTRCorrelationPO <- function(df){
+DTRCorrelationPO <- function(df.list){
   
   # Args:
   #   df: ADDLATER
+  
+  datagen.params <- df.list$datagen.params
+  df <- df.list$df.potential.Yit
   
   # DTR (++)
   widedat.plusplus <- df %>% filter(A1==1 & A2==1) %>% select(id, t, Yit) %>%
@@ -841,20 +844,19 @@ DTRCorrelationPO <- function(df){
   cormat.minusminus <- cor(widedat.minusminus)
   
   # Across all DTRs
-  rho.star <- data.frame(plusplus = cormat.plusplus[upper.tri(cormat.plusplus)],
-                         plusminus = cormat.plusminus[upper.tri(cormat.plusminus)],
-                         minusplus = cormat.minusplus[upper.tri(cormat.minusplus)],
-                         minusminus = cormat.minusminus[upper.tri(cormat.minusminus)])
+  tau <- data.frame(plusplus = cormat.plusplus[upper.tri(cormat.plusplus)],
+                    plusminus = cormat.plusminus[upper.tri(cormat.plusminus)],
+                    minusplus = cormat.minusplus[upper.tri(cormat.minusplus)],
+                    minusminus = cormat.minusminus[upper.tri(cormat.minusminus)])
   
-  rho.star.max <- apply(rho.star, 2, max)
-  rho.star.min <- apply(rho.star, 2, min)
-  rho.star.ave <- colMeans(rho.star)
+  tau.max <- apply(tau, 2, max)
+  tau.min <- apply(tau, 2, min)
+  tau.ave <- colMeans(tau)
   
-  list.out <- list(sim = df$sim[1],
-                   rho = df$rho[1],
-                   rho.star.max = rho.star.max, 
-                   rho.star.min = rho.star.min,
-                   rho.star.ave = rho.star.ave)
+  list.out <- list(datagen.params = datagen.params,
+                   estimates = data.frame(tau.max = tau.max, 
+                                          tau.min = tau.min,
+                                          tau.ave = tau.ave))
   
   return(list.out)
 }
@@ -919,19 +921,12 @@ CalcDeltaj <- function(list.df, L){
   #############################################################################
   # Calculate delta_j
   #############################################################################
-  delta.plusplus.plusminus <- (meanQ.plusplus - meanQ.plusminus)/sqrt((varQ.plusplus + varQ.plusminus)/2)
-  delta.plusplus.minusplus <- (meanQ.plusplus - meanQ.minusplus)/sqrt((varQ.plusplus + varQ.minusplus)/2)
-  delta.plusplus.minusminus <- (meanQ.plusplus - meanQ.minusminus)/sqrt((varQ.plusplus + varQ.minusminus)/2)
-  delta.plusminus.minusplus <- (meanQ.plusminus - meanQ.minusplus)/sqrt((varQ.plusminus + varQ.minusplus)/2)
-  delta.plusminus.minusminus <- (meanQ.plusminus - meanQ.minusminus)/sqrt((varQ.plusminus + varQ.minusminus)/2)
-  delta.minusminus.minusplus <- (meanQ.minusminus - meanQ.minusplus)/sqrt((varQ.minusminus + varQ.minusplus)/2)
-  
-  delta.plusplus.plusminus <- delta.plusplus.plusminus
-  delta.plusplus.minusplus <- delta.plusplus.minusplus
-  delta.plusplus.minusminus <- delta.plusplus.minusminus
-  delta.plusminus.minusplus <- delta.plusminus.minusplus
-  delta.plusminus.minusminus <- delta.plusminus.minusminus
-  delta.minusminus.minusplus <- delta.minusminus.minusplus
+  delta.plusplus.plusminus <- abs((meanQ.plusplus - meanQ.plusminus))/sqrt((varQ.plusplus + varQ.plusminus)/2)
+  delta.plusplus.minusplus <- abs((meanQ.plusplus - meanQ.minusplus))/sqrt((varQ.plusplus + varQ.minusplus)/2)
+  delta.plusplus.minusminus <- abs((meanQ.plusplus - meanQ.minusminus))/sqrt((varQ.plusplus + varQ.minusminus)/2)
+  delta.plusminus.minusplus <- abs((meanQ.plusminus - meanQ.minusplus))/sqrt((varQ.plusminus + varQ.minusplus)/2)
+  delta.plusminus.minusminus <- abs((meanQ.plusminus - meanQ.minusminus))/sqrt((varQ.plusminus + varQ.minusminus)/2)
+  delta.minusminus.minusplus <- abs((meanQ.minusminus - meanQ.minusplus))/sqrt((varQ.minusminus + varQ.minusplus)/2)
   
   outdf <- list(plusplus.plusminus = list(datagen.params = datagen.params, estimates=data.frame(delta.plusplus.plusminus=delta.plusplus.plusminus)),
                 plusplus.minusplus = list(datagen.params = datagen.params, estimates=data.frame(delta.plusplus.minusplus=delta.plusplus.minusplus)),
