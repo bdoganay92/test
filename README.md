@@ -15,7 +15,7 @@ Questions about the material in this repository can be directed at https://githu
 ## 3. Contents of `code` Folder
 
 File | Description
------------- | -------------
+------------------------ | -------------------------
 [input-utils.R](https://github.com/jamieyap/CountSMART/tree/master/code/input-utils.R) | Contains a function for checking validity of time-specific means and proportion of zeros provided as inputs to the sample size estimation procedure. [input_means.csv](https://github.com/jamieyap/CountSMART/tree/master/run-examples/dat-example-01a/input_means.csv) and [prop_zeros.csv](https://github.com/jamieyap/CountSMART/tree/master/run-examples/dat-example-01a/prop_zeros.csv)  provide examples of valid inputs.
 [datagen-utils.R](https://github.com/jamieyap/CountSMART/tree/master/code/datagen-utils.R) | Collection of functions to generate potential outcomes and observed outcomes.
 [analysis-utils.R](https://github.com/jamieyap/CountSMART/tree/master/code/analysis-utils.R) | Collection of functions to 'analyze' data from a SMART
@@ -27,6 +27,6 @@ File | Description
 ## 4. Contents of `run-examples` Folder
 
 File | Description
------------- | -------------
-[example-01a.R](https://github.com/jamieyap/CountSMART/tree/master/run-examples/example-01a.R) | Calls code in `code` folder to generate estimates presented in example 1 when $\tau_{MAX}=0.70$.
+------------------------ | -------------------------
+[example-01a.R](https://github.com/jamieyap/CountSMART/tree/master/run-examples/example-01a.R) | Calls code in `code` folder to generate estimates presented in example 1 when tauMAX=0.70.
 
