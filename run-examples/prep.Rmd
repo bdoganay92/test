@@ -46,16 +46,16 @@ path.code = "J:/CountSMART/code"
 Now, restart R so that these paths can be loaded into R's namespace. 
 
 # List of packages used
-\begin{enumerate}[]
-\item `dplyr`
-\item `purrr`
-\item `assertthat`
-\item `rootSolve`
-\item `mvtnorm`
-\item `geeM`
-\item `parallel`
-\item `ggplot2`
-\end{enumerate}
+
+* `dplyr`
+* `purrr`
+* `assertthat`
+* `rootSolve`
+* `mvtnorm`
+* `geeM`
+* `parallel`
+* `ggplot2`
+
 
 # Display session information
 
@@ -63,7 +63,6 @@ To facilitate reproducibility, we display details on the set-up of our work envi
 
 ```{r, echo=FALSE}
 path.code <- Sys.getenv("path.code")
-path.input_data <- Sys.getenv("path.input_data")
 
 library(dplyr)
 library(purrr)
