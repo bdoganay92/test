@@ -16,9 +16,9 @@ Questions about the material in this repository can be directed at https://githu
 
 File | Description
 ------------------------ | -------------------------
-[input-utils.R](https://github.com/jamieyap/CountSMART/tree/master/code/input-utils.R) | Contains a function for checking validity of time-specific means and proportion of zeros provided as inputs to the sample size estimation procedure. [input_means.csv](https://github.com/jamieyap/CountSMART/tree/master/run-examples/dat-example-01a/input_means.csv) and [prop_zeros.csv](https://github.com/jamieyap/CountSMART/tree/master/run-examples/dat-example-01a/prop_zeros.csv)  provide examples of valid inputs.
+[input-utils.R](https://github.com/jamieyap/CountSMART/tree/master/code/input-utils.R) | Contains a function for checking validity of time-specific means and proportion of zeros provided as inputs to the sample size estimation procedure. [input_means.csv](https://github.com/jamieyap/CountSMART/tree/master/run-examples/dat-example-01a/input_means.csv) and [input_prop_zeros.csv](https://github.com/jamieyap/CountSMART/tree/master/run-examples/dat-example-01a/input_prop_zeros.csv)  provide examples of valid inputs.
 [datagen-utils.R](https://github.com/jamieyap/CountSMART/tree/master/code/datagen-utils.R) | Collection of functions to generate potential outcomes and observed outcomes.
-[analysis-utils.R](https://github.com/jamieyap/CountSMART/tree/master/code/analysis-utils.R) | Collection of functions to 'analyze' data from a SMART
+[analysis-utils.R](https://github.com/jamieyap/CountSMART/tree/master/code/analysis-utils.R) | Collection of functions to 'analyze' data from a SMART.
 [calibrate-params.R](https://github.com/jamieyap/CountSMART/tree/master/code/calibrate-params.R) | Implements calibration stage of the sample size estimation method.
 [calc-delta.R](https://github.com/jamieyap/CountSMART/tree/master/code/calc-delta.R) |  Implements calculation of standardized effect size of the sample size estimation method.
 [calc-power.R](https://github.com/jamieyap/CountSMART/tree/master/code/calc-power.R) |  Implements power calculation stage of the sample size estimation method.
