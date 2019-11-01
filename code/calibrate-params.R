@@ -1,4 +1,5 @@
 library(dplyr)
+library(purrr)
 library(assertthat)
 library(rootSolve)
 library(mvtnorm)
@@ -13,7 +14,7 @@ source(file.path(path.code,"datagen-utils.R"))
 source(file.path(path.code,"analysis-utils.R"))
 
 # -----------------------------------------------------------------------------
-# Parameters held fixed at all times
+# Parameters held fixed at all times in calibrate-params.R
 # -----------------------------------------------------------------------------
 idx.nsim <- 1:1000  # Total no. of monte carlo samples
 input.cutoff <- 0  # Cutoff in the definition of response status
@@ -22,11 +23,11 @@ input.cutoff <- 0  # Cutoff in the definition of response status
 # Specify data generating parameters
 # -----------------------------------------------------------------------------
 # Held fixed at all times
-input.rho <- seq(0,0.99,0.01)  # Grid of dependence parameters to search over
+input.rho <- seq(0,0.99,0.05)  # Grid of dependence parameters to search over
 
 # Combine all inputs into a grid
 gridx <- expand.grid(nsim=idx.nsim, 
-                     input.N=5000,
+                     input.N=1000,
                      input.rand.time=input.rand.time, 
                      input.tot.time=input.tot.time,
                      input.cutoff=input.cutoff,
@@ -100,7 +101,7 @@ clusterEvalQ(cl,
              })
 
 list.empirical.corr <- parLapply(cl = cl, 
-                                 X = list.df.potential, 
+                                 X = list.df.potential,
                                  fun = DTRCorrelationPO)
 
 stopCluster(cl)
@@ -110,15 +111,15 @@ list.empirical.corr <- lapply(list.empirical.corr,
                                 datagen.params <- x$datagen.params
                                 df <- x$estimates
                                 row.names(df) <- NULL
-                                outlist <- list(datagen.params = datagen.params,
-                                                estimates = df)
+                                outlist <- data.frame(datagen.params = datagen.params,
+                                                      estimates = df)
                                 return(outlist)
                               })
 
-empirical.corr <- bind_rows(by.DTR.empirical.corr)
+empirical.corr <- bind_rows(list.empirical.corr)
 empirical.corr <- empirical.corr %>%
   group_by(datagen.params.N, datagen.params.rho) %>%
-  summarise(hat.tau = mean(tau.mean, na.rm=TRUE)) %>%
+  summarise(hat.tau = mean(tau.ave, na.rm=TRUE)) %>%
   arrange(datagen.params.N, datagen.params.rho)
 
 # -----------------------------------------------------------------------------
@@ -129,7 +130,7 @@ gg <- gg.base + xlab("rho") + ylab("tau_MEAN")
 gg <- gg + scale_x_continuous(limits = c(-0.2,0.9), breaks = seq(-0.2,1,0.1)) + scale_y_continuous(limits = c(-0.2,0.9), breaks = seq(-0.2,1,0.1))
 gg <- gg + geom_abline(slope=1, intercept=0)
 gg <- gg + geom_point(size=2, na.rm=TRUE)
-ggsave(file.path(path.input_data,"ghat.jpeg"), width = 7, height = 7, units = "in")
+ggsave(file.path(path.output_data,"ghat.jpeg"), width = 7, height = 7, units = "in")
 
 # -----------------------------------------------------------------------------
 # Determine rho.star
@@ -142,4 +143,7 @@ this.idx <- min(which(empirical.corr$is.greater.than))
 rho.star <- empirical.corr[this.idx,"datagen.params.rho"]
 rho.star <- as.numeric(rho.star)
 
+write.csv(empirical.corr, file.path(path.output_data,"empirical.corr.csv"), row.names=FALSE)
+
 remove(input.rho, gridx, list.gridx)
+
