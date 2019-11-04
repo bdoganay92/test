@@ -23,10 +23,12 @@ File | Description
 [calc-delta.R](https://github.com/jamieyap/CountSMART/tree/master/code/calc-delta.R) |  Implements calculation of standardized effect size of the sample size estimation method.
 [calc-power.R](https://github.com/jamieyap/CountSMART/tree/master/code/calc-power.R) |  Implements power calculation stage of the sample size estimation method.
 [estimate-sample-size.R](https://github.com/jamieyap/CountSMART/tree/master/code/estimate-sample-size.R) | Calls [calc-power.R](https://github.com/jamieyap/CountSMART/tree/master/code/calc-power.R) to estimate sample size for various candidate sample sizes.
+[calc-bias.R](https://github.com/jamieyap/CountSMART/tree/master/code/calc-bias.R) |  Calculates bias of estimates when called by [run-calc.R](https://github.com/jamieyap/CountSMART/blob/master/run-sanity-checks/run-calc.R)
+[calc-coverage.R](https://github.com/jamieyap/CountSMART/tree/master/code/calc-coverage.R) |  Calculates coverage of estimates when called by [run-calc.R](https://github.com/jamieyap/CountSMART/blob/master/run-sanity-checks/run-calc.R)
 
 ## 4. Contents of `run-examples` Folder
 
-File | Description
+File/Folder | Description
 ------------------------ | -------------------------
 [example-01a.R](https://github.com/jamieyap/CountSMART/tree/master/run-examples/example-01a.R) | Calls code in `code` folder to generate estimates presented in example 1 when tauMAX=0.75.
 [example-01b.R](https://github.com/jamieyap/CountSMART/tree/master/run-examples/example-01b.R) | Calls code in `code` folder to generate estimates presented in example 1 when tauMAX=0.10.
@@ -35,3 +37,10 @@ File | Description
 [run-examples/output-example-01a](https://github.com/jamieyap/CountSMART/tree/master/run-examples/output-example-01a) | Folder containing outputs of [example-01a.R](https://github.com/jamieyap/CountSMART/tree/master/run-examples/output-example-01a.R)
 [run-examples/output-example-01b](https://github.com/jamieyap/CountSMART/tree/master/run-examples/output-example-01b) | Folder containing outputs of [example-01b.R](https://github.com/jamieyap/CountSMART/tree/master/run-examples/output-example-01b.R)
 
+## 4. Contents of `run-sanity-checks` Folder
+
+File/Folder | Description
+------------------------ | -------------------------
+[run-calc.R](https://github.com/jamieyap/CountSMART/blob/master/run-sanity-checks/run-calc.R) | Produces tables in appendix A and B.
+[run-sanity-checks/dat-checks](https://github.com/jamieyap/CountSMART/tree/master/run-sanity-checks/dat-checks) | Folder containing inputs to [run-calc.R](https://github.com/jamieyap/CountSMART/blob/master/run-sanity-checks/run-calc.R)
+[run-sanity-checks/output-checks](https://github.com/jamieyap/CountSMART/tree/master/run-sanity-checks/output-checks) | Folder containing outputs of [run-calc.R](https://github.com/jamieyap/CountSMART/blob/master/run-sanity-checks/run-calc.R)
