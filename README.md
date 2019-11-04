@@ -10,7 +10,7 @@ This repository contains code for performing sample size estimation via simulati
 
 ## 2. Before Proceeding
 
-Questions about the material in this repository can be directed at https://github.com/jamieyap/CountSMART/issues by submitting a `New issue`. Prior to running the code, ensure that steps described in [prep.pdf](https://github.com/jamieyap/CountSMART/tree/master/run-examples/prep.pdf) have been performed.
+Questions about the material in this repository can be directed at https://github.com/jamieyap/CountSMART/issues by submitting a `New issue`. Prior to running the code, ensure that steps described in [prep.pdf](https://github.com/jamieyap/CountSMART/blob/master/prep.pdf) have been performed.
 
 ## 3. Contents of `code` Folder
 
@@ -28,5 +28,10 @@ File | Description
 
 File | Description
 ------------------------ | -------------------------
-[example-01a.R](https://github.com/jamieyap/CountSMART/tree/master/run-examples/example-01a.R) | Calls code in `code` folder to generate estimates presented in example 1 when tauMAX=0.70.
+[example-01a.R](https://github.com/jamieyap/CountSMART/tree/master/run-examples/example-01a.R) | Calls code in `code` folder to generate estimates presented in example 1 when tauMAX=0.75.
+[example-01b.R](https://github.com/jamieyap/CountSMART/tree/master/run-examples/example-01b.R) | Calls code in `code` folder to generate estimates presented in example 1 when tauMAX=0.10.
+[run-examples/dat-example-01a](https://github.com/jamieyap/CountSMART/tree/master/run-examples/dat-example-01a) | Folder containing inputs to [example-01a.R](https://github.com/jamieyap/CountSMART/tree/master/run-examples/example-01a.R)
+[run-examples/dat-example-01b](https://github.com/jamieyap/CountSMART/tree/master/run-examples/dat-example-01b) | Folder containing inputs to [example-01b.R](https://github.com/jamieyap/CountSMART/tree/master/run-examples/example-01b.R)
+[run-examples/output-example-01a](https://github.com/jamieyap/CountSMART/tree/master/run-examples/output-example-01a) | Folder containing outputs of [example-01a.R](https://github.com/jamieyap/CountSMART/tree/master/run-examples/output-example-01a.R)
+[run-examples/output-example-01b](https://github.com/jamieyap/CountSMART/tree/master/run-examples/output-example-01b) | Folder containing outputs of [example-01b.R](https://github.com/jamieyap/CountSMART/tree/master/run-examples/output-example-01b.R)
 
