@@ -20,7 +20,7 @@ source(file.path(path.code,"analysis-utils.R"))
 # -----------------------------------------------------------------------------
 input.tot.time <- 6  # Total no. of measurement occasions
 input.rand.time <- 2  # Time when second randomization occurred (time is 1-indexed)
-input.tau.max <- 0.75  # Maximum correlation between time-specific outcomes under any DTR
+input.tau.max <- 0.1  # Maximum correlation between time-specific outcomes under any DTR
 input.alpha <- 0.05  # Type-I error rate
 type.ii.error <- 0.20  # Type-II error rate
 

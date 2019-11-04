@@ -44,11 +44,12 @@ if(what.quantity == "AUC"){
     source(file.path(path.code, "calc-power.R"))
     current.power <- power.diff.AUC[power.diff.AUC$pair==this.pair,"power"]
     current.power <- as.numeric(current.power)
+    print(power.diff.AUC)
     power.diff.AUC <- list(power.diff.AUC)
     collect.power.diff.AUC <- append(collect.power.diff.AUC, power.diff.AUC)
     
     if((current.power<(1-type.ii.error)) & (bounded==FALSE)){
-      lb <- input.N
+      lb <- use.input.N
       use.input.N <- lb+lb/2
       use.input.N <- ceiling(use.input.N)
     }else if((current.power>(1-type.ii.error+epsilon)) & (bounded==FALSE)){
@@ -86,8 +87,8 @@ if(what.quantity == "AUC"){
   gg <- gg + scale_x_continuous(limits = c(0,max(df.this.pair$datagen.params.N)+100), 
                                 breaks = seq(0, max(df.this.pair$datagen.params.N)+100, 100)) 
   gg <- gg + scale_y_continuous(limits = c(0,1), breaks = seq(0,1,0.1))
-  gg <- gg + geom_line(color = "red", linetype=3, size = 1.5)
-  gg <- gg + geom_point(size=5, na.rm=TRUE)
+  gg <- gg + geom_line(color = "red", linetype=3, size = 1)
+  gg <- gg + geom_point(size=3.5, na.rm=TRUE)
   ggsave(file.path(path.output_data,paste("diff.AUC","pair",this.pair,".jpeg", sep="")), 
          width = 7, height = 7, units = "in")
 }
@@ -107,6 +108,7 @@ if(what.quantity == "eos.means"){
     source(file.path(path.code, "calc-power.R"))
     current.power <- power.diff.eos.means[power.diff.eos.means$pair==this.pair,"power"]
     current.power <- as.numeric(current.power)
+    print(power.diff.eos.means)
     power.diff.eos.means <- list(power.diff.eos.means)
     collect.power.diff.eos.means <- append(collect.power.diff.eos.means, power.diff.eos.means)
     
@@ -149,8 +151,8 @@ if(what.quantity == "eos.means"){
   gg <- gg + scale_x_continuous(limits = c(0,max(df.this.pair$datagen.params.N)+100), 
                                 breaks = seq(0, max(df.this.pair$datagen.params.N)+100, 100)) 
   gg <- gg + scale_y_continuous(limits = c(0,1), breaks = seq(0,1,0.1))
-  gg <- gg + geom_line(color = "red", linetype=3, size = 1.5)
-  gg <- gg + geom_point(size=5, na.rm=TRUE)
+  gg <- gg + geom_line(color = "red", linetype=3, size = 1)
+  gg <- gg + geom_point(size=3.5, na.rm=TRUE)
   ggsave(file.path(path.output_data,paste("diff.eos.means","pair",this.pair,".jpeg", sep="")), 
          width = 7, height = 7, units = "in")
 }

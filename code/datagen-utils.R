@@ -698,21 +698,15 @@ GeneratePotentialYit <- function(sim, N, tot.time, rand.time, cutoff, rho, input
   remove(use.var, use.mean)
   
   # Calculate number of individuals belonging to each group
-  n4 <- min(ceiling(N*(1-p)), ceiling(N*(1-q)))
+  n4 <- min(N*(1-p), N*(1-q))
+  n1 <- N*(p+q-1) + n4
+  n2 <- N*(1-q) - n4
+  n3 <- N*(1-p) - n4
   
-  n.per.group <- solve(a = matrix(c(1,1,1,
-                                    1,1,0,
-                                    1,0,1), 
-                                  ncol = 3, byrow = TRUE),
-                       b = matrix(c(N-n4,
-                                    N*p,
-                                    N*q), 
-                                  ncol = 1, byrow = TRUE)
-  )
-  
-  n1 <- ceiling(n.per.group[1])
-  n2 <- ceiling(n.per.group[2])
-  n3 <- ceiling(n.per.group[3])
+  n1 <- ceiling(n1)
+  n2 <- ceiling(n2)
+  n3 <- ceiling(n3)
+  n4 <- ceiling(n4)
   
   n.generated <- n1+n2+n3+n4
   
@@ -720,10 +714,10 @@ GeneratePotentialYit <- function(sim, N, tot.time, rand.time, cutoff, rho, input
   # Checks in between to ensure that calculations are performed as expected
   ###############################################################################
   
-  assert_that(abs((n1+n2)/N - p) < 0.01, msg = "Emprical proportion of responders is incorrect")
-  assert_that(abs((n1+n3)/N - q) < 0.01, msg = "Emprical proportion of responders is incorrect")
-  assert_that(abs((n3+n4)/N - (1-p)) < 0.01, msg = "Emprical proportion of non-responders is incorrect")
-  assert_that(abs((n2+n4)/N - (1-q)) < 0.01, msg = "Emprical proportion of non-responders is incorrect")
+  assert_that(abs((n1+n2)/N - p) < 0.05, msg = "Emprical proportion of responders is incorrect")
+  assert_that(abs((n1+n3)/N - q) < 0.05, msg = "Emprical proportion of responders is incorrect")
+  assert_that(abs((n3+n4)/N - (1-p)) < 0.05, msg = "Emprical proportion of non-responders is incorrect")
+  assert_that(abs((n2+n4)/N - (1-q)) < 0.05, msg = "Emprical proportion of non-responders is incorrect")
   
   # -----------------------------------------------------------------------------
   # Simulate potential outcomes
@@ -764,7 +758,7 @@ GeneratePotentialYit <- function(sim, N, tot.time, rand.time, cutoff, rho, input
   df.potential.Yit <- bind_rows(list.Y)
   df.potential.Yit <- df.potential.Yit %>% arrange(id, desc(A1), desc(A2), t)
   
-  out.list <- list(datagen.params = data.frame(N=N, rho=rho, sim=sim),
+  out.list <- list(datagen.params = data.frame(N=n.generated, rho=rho, sim=sim),
                    df.potential.Yit = df.potential.Yit)
   
   return(out.list)

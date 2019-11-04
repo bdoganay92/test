@@ -20,12 +20,6 @@ source(file.path(path.code,"analysis-utils.R"))
 input.rho <- rho.star
 
 # -----------------------------------------------------------------------------
-# Set up data frames for merging below
-# -----------------------------------------------------------------------------
-delta.eos.means$datagen.params.N <- use.input.N
-delta.AUC$datagen.params.N <- use.input.N
-
-# -----------------------------------------------------------------------------
 # Combine all inputs into a grid
 # -----------------------------------------------------------------------------
 gridx <- expand.grid(nsim=idx.nsim, 
@@ -43,6 +37,7 @@ list.gridx <- lapply(list.gridx, function(this.list,
   this.list$input.prop.zeros <- input.prop.zeros
   return(this.list)
 })
+
 
 # -----------------------------------------------------------------------------
 # Generate potential outcomes and observed outcomes
@@ -419,21 +414,32 @@ list.power.diff.AUC <- list(power.diff.AUC.plusplus.plusminus=power.diff.AUC.plu
 # -----------------------------------------------------------------------------
 # Aggregate list of estimates
 # -----------------------------------------------------------------------------
+for(i in 1:length(list.power.diff.eos.means)){
+  list.power.diff.eos.means[[i]]$pair <- i
+}
+
+for(i in 1:length(list.power.diff.AUC)){
+  list.power.diff.AUC[[i]]$pair <- i
+}
+
 power.diff.eos.means <- bind_rows(list.power.diff.eos.means)
 power.diff.AUC <- bind_rows(list.power.diff.AUC)
-power.diff.eos.means$pair <- 1:6
-power.diff.AUC$pair <- 1:6
+
+# -----------------------------------------------------------------------------
+# Set up data frames for merging below
+# -----------------------------------------------------------------------------
+#delta.eos.means <- delta.eos.means[, !(colnames(delta.eos.means) %in% "datagen.params.N")]
+#delta.AUC <- delta.AUC[, !(colnames(delta.AUC) %in% "datagen.params.N")]
 
 # -----------------------------------------------------------------------------
 # Merge delta and power
 # -----------------------------------------------------------------------------
-power.diff.eos.means <- left_join(delta.eos.means, power.diff.eos.means,
-                                  by = c("datagen.params.N",
-                                         "datagen.params.rho",
-                                         "pair"))
+#power.diff.eos.means <- left_join(delta.eos.means, power.diff.eos.means,
+#                                  by = c("datagen.params.rho",
+#                                         "pair"))
 
-power.diff.AUC <- left_join(delta.AUC, power.diff.AUC,
-                            by = c("datagen.params.N",
-                                   "datagen.params.rho",
-                                   "pair"))
+#power.diff.AUC <- left_join(delta.AUC, power.diff.AUC,
+#                            by = c("datagen.params.rho",
+#                                   "pair"))
+
 

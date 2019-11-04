@@ -129,7 +129,7 @@ gg.base <- ggplot(empirical.corr, aes(datagen.params.rho,hat.tau))
 gg <- gg.base + xlab("rho") + ylab("tau_MEAN")
 gg <- gg + scale_x_continuous(limits = c(-0.2,0.9), breaks = seq(-0.2,1,0.1)) + scale_y_continuous(limits = c(-0.2,0.9), breaks = seq(-0.2,1,0.1))
 gg <- gg + geom_abline(slope=1, intercept=0)
-gg <- gg + geom_point(size=2, na.rm=TRUE)
+gg <- gg + geom_point(size=3.5, na.rm=TRUE)
 ggsave(file.path(path.output_data,"ghat.jpeg"), width = 7, height = 7, units = "in")
 
 # -----------------------------------------------------------------------------
