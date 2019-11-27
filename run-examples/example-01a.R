@@ -65,15 +65,21 @@ source(file.path(path.code, "calc-delta.R"))
 ###############################################################################
 # Primary Aim: Compare DTRs based on end-of-study means
 ###############################################################################
-what.quantity <- "eos.means" # choices are "eos.means" or "AUC"
+what.quantity <- "eos.means" # choices are "eos.means" or "AUC" or "change.score"
 write.csv(delta.eos.means, file.path(path.output_data, "delta.eos.means.csv"), row.names=FALSE)
 source(file.path(path.code, "estimate-sample-size.R"))
 
 ###############################################################################
 # Secondary Aim: Compare DTRs based on AUC
 ###############################################################################
-what.quantity <- "AUC" # choices are "eos.means" or "AUC"
+what.quantity <- "AUC" # choices are "eos.means" or "AUC" or "change.score"
 write.csv(delta.AUC, file.path(path.output_data, "delta.AUC.csv"), row.names=FALSE)
 source(file.path(path.code, "estimate-sample-size.R"))
 
+###############################################################################
+# Secondary Aim: Compare DTRs based on change score
+###############################################################################
+what.quantity <- "change.score" # choices are "eos.means" or "AUC" or "change.score"
+write.csv(delta.AUC, file.path(path.output_data, "delta.change.score.csv"), row.names=FALSE)
+source(file.path(path.code, "estimate-sample-size.R"))
 

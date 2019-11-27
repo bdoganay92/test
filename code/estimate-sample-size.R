@@ -157,6 +157,70 @@ if(what.quantity == "eos.means"){
          width = 7, height = 7, units = "in")
 }
 
+if(what.quantity == "change.score"){
+  # -----------------------------------------------------------------------------
+  # We use the bisection method to find the sample size needed to achieve power
+  # to reject H0 to be between (1-type.ii.error) and (1-type.ii.error)+epsilon
+  # -----------------------------------------------------------------------------
+  collect.power.diff.change.score <- list()
+  
+  while((current.power<(1-type.ii.error))|(current.power>(1-type.ii.error+epsilon))){
+    # Sanity check before power is calculated
+    assert_that(lb<=ub)
+    
+    # Calculate power with current value of input.N
+    source(file.path(path.code, "calc-power.R"))
+    current.power <- power.diff.change.score[power.diff.change.score$pair==this.pair,"power"]
+    current.power <- as.numeric(current.power)
+    print(power.diff.change.score)
+    power.diff.change.score <- list(power.diff.change.score)
+    collect.power.diff.change.score <- append(collect.power.diff.change.score, power.diff.change.score)
+    
+    if((current.power<(1-type.ii.error)) & (bounded==FALSE)){
+      lb <- use.input.N
+      use.input.N <- lb+lb/2
+      use.input.N <- ceiling(use.input.N)
+    }else if((current.power>(1-type.ii.error+epsilon)) & (bounded==FALSE)){
+      ub <- use.input.N
+      bounded <- TRUE
+      use.input.N <- (lb+ub)/2
+      use.input.N <- ceiling(use.input.N)
+    }else if((current.power<(1-type.ii.error)) & (bounded==TRUE)){
+      lb <- use.input.N
+      use.input.N <- (lb+ub)/2
+      use.input.N <- ceiling(use.input.N)
+    }else if((current.power>(1-type.ii.error+epsilon)) & (bounded==TRUE)){
+      ub <- use.input.N
+      use.input.N <- (lb+ub)/2
+      use.input.N <- ceiling(use.input.N)
+    }else{
+      break
+    }
+  }
+  
+  df.collect.power.diff.change.score <- bind_rows(collect.power.diff.change.score)
+  df.this.pair <- df.collect.power.diff.change.score %>% 
+    filter(pair==this.pair) %>%
+    arrange(datagen.params.N)
+  
+  write.csv(df.this.pair, 
+            file.path(path.output_data, "power.diff.change.score.csv"), 
+            row.names=FALSE)
+  
+  # -----------------------------------------------------------------------------
+  # Plot sample size vs. power
+  # -----------------------------------------------------------------------------
+  gg.base <- ggplot(df.this.pair, aes(datagen.params.N,power))
+  gg <- gg.base + xlab("N") + ylab("power")
+  gg <- gg + scale_x_continuous(limits = c(0,max(df.this.pair$datagen.params.N)+100), 
+                                breaks = seq(0, max(df.this.pair$datagen.params.N)+100, 100)) 
+  gg <- gg + scale_y_continuous(limits = c(0,1), breaks = seq(0,1,0.1))
+  gg <- gg + geom_line(color = "red", linetype=3, size = 1)
+  gg <- gg + geom_point(size=3.5, na.rm=TRUE)
+  ggsave(file.path(path.output_data,paste("diff.change.score","pair",this.pair,".jpeg", sep="")), 
+         width = 7, height = 7, units = "in")
+}
+
 
 remove(df.this.pair, gg)
 

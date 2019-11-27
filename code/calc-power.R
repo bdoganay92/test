@@ -127,7 +127,10 @@ clusterExport(cl, c("path.code",
                     "path.input_data",
                     "path.output_data",
                     "list.df.est.beta",
-                    "list.C"))
+                    "list.C",
+                    "D.eos.means",
+                    "D.AUC",
+                    "D.change.score"))
 clusterEvalQ(cl,
              {
                library(dplyr)
@@ -152,6 +155,12 @@ list.df.est.diff.AUC <- parLapply(cl = cl,
                                   D = D.AUC,
                                   list.C=list.C)
 
+list.df.est.diff.change.score <- parLapply(cl = cl, 
+                                           X = list.df.est.beta, 
+                                           fun = EstimateDiffs, 
+                                           D = D.change.score,
+                                           list.C=list.C)
+
 stopCluster(cl)
 
 list.est.diff.eos.means.plusplus.plusminus <- lapply(list.df.est.diff.eos.means, function(x){return(x["plusplus.plusminus"])})
@@ -167,6 +176,13 @@ list.est.diff.AUC.plusplus.minusminus <- lapply(list.df.est.diff.AUC, function(x
 list.est.diff.AUC.plusminus.minusplus <- lapply(list.df.est.diff.AUC, function(x){return(x["plusminus.minusplus"])})
 list.est.diff.AUC.plusminus.minusminus <- lapply(list.df.est.diff.AUC, function(x){return(x["plusminus.minusminus"])})
 list.est.diff.AUC.minusminus.minusplus <- lapply(list.df.est.diff.AUC, function(x){return(x["minusminus.minusplus"])})
+
+list.est.diff.change.score.plusplus.plusminus <- lapply(list.df.est.diff.change.score, function(x){return(x["plusplus.plusminus"])})
+list.est.diff.change.score.plusplus.minusplus <- lapply(list.df.est.diff.change.score, function(x){return(x["plusplus.minusplus"])})
+list.est.diff.change.score.plusplus.minusminus <- lapply(list.df.est.diff.change.score, function(x){return(x["plusplus.minusminus"])})
+list.est.diff.change.score.plusminus.minusplus <- lapply(list.df.est.diff.change.score, function(x){return(x["plusminus.minusplus"])})
+list.est.diff.change.score.plusminus.minusminus <- lapply(list.df.est.diff.change.score, function(x){return(x["plusminus.minusminus"])})
+list.est.diff.change.score.minusminus.minusplus <- lapply(list.df.est.diff.change.score, function(x){return(x["minusminus.minusplus"])})
 
 # -----------------------------------------------------------------------------
 # Reshape list of estimates
@@ -185,6 +201,13 @@ list.est.diff.AUC.plusminus.minusplus <- lapply(list.est.diff.AUC.plusminus.minu
 list.est.diff.AUC.plusminus.minusminus <- lapply(list.est.diff.AUC.plusminus.minusminus, ReshapeList)
 list.est.diff.AUC.minusminus.minusplus <- lapply(list.est.diff.AUC.minusminus.minusplus, ReshapeList)
 
+list.est.diff.change.score.plusplus.plusminus <- lapply(list.est.diff.change.score.plusplus.plusminus, ReshapeList)
+list.est.diff.change.score.plusplus.minusplus <- lapply(list.est.diff.change.score.plusplus.minusplus, ReshapeList)
+list.est.diff.change.score.plusplus.minusminus <- lapply(list.est.diff.change.score.plusplus.minusminus, ReshapeList)
+list.est.diff.change.score.plusminus.minusplus <- lapply(list.est.diff.change.score.plusminus.minusplus, ReshapeList)
+list.est.diff.change.score.plusminus.minusminus <- lapply(list.est.diff.change.score.plusminus.minusminus, ReshapeList)
+list.est.diff.change.score.minusminus.minusplus <- lapply(list.est.diff.change.score.minusminus.minusplus, ReshapeList)
+
 # -----------------------------------------------------------------------------
 # Aggregate list of estimates
 # -----------------------------------------------------------------------------
@@ -201,6 +224,13 @@ est.diff.AUC.plusplus.minusminus <- bind_rows(list.est.diff.AUC.plusplus.minusmi
 est.diff.AUC.plusminus.minusplus <- bind_rows(list.est.diff.AUC.plusminus.minusplus)
 est.diff.AUC.plusminus.minusminus <- bind_rows(list.est.diff.AUC.plusminus.minusminus)
 est.diff.AUC.minusminus.minusplus <- bind_rows(list.est.diff.AUC.minusminus.minusplus)
+
+est.diff.change.score.plusplus.plusminus <- bind_rows(list.est.diff.change.score.plusplus.plusminus)
+est.diff.change.score.plusplus.minusplus <- bind_rows(list.est.diff.change.score.plusplus.minusplus)
+est.diff.change.score.plusplus.minusminus <- bind_rows(list.est.diff.change.score.plusplus.minusminus)
+est.diff.change.score.plusminus.minusplus <- bind_rows(list.est.diff.change.score.plusminus.minusplus)
+est.diff.change.score.plusminus.minusminus <- bind_rows(list.est.diff.change.score.plusminus.minusminus)
+est.diff.change.score.minusminus.minusplus <- bind_rows(list.est.diff.change.score.minusminus.minusplus)
 
 # -----------------------------------------------------------------------------
 # Calculate estimates of standard error of pairwise differences in 
@@ -255,6 +285,33 @@ est.stderr.diff.AUC.plusplus.minusminus <- bind_rows(list.est.stderr.diff.AUC.pl
 est.stderr.diff.AUC.plusminus.minusplus <- bind_rows(list.est.stderr.diff.AUC.plusminus.minusplus)
 est.stderr.diff.AUC.plusminus.minusminus <- bind_rows(list.est.stderr.diff.AUC.plusminus.minusminus)
 est.stderr.diff.AUC.minusminus.minusplus <- bind_rows(list.est.stderr.diff.AUC.minusminus.minusplus)
+
+# -----------------------------------------------------------------------------
+# Calculate estimates of standard error of pairwise differences in 
+# change score between DTRs
+# -----------------------------------------------------------------------------
+list.est.stderr.diff.change.score <- lapply(list.df.est.beta, EstimateStdErrDiffs, D=D.change.score, list.C=list.C)
+
+list.est.stderr.diff.change.score.plusplus.plusminus <- lapply(list.est.stderr.diff.change.score, function(x){return(x["plusplus.plusminus"])})
+list.est.stderr.diff.change.score.plusplus.minusplus <- lapply(list.est.stderr.diff.change.score, function(x){return(x["plusplus.minusplus"])})
+list.est.stderr.diff.change.score.plusplus.minusminus <- lapply(list.est.stderr.diff.change.score, function(x){return(x["plusplus.minusminus"])})
+list.est.stderr.diff.change.score.plusminus.minusplus <- lapply(list.est.stderr.diff.change.score, function(x){return(x["plusminus.minusplus"])})
+list.est.stderr.diff.change.score.plusminus.minusminus <- lapply(list.est.stderr.diff.change.score, function(x){return(x["plusminus.minusminus"])})
+list.est.stderr.diff.change.score.minusminus.minusplus <- lapply(list.est.stderr.diff.change.score, function(x){return(x["minusminus.minusplus"])})
+
+list.est.stderr.diff.change.score.plusplus.plusminus <- lapply(list.est.stderr.diff.change.score.plusplus.plusminus, ReshapeList)
+list.est.stderr.diff.change.score.plusplus.minusplus <- lapply(list.est.stderr.diff.change.score.plusplus.minusplus, ReshapeList)
+list.est.stderr.diff.change.score.plusplus.minusminus <- lapply(list.est.stderr.diff.change.score.plusplus.minusminus, ReshapeList)
+list.est.stderr.diff.change.score.plusminus.minusplus <- lapply(list.est.stderr.diff.change.score.plusminus.minusplus, ReshapeList)
+list.est.stderr.diff.change.score.plusminus.minusminus <- lapply(list.est.stderr.diff.change.score.plusminus.minusminus, ReshapeList)
+list.est.stderr.diff.change.score.minusminus.minusplus <- lapply(list.est.stderr.diff.change.score.minusminus.minusplus, ReshapeList)
+
+est.stderr.diff.change.score.plusplus.plusminus <- bind_rows(list.est.stderr.diff.change.score.plusplus.plusminus)
+est.stderr.diff.change.score.plusplus.minusplus <- bind_rows(list.est.stderr.diff.change.score.plusplus.minusplus)
+est.stderr.diff.change.score.plusplus.minusminus <- bind_rows(list.est.stderr.diff.change.score.plusplus.minusminus)
+est.stderr.diff.change.score.plusminus.minusplus <- bind_rows(list.est.stderr.diff.change.score.plusminus.minusplus)
+est.stderr.diff.change.score.plusminus.minusminus <- bind_rows(list.est.stderr.diff.change.score.plusminus.minusminus)
+est.stderr.diff.change.score.minusminus.minusplus <- bind_rows(list.est.stderr.diff.change.score.minusminus.minusplus)
 
 # -----------------------------------------------------------------------------
 # Calculate power to reject null hypothesis on pairwise differences in
@@ -410,6 +467,82 @@ list.power.diff.AUC <- list(power.diff.AUC.plusplus.plusminus=power.diff.AUC.plu
                             power.diff.AUC.plusminus.minusminus=power.diff.AUC.plusminus.minusminus,
                             power.diff.AUC.minusminus.minusplus=power.diff.AUC.minusminus.minusplus)
 
+# -----------------------------------------------------------------------------
+# Calculate power to reject null hypothesis on pairwise differences in
+# change score between DTRs
+# -----------------------------------------------------------------------------
+power.diff.change.score.plusplus.plusminus <- left_join(est.diff.change.score.plusplus.plusminus,
+                                                        est.stderr.diff.change.score.plusplus.plusminus,
+                                                        by = c("datagen.params.N", 
+                                                               "datagen.params.rho",
+                                                               "datagen.params.sim")) %>%
+  rename(est.diff=estimates.x, est.stderr=estimates.y) %>%
+  mutate(z = est.diff/est.stderr) %>%
+  mutate(is.reject = abs(z)>qnorm(1-(input.alpha/2))) %>%
+  group_by(datagen.params.N, datagen.params.rho) %>%
+  summarise(power = mean(is.reject, na.rm=TRUE))
+
+power.diff.change.score.plusplus.minusplus <- left_join(est.diff.change.score.plusplus.minusplus,
+                                                        est.stderr.diff.change.score.plusplus.minusplus,
+                                                        by = c("datagen.params.N", 
+                                                               "datagen.params.rho",
+                                                               "datagen.params.sim")) %>%
+  rename(est.diff=estimates.x, est.stderr=estimates.y) %>%
+  mutate(z = est.diff/est.stderr) %>%
+  mutate(is.reject = abs(z)>qnorm(1-(input.alpha/2))) %>%
+  group_by(datagen.params.N, datagen.params.rho) %>%
+  summarise(power = mean(is.reject, na.rm=TRUE))
+
+power.diff.change.score.plusplus.minusminus <- left_join(est.diff.change.score.plusplus.minusminus,
+                                                         est.stderr.diff.change.score.plusplus.minusminus,
+                                                         by = c("datagen.params.N", 
+                                                                "datagen.params.rho",
+                                                                "datagen.params.sim")) %>%
+  rename(est.diff=estimates.x, est.stderr=estimates.y) %>%
+  mutate(z = est.diff/est.stderr) %>%
+  mutate(is.reject = abs(z)>qnorm(1-(input.alpha/2))) %>%
+  group_by(datagen.params.N, datagen.params.rho) %>%
+  summarise(power = mean(is.reject, na.rm=TRUE))
+
+power.diff.change.score.plusminus.minusplus <- left_join(est.diff.change.score.plusminus.minusplus,
+                                                         est.stderr.diff.change.score.plusminus.minusplus,
+                                                         by = c("datagen.params.N", 
+                                                                "datagen.params.rho",
+                                                                "datagen.params.sim")) %>%
+  rename(est.diff=estimates.x, est.stderr=estimates.y) %>%
+  mutate(z = est.diff/est.stderr) %>%
+  mutate(is.reject = abs(z)>qnorm(1-(input.alpha/2))) %>%
+  group_by(datagen.params.N, datagen.params.rho) %>%
+  summarise(power = mean(is.reject, na.rm=TRUE))
+
+power.diff.change.score.plusminus.minusminus <- left_join(est.diff.change.score.plusminus.minusminus,
+                                                          est.stderr.diff.change.score.plusminus.minusminus,
+                                                          by = c("datagen.params.N", 
+                                                                 "datagen.params.rho",
+                                                                 "datagen.params.sim")) %>%
+  rename(est.diff=estimates.x, est.stderr=estimates.y) %>%
+  mutate(z = est.diff/est.stderr) %>%
+  mutate(is.reject = abs(z)>qnorm(1-(input.alpha/2))) %>%
+  group_by(datagen.params.N, datagen.params.rho) %>%
+  summarise(power = mean(is.reject, na.rm=TRUE))
+
+power.diff.change.score.minusminus.minusplus <- left_join(est.diff.change.score.minusminus.minusplus,
+                                                          est.stderr.diff.change.score.minusminus.minusplus,
+                                                          by = c("datagen.params.N", 
+                                                                 "datagen.params.rho",
+                                                                 "datagen.params.sim")) %>%
+  rename(est.diff=estimates.x, est.stderr=estimates.y) %>%
+  mutate(z = est.diff/est.stderr) %>%
+  mutate(is.reject = abs(z)>qnorm(1-(input.alpha/2))) %>%
+  group_by(datagen.params.N, datagen.params.rho) %>%
+  summarise(power = mean(is.reject, na.rm=TRUE))
+
+list.power.diff.change.score <- list(power.diff.change.score.plusplus.plusminus=power.diff.change.score.plusplus.plusminus,
+                                     power.diff.change.score.plusplus.minusplus=power.diff.change.score.plusplus.minusplus,
+                                     power.diff.change.score.plusplus.minusminus=power.diff.change.score.plusplus.minusminus,
+                                     power.diff.change.score.plusminus.minusplus=power.diff.change.score.plusminus.minusplus,
+                                     power.diff.change.score.plusminus.minusminus=power.diff.change.score.plusminus.minusminus,
+                                     power.diff.change.score.minusminus.minusplus=power.diff.change.score.minusminus.minusplus)
 
 # -----------------------------------------------------------------------------
 # Aggregate list of estimates
@@ -422,8 +555,16 @@ for(i in 1:length(list.power.diff.AUC)){
   list.power.diff.AUC[[i]]$pair <- i
 }
 
+for(i in 1:length(list.power.diff.change.score)){
+  list.power.diff.change.score[[i]]$pair <- i
+}
+
 power.diff.eos.means <- bind_rows(list.power.diff.eos.means)
 power.diff.AUC <- bind_rows(list.power.diff.AUC)
+power.diff.change.score <- bind_rows(list.power.diff.change.score)
+
+print(power.diff.eos.means)
+print(power.diff.change.score)
 
 # -----------------------------------------------------------------------------
 # Set up data frames for merging below
