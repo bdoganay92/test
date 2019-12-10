@@ -102,35 +102,95 @@ AnalyzeData <- function(list.df, tot.time, rand.time, working.corr="independence
   fo <- paste("Y ~ ", fo, sep="")
   fo <- as.formula(fo)
   
-  model <- geem(formula = fo,
-                data = df.replicated.observed.Yit, 
-                id = id,
-                waves = wave, # No missing data 
-                family = poisson,
-                corstr = "independence",
-                weights = KnownWeight,
-                scale.fix = TRUE)
+  # ---------------------------------------------------------------------------
+  # Fit initial model and residuals
+  # ---------------------------------------------------------------------------
+  model.init <- geem(formula = fo,
+                     data = df.replicated.observed.Yit, 
+                     id = id,
+                     waves = wave, # No missing data 
+                     family = "poisson",
+                     corstr = "independence",
+                     weights = KnownWeight,
+                     scale.fix = TRUE)
   
-  if(model$converged == TRUE){
-    # Calculate estimates of the mean per DTR and time
-    est.beta <- as.matrix(model$beta)
-    coefnames <- (model$coefnames)
-    est.cov.beta <- (model$var)
-    converged <- 1*(model$converged==TRUE)
-    est <- list(est.beta = est.beta, 
-                coefnames = coefnames,
-                est.cov.beta = est.cov.beta, 
-                converged = converged)
-  }else{
+  if(model.init$converged==FALSE){
     est <- list(est.beta=NA,
                 coefnames=NA,
                 est.cov.beta=NA,
-                converged=0)
+                converged=0) 
+    
+    out.list <- list(datagen.params = datagen.params,
+                     estimates=est)
+  }else{
+    # Obtain initial estimates of beta
+    init.est.beta <- as.matrix(model.init$beta)
+    # Obtain squared residuals
+    init.resid <- model.init$y - exp(model.init$X %*% init.est.beta)
+    init.resid.squared <- init.resid^2
+    # Obtain predicted means
+    init.muhat <- exp(model.init$X %*% init.est.beta)
+    # Calculate dispersion parameter
+    num <- weighted.mean(x=init.resid.squared, w=model.init$weights) - weighted.mean(x=init.muhat, w=model.init$weights)
+    den <- weighted.mean(x=init.muhat, w=model.init$weights)^2
+    disp.param <- num/denom
+    
+    # ---------------------------------------------------------------------------
+    # Specify FunList
+    # ---------------------------------------------------------------------------
+    LinkFun <- function(mu){
+      out <- log(mu)
+      return(out)
+    }
+    
+    VarFun <- function(mu){
+      out <- mu + disp.param*(mu^2)
+      return(out)
+    }
+    
+    InvLink <- function(eta){
+      out <- exp(eta)
+      return(out)
+    }
+    
+    InvLinkDeriv <- function(eta){
+      out <- exp(eta)
+      return(out)
+    }
+    
+    FunList <- list(LinkFun, VarFun, InvLink, InvLinkDeriv)
+    
+    model.indep <- geem(formula = fo,
+                        data = df.replicated.observed.Yit, 
+                        id = id,
+                        waves = wave, # No missing data 
+                        family = FunList,
+                        corstr = "independence",
+                        weights = KnownWeight,
+                        scale.fix = TRUE)
+    
+    if(model.indep$converged == FALSE){
+      est <- list(est.beta=NA,
+                  coefnames=NA,
+                  est.cov.beta=NA,
+                  converged=0)
+    }else{
+      # Calculate estimates of the mean per DTR and time
+      est.beta <- as.matrix(model.indep$beta)
+      coefnames <- model.indep$coefnames
+      est.cov.beta <- model.indep$var
+      converged <- 1*(model.indep$converged==TRUE)
+      est <- list(est.beta = est.beta, 
+                  coefnames = coefnames,
+                  est.cov.beta = est.cov.beta, 
+                  converged = converged)
+    }
+    
+    out.list <- list(datagen.params = datagen.params,
+                     estimates=est)
   }
   
-  out.list <- list(datagen.params = datagen.params,
-                   estimates=est)
-  
+
   return(out.list)
 }
 
