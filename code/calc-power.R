@@ -14,16 +14,26 @@ source(file.path(path.code,"input-utils.R"))
 source(file.path(path.code,"datagen-utils.R"))
 source(file.path(path.code,"analysis-utils.R"))
 
-# -----------------------------------------------------------------------------
-# Result of calibration step
-# -----------------------------------------------------------------------------
-input.rho <- rho.star
+# Note that 
+#   - input.rand.time, input.tot.time, 
+#   - input.N
+#   - input.rho
+#   - input.cutoff
+#   - input.means, input.prop.zeros
+#   - use.working.corr
+# need to be specified prior to running the code below
 
 # -----------------------------------------------------------------------------
 # Combine all inputs into a grid
 # -----------------------------------------------------------------------------
-gridx <- expand.grid(nsim=idx.nsim, 
-                     input.N=use.input.N,
+# input.tot.time and input.rand.time cannot be sequences of numbers
+# but input.N, input.cutoff, and input.rho could be specified as sequences 
+# of numbers
+assert_that(length(input.tot.time)==1, msg="input.tot.time cannot be a sequence of numbers")
+assert_that(length(input.rand.time)==1, msg="input.rand.time cannot be a sequence of numbers")
+
+gridx <- expand.grid(nsim=1:1000, 
+                     input.N=input.N,
                      input.rand.time=input.rand.time, 
                      input.tot.time=input.tot.time,
                      input.cutoff=input.cutoff,
@@ -37,7 +47,6 @@ list.gridx <- lapply(list.gridx, function(this.list,
   this.list$input.prop.zeros <- input.prop.zeros
   return(this.list)
 })
-
 
 # -----------------------------------------------------------------------------
 # Generate potential outcomes and observed outcomes
@@ -91,7 +100,10 @@ clusterSetRNGStream(cl, 102399)
 clusterExport(cl, c("path.code",
                     "path.input_data",
                     "path.output_data",
-                    "list.df.observed"))
+                    "list.df.observed",
+                    "input.tot.time",
+                    "input.rand.time",
+                    "use.working.corr"))
 clusterEvalQ(cl,
              {
                library(dplyr)
@@ -102,6 +114,10 @@ clusterEvalQ(cl,
                source(file.path(path.code, "input-utils.R"))
                source(file.path(path.code, "datagen-utils.R"))
                source(file.path(path.code, "analysis-utils.R"))
+               source(file.path(path.code, "geemMod.r"))
+               
+               environment(geemMod) <- asNamespace('geeM')
+               assignInNamespace("geem", geemMod, ns = "geeM")
              })
 
 list.df.wr <- parLapply(cl = cl, 
@@ -113,9 +129,42 @@ list.df.est.beta <- parLapply(cl = cl,
                               X = list.df.wr, 
                               fun = AnalyzeData, 
                               tot.time = input.tot.time, 
-                              rand.time = input.rand.time)
+                              rand.time = input.rand.time,
+                              working.corr = use.working.corr)
 
 stopCluster(cl)
+
+# -----------------------------------------------------------------------------
+# Specify contrasts of interest
+# -----------------------------------------------------------------------------
+# Create C matrix
+list.C <- CreateC(input.tot.time = input.tot.time, input.rand.time = input.rand.time)
+C.plusplus <- list.C$C.plusplus
+C.plusminus <- list.C$C.plusminus
+C.minusplus <- list.C$C.minusplus
+C.minusminus <- list.C$C.minusminus
+
+# Difference in end-of-study means
+L.eos.means <- t(eCol(input.tot.time,input.tot.time))
+D.eos.means <- cbind(L.eos.means,-L.eos.means)
+
+# Difference in AUC
+for(i in 1:input.tot.time){
+  if(input.tot.time==2){
+    L.AUC <- (1/2)*t(eCol(1,input.tot.time)) + (1/2)*t(eCol(input.tot.time,input.tot.time))
+  }else if(input.tot.time>2 & i==1){
+    L.AUC <- (1/2)*t(eCol(1,input.tot.time))
+  }else if(input.tot.time>2 & i==input.tot.time){
+    L.AUC <- L.AUC+(1/2)*t(eCol(input.tot.time,input.tot.time))
+  }else{
+    L.AUC <- L.AUC+t(eCol(i,input.tot.time))
+  }
+}
+D.AUC <- cbind(L.AUC,-L.AUC)
+
+# Difference in change score
+L.change.score <- -t(eCol(input.rand.time, input.tot.time)) + t(eCol(input.tot.time, input.tot.time))
+D.change.score <- cbind(L.change.score, -L.change.score)
 
 # -----------------------------------------------------------------------------
 # Estimate contrasts for each DTR 
@@ -562,25 +611,4 @@ for(i in 1:length(list.power.diff.change.score)){
 power.diff.eos.means <- bind_rows(list.power.diff.eos.means)
 power.diff.AUC <- bind_rows(list.power.diff.AUC)
 power.diff.change.score <- bind_rows(list.power.diff.change.score)
-
-print(power.diff.eos.means)
-print(power.diff.change.score)
-
-# -----------------------------------------------------------------------------
-# Set up data frames for merging below
-# -----------------------------------------------------------------------------
-#delta.eos.means <- delta.eos.means[, !(colnames(delta.eos.means) %in% "datagen.params.N")]
-#delta.AUC <- delta.AUC[, !(colnames(delta.AUC) %in% "datagen.params.N")]
-
-# -----------------------------------------------------------------------------
-# Merge delta and power
-# -----------------------------------------------------------------------------
-#power.diff.eos.means <- left_join(delta.eos.means, power.diff.eos.means,
-#                                  by = c("datagen.params.rho",
-#                                         "pair"))
-
-#power.diff.AUC <- left_join(delta.AUC, power.diff.AUC,
-#                            by = c("datagen.params.rho",
-#                                   "pair"))
-
 

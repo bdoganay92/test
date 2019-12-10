@@ -62,7 +62,7 @@ WeightAndReplicate <- function(list.df, tot.time){
   return(out.list)
 }
 
-AnalyzeData <- function(list.df, tot.time, rand.time){
+AnalyzeData <- function(list.df, tot.time, rand.time, working.corr="independence"){
   
   # Args:
   #   df.replicated.observed.Yit: ADDLATER

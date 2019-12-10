@@ -14,9 +14,20 @@ source(file.path(path.code,"input-utils.R"))
 source(file.path(path.code,"datagen-utils.R"))
 source(file.path(path.code,"analysis-utils.R"))
 
+# Note that 
+#   - list.df.potential
+# need to be specified prior to running the code below
+
 # -----------------------------------------------------------------------------
 # Specify contrasts of interest
 # -----------------------------------------------------------------------------
+# Create C matrix
+list.C <- CreateC(input.tot.time = input.tot.time, input.rand.time = input.rand.time)
+C.plusplus <- list.C$C.plusplus
+C.plusminus <- list.C$C.plusminus
+C.minusplus <- list.C$C.minusplus
+C.minusminus <- list.C$C.minusminus
+
 # Difference in end-of-study means
 L.eos.means <- t(eCol(input.tot.time,input.tot.time))
 D.eos.means <- cbind(L.eos.means,-L.eos.means)
@@ -39,41 +50,19 @@ D.AUC <- cbind(L.AUC,-L.AUC)
 L.change.score <- -t(eCol(input.rand.time, input.tot.time)) + t(eCol(input.tot.time, input.tot.time))
 D.change.score <- cbind(L.change.score, -L.change.score)
 
-# Create C matrix
-list.C <- CreateC(input.tot.time = input.tot.time, input.rand.time = input.rand.time)
-C.plusplus <- list.C$C.plusplus
-C.plusminus <- list.C$C.plusminus
-C.minusplus <- list.C$C.minusplus
-C.minusminus <- list.C$C.minusminus
-
 # -----------------------------------------------------------------------------
 # Calculate delta
 # -----------------------------------------------------------------------------
-this.list.df.potential <- lapply(list.df.potential, 
-                                 function(x, use.rho = rho.star){
-                                   datagen.params <- x$datagen.params
-                                   df <- x$df.potential.Yit
-                                   if(datagen.params$rho!=use.rho){
-                                     x <- NULL
-                                   }
-                                   return(x)
-                                 })
-
-# Function purrr::compact() removes NULL elements from a list
-this.list.df.potential  <- compact(this.list.df.potential)
-
-# Free up memory
-remove(list.df.potential, list.empirical.corr)
-
 ncore <- detectCores()
 cl <- makeCluster(ncore - 1)
 clusterSetRNGStream(cl, 102399)
 clusterExport(cl, c("path.code",
                     "path.input_data",
                     "path.output_data",
-                    "this.list.df.potential",
+                    "list.df.potential",
                     "L.AUC",
-                    "L.eos.means"))
+                    "L.eos.means",
+                    "L.change.score"))
 clusterEvalQ(cl,
              {
                library(dplyr)
@@ -86,13 +75,10 @@ clusterEvalQ(cl,
                source(file.path(path.code, "analysis-utils.R"))
              })
 
-list.delta.eos.means <- parLapply(cl=cl, this.list.df.potential, CalcDeltaj, L=L.eos.means)
-list.delta.AUC <- parLapply(cl=cl, this.list.df.potential, CalcDeltaj, L=L.AUC)
-list.delta.change.score <- parLapply(cl=cl, this.list.df.potential, CalcDeltaj, L=L.change.score)
+list.delta.eos.means <- parLapply(cl=cl, list.df.potential, CalcDeltaj, L=L.eos.means)
+list.delta.AUC <- parLapply(cl=cl, list.df.potential, CalcDeltaj, L=L.AUC)
+list.delta.change.score <- parLapply(cl=cl, list.df.potential, CalcDeltaj, L=L.change.score)
 stopCluster(cl)
-
-# Free up memory
-remove(this.list.df.potential)
 
 ###############################################################################
 # Aggregate results for end-of-study means
@@ -264,11 +250,4 @@ delta.change.score <- bind_rows(list.delta.change.score)
 delta.eos.means$pair <- 1:6
 delta.AUC$pair <- 1:6
 delta.change.score$pair <- 1:6
-
-print(delta.eos.means)
-print(delta.AUC)
-print(delta.change.score)
-
-
-
 
