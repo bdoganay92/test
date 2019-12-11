@@ -13,6 +13,8 @@ path.output_data <- Sys.getenv("path.output_data")
 source(file.path(path.code,"input-utils.R"))
 source(file.path(path.code,"datagen-utils.R"))
 source(file.path(path.code,"analysis-utils.R"))
+source(file.path(path.code, "geemMod.r"))
+environment(geemMod) <- asNamespace("geeM")
 
 # Note that 
 #   - input.rand.time, input.tot.time, 
@@ -115,9 +117,7 @@ clusterEvalQ(cl,
                source(file.path(path.code, "datagen-utils.R"))
                source(file.path(path.code, "analysis-utils.R"))
                source(file.path(path.code, "geemMod.r"))
-               
                environment(geemMod) <- asNamespace('geeM')
-               assignInNamespace("geem", geemMod, ns = "geeM")
              })
 
 list.df.wr <- parLapply(cl = cl, 

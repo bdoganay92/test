@@ -36,12 +36,6 @@ WeightAndReplicate <- function(list.df, tot.time){
   MinusOnePseudodata$t <- MinusOnePseudodata$t + nwaves
   
   RowsNotToReplicate <- DataLongFormat[which(DataLongFormat$R==0),]
-  DummyRowsNotToReplicate <- RowsNotToReplicate
-  DummyRowsNotToReplicate$t <- DummyRowsNotToReplicate$t + nwaves 
-  DummyRowsNotToReplicate$Yit <- NA
-  DummyRowsNotToReplicate$KnownWeight1 <- 0
-  DummyRowsNotToReplicate$KnownWeight2 <- 0
-  DummyRowsNotToReplicate$KnownWeight <- 0
   
   # We keep the same subject ID to show that we don't really have all those
   # new participants. So we have to distinguish the new observations somehow,
@@ -49,8 +43,7 @@ WeightAndReplicate <- function(list.df, tot.time){
   # Create the final analysis dataset including replicates.
   data.for.analysis <- rbind(PlusOnePseudodata, 
                              MinusOnePseudodata, 
-                             RowsNotToReplicate, 
-                             DummyRowsNotToReplicate)
+                             RowsNotToReplicate)
   data.for.analysis <- data.for.analysis[order(data.for.analysis$id,data.for.analysis$t),] 
   
   colnames(data.for.analysis) <- c("id", "wave", "A1", "A2", "R", "Y", 
@@ -105,14 +98,14 @@ AnalyzeData <- function(list.df, tot.time, rand.time, working.corr="independence
   # ---------------------------------------------------------------------------
   # Fit initial model and residuals
   # ---------------------------------------------------------------------------
-  model.init <- geem(formula = fo,
-                     data = df.replicated.observed.Yit, 
-                     id = id,
-                     waves = wave, # No missing data 
-                     family = "poisson",
-                     corstr = "independence",
-                     weights = KnownWeight,
-                     scale.fix = TRUE)
+  model.init <- geemMod(formula = fo,
+                        data = df.replicated.observed.Yit, 
+                        id = id,
+                        waves = wave, # No missing data 
+                        family = "poisson",
+                        corstr = "independence",
+                        weights = KnownWeight,
+                        scale.fix = TRUE)
   
   if(model.init$converged==FALSE){
     est <- list(est.beta=NA,
@@ -125,15 +118,20 @@ AnalyzeData <- function(list.df, tot.time, rand.time, working.corr="independence
   }else{
     # Obtain initial estimates of beta
     init.est.beta <- as.matrix(model.init$beta)
-    # Obtain squared residuals
-    init.resid <- model.init$y - exp(model.init$X %*% init.est.beta)
-    init.resid.squared <- init.resid^2
-    # Obtain predicted means
-    init.muhat <- exp(model.init$X %*% init.est.beta)
-    # Calculate dispersion parameter
-    num <- weighted.mean(x=init.resid.squared, w=model.init$weights) - weighted.mean(x=init.muhat, w=model.init$weights)
-    den <- weighted.mean(x=init.muhat, w=model.init$weights)^2
-    disp.param <- num/denom
+    df.replicated.observed.Yit$yhat <- exp((model.init$X) %*% init.est.beta)
+    df.replicated.observed.Yit$resid <- df.replicated.observed.Yit$Y - df.replicated.observed.Yit$yhat 
+    df.replicated.observed.Yit$resid.squared <- (df.replicated.observed.Yit$resid)^2
+    
+    summary.df <- df.replicated.observed.Yit %>% 
+      group_by(A1, A2, ActualTime) %>%
+      summarise(mean.resid = weighted.mean(x = resid, w = KnownWeight),
+                mean.resid.squared = weighted.mean(x = resid.squared, w = KnownWeight),
+                mean.yhat = weighted.mean(x = yhat, w = KnownWeight)) %>%
+      mutate(sigsq = (mean.resid.squared - mean.yhat) / (mean.yhat^2)) %>%
+      select(A1, A2, ActualTime, sigsq)
+    
+    df.replicated.observed.Yit <- left_join(df.replicated.observed.Yit, summary.df, by = c("A1", "A2", "ActualTime"))
+    disp.param <- df.replicated.observed.Yit$sigsq
     
     # ---------------------------------------------------------------------------
     # Specify FunList
@@ -160,36 +158,45 @@ AnalyzeData <- function(list.df, tot.time, rand.time, working.corr="independence
     
     FunList <- list(LinkFun, VarFun, InvLink, InvLinkDeriv)
     
-    model.indep <- geem(formula = fo,
-                        data = df.replicated.observed.Yit, 
-                        id = id,
-                        waves = wave, # No missing data 
-                        family = FunList,
-                        corstr = "independence",
-                        weights = KnownWeight,
-                        scale.fix = TRUE)
-    
-    if(model.indep$converged == FALSE){
-      est <- list(est.beta=NA,
-                  coefnames=NA,
-                  est.cov.beta=NA,
-                  converged=0)
+    if(working.corr=="independence"){
+      model.indep <- geemMod(formula = fo,
+                             data = df.replicated.observed.Yit, 
+                             id = id,
+                             waves = wave, # No missing data 
+                             family = FunList,
+                             corstr = "independence",
+                             weights = KnownWeight,
+                             scale.fix = TRUE,
+                             fullmat = FALSE)
+      
+      if(model.indep$converged == FALSE){
+        est <- list(est.beta=NA,
+                    coefnames=NA,
+                    est.cov.beta=NA,
+                    converged=0) 
+        
+        out.list <- list(datagen.params = datagen.params,
+                         estimates=est)
+      }else{
+        # Calculate estimates of the mean per DTR and time
+        est.beta <- as.matrix(model.indep$beta)
+        coefnames <- model.indep$coefnames
+        est.cov.beta <- model.indep$var
+        converged <- 1*(model.indep$converged==TRUE)
+        est <- list(est.beta = est.beta, 
+                    coefnames = coefnames,
+                    est.cov.beta = est.cov.beta, 
+                    converged = converged)
+        out.list <- list(datagen.params = datagen.params,
+                         estimates=est)
+      }
+    }else if(working.corr=="ar1"){
+      # ADD LATER
     }else{
-      # Calculate estimates of the mean per DTR and time
-      est.beta <- as.matrix(model.indep$beta)
-      coefnames <- model.indep$coefnames
-      est.cov.beta <- model.indep$var
-      converged <- 1*(model.indep$converged==TRUE)
-      est <- list(est.beta = est.beta, 
-                  coefnames = coefnames,
-                  est.cov.beta = est.cov.beta, 
-                  converged = converged)
+      assert_that(working.corr %in% c("independence","ar1"), 
+                  msg = "Enter valid working correlation")
     }
-    
-    out.list <- list(datagen.params = datagen.params,
-                     estimates=est)
   }
-  
 
   return(out.list)
 }
