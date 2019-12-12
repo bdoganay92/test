@@ -98,16 +98,16 @@ AnalyzeData <- function(list.df, tot.time, rand.time, working.corr="independence
   # ---------------------------------------------------------------------------
   # Fit initial model and residuals
   # ---------------------------------------------------------------------------
-  model.init <- geemMod(formula = fo,
-                        data = df.replicated.observed.Yit, 
-                        id = id,
-                        waves = wave, # No missing data 
-                        family = "poisson",
-                        corstr = "independence",
-                        weights = KnownWeight,
-                        scale.fix = TRUE)
+  model.init <- try(geemMod(formula = fo,
+                            data = df.replicated.observed.Yit, 
+                            id = id,
+                            waves = wave, # No missing data 
+                            family = "poisson",
+                            corstr = "independence",
+                            weights = KnownWeight,
+                            scale.fix = TRUE), silent=TRUE)
   
-  if(model.init$converged==FALSE){
+  if(class(model.init)=="try-error"){
     est <- list(est.beta=NA,
                 coefnames=NA,
                 est.cov.beta=NA,
@@ -115,6 +115,14 @@ AnalyzeData <- function(list.df, tot.time, rand.time, working.corr="independence
     
     out.list <- list(datagen.params = datagen.params,
                      estimates=est)
+  }else if(model.init$converged==FALSE){
+    est <- list(est.beta=NA,
+                coefnames=NA,
+                est.cov.beta=NA,
+                converged=0) 
+    
+    out.list <- list(datagen.params = datagen.params,
+                     estimates=est) 
   }else{
     # Obtain initial estimates of beta
     init.est.beta <- as.matrix(model.init$beta)
@@ -159,17 +167,25 @@ AnalyzeData <- function(list.df, tot.time, rand.time, working.corr="independence
     FunList <- list(LinkFun, VarFun, InvLink, InvLinkDeriv)
     
     if(working.corr=="independence"){
-      model.indep <- geemMod(formula = fo,
-                             data = df.replicated.observed.Yit, 
-                             id = id,
-                             waves = wave, # No missing data 
-                             family = FunList,
-                             corstr = "independence",
-                             weights = KnownWeight,
-                             scale.fix = TRUE,
-                             fullmat = FALSE)
+      model.indep <- try(geemMod(formula = fo,
+                                 data = df.replicated.observed.Yit, 
+                                 id = id,
+                                 waves = wave, # No missing data 
+                                 family = FunList,
+                                 corstr = "independence",
+                                 weights = KnownWeight,
+                                 scale.fix = TRUE,
+                                 fullmat = FALSE), silent = TRUE)
       
-      if(model.indep$converged == FALSE){
+      if(class(model.indep)=="try-error"){
+        est <- list(est.beta=NA,
+                    coefnames=NA,
+                    est.cov.beta=NA,
+                    converged=0) 
+        
+        out.list <- list(datagen.params = datagen.params,
+                         estimates=est)
+      }else if(model.indep$converged == FALSE){
         est <- list(est.beta=NA,
                     coefnames=NA,
                     est.cov.beta=NA,

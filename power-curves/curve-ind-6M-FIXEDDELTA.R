@@ -28,27 +28,6 @@ names.seq <- matrix(c("plus.r", "plus.nr.plus", "plus.nr.minus",
 this.pair <- 2 # Compare DTR plus.plus vs. DTR minus.plus
 
 ###############################################################################
-# Create list.input.means data frames where difference in end-of-study means
-# or change score between DTRs ++ and -+ is gradually increased. 
-# This will be used to calculate power when N is fixed while standardized 
-# effect size is varied
-###############################################################################
-dat <- matrix(rep(NA, 6*(input.tot.time)), byrow=TRUE, ncol=input.tot.time)
-colnames(dat) <- paste("time",1:input.tot.time, sep=".")
-dat <- data.frame(names.seq, dat)
-dat <- replace(dat, is.na(dat), 1.5)
-increments <- seq(0,5,0.1)
-
-list.input.means <- list()
-for(i in 1:length(increments)){
-  k <- increments[i]
-  tmpdat <- dat
-  tmpdat[tmpdat$seq=="minus.r","time.6"] <- tmpdat[tmpdat$seq=="minus.r","time.6"] + k
-  tmpdat[tmpdat$seq=="minus.nr.plus","time.6"] <- tmpdat[tmpdat$seq=="minus.nr.plus","time.6"] + k
-  list.input.means <- append(list.input.means, list(tmpdat))
-}
-
-###############################################################################
 # Create shortlist.input.means data frames for a fixed choice of 
 # difference in end-of-study means or change score between DTRs ++ and -+
 # This will be used to calculate power when standardized effect size is fixed
@@ -67,37 +46,6 @@ for(i in 1:length(increments)){
   tmpdat[tmpdat$seq=="minus.r","time.6"] <- tmpdat[tmpdat$seq=="minus.r","time.6"] + k
   tmpdat[tmpdat$seq=="minus.nr.plus","time.6"] <- tmpdat[tmpdat$seq=="minus.nr.plus","time.6"] + k
   shortlist.input.means <- append(shortlist.input.means, list(tmpdat))
-}
-
-###############################################################################
-# Create auc.list.input.means data frames where difference in AUC
-# between DTRs ++ and -+ is gradually increased. This will be used to calculate
-# power when N is fixed while standardized effect size is varied
-###############################################################################
-dat <- matrix(rep(NA, 6*(input.tot.time)), byrow=TRUE, ncol=input.tot.time)
-colnames(dat) <- paste("time",1:input.tot.time, sep=".")
-dat <- data.frame(names.seq, dat)
-dat <- replace(dat, is.na(dat), 1.5)
-increments <- seq(0,5,0.1)
-
-auc.list.input.means <- list()
-for(i in 1:length(increments)){
-  k <- increments[i]
-  tmpdat <- dat
-  
-  tmpdat[tmpdat$seq=="minus.r","time.3"] <- tmpdat[tmpdat$seq=="minus.r","time.3"] + k
-  tmpdat[tmpdat$seq=="minus.nr.plus","time.3"] <- tmpdat[tmpdat$seq=="minus.nr.plus","time.3"] + k
-  
-  tmpdat[tmpdat$seq=="minus.r","time.4"] <- tmpdat[tmpdat$seq=="minus.r","time.4"] + k
-  tmpdat[tmpdat$seq=="minus.nr.plus","time.4"] <- tmpdat[tmpdat$seq=="minus.nr.plus","time.4"] + k
-  
-  tmpdat[tmpdat$seq=="minus.r","time.5"] <- tmpdat[tmpdat$seq=="minus.r","time.5"] + k
-  tmpdat[tmpdat$seq=="minus.nr.plus","time.5"] <- tmpdat[tmpdat$seq=="minus.nr.plus","time.5"] + k
-  
-  tmpdat[tmpdat$seq=="minus.r","time.6"] <- tmpdat[tmpdat$seq=="minus.r","time.6"] + k
-  tmpdat[tmpdat$seq=="minus.nr.plus","time.6"] <- tmpdat[tmpdat$seq=="minus.nr.plus","time.6"] + k
-  
-  auc.list.input.means <- append(auc.list.input.means, list(tmpdat))
 }
 
 ###############################################################################

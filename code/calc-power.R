@@ -34,7 +34,7 @@ environment(geemMod) <- asNamespace("geeM")
 assert_that(length(input.tot.time)==1, msg="input.tot.time cannot be a sequence of numbers")
 assert_that(length(input.rand.time)==1, msg="input.rand.time cannot be a sequence of numbers")
 
-gridx <- expand.grid(nsim=1:1000, 
+gridx <- expand.grid(nsim=1:5000, 
                      input.N=input.N,
                      input.rand.time=input.rand.time, 
                      input.tot.time=input.tot.time,
