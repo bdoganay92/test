@@ -20,7 +20,7 @@ source(file.path(path.code,"analysis-utils.R"))
 input.alpha <- 0.05
 input.rand.time <- 2
 input.tot.time <- 6
-list.input.rho <- list(0.2, 0.5, 0.8)
+list.input.rho <- list(0.1, 0.5, 0.9)
 input.cutoff <- 0
 names.seq <- matrix(c("plus.r", "plus.nr.plus", "plus.nr.minus", 
                       "minus.r", "minus.nr.plus", "minus.nr.minus"), 
