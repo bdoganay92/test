@@ -124,6 +124,9 @@ AnalyzeData <- function(list.df, tot.time, rand.time, working.corr="independence
     out.list <- list(datagen.params = datagen.params,
                      estimates=est) 
   }else{
+    # Save for use later
+    tmpdf.long <- df.replicated.observed.Yit
+    
     # Obtain initial estimates of beta
     init.est.beta <- as.matrix(model.init$beta)
     df.replicated.observed.Yit$yhat <- exp((model.init$X) %*% init.est.beta)
@@ -207,7 +210,160 @@ AnalyzeData <- function(list.df, tot.time, rand.time, working.corr="independence
                          estimates=est)
       }
     }else if(working.corr=="ar1"){
-      # ADD LATER
+      model.indep <- try(geemMod(formula = fo,
+                                 data = df.replicated.observed.Yit, 
+                                 id = id,
+                                 waves = wave, # No missing data 
+                                 family = FunList,
+                                 corstr = "independence",
+                                 weights = KnownWeight,
+                                 scale.fix = TRUE,
+                                 fullmat = FALSE), silent = TRUE)
+      
+      if(class(model.indep)=="try-error"){
+        est <- list(est.beta=NA,
+                    coefnames=NA,
+                    est.cov.beta=NA,
+                    converged=0) 
+        
+        out.list <- list(datagen.params = datagen.params,
+                         estimates=est)
+      }else if(model.indep$converged == FALSE){
+        est <- list(est.beta=NA,
+                    coefnames=NA,
+                    est.cov.beta=NA,
+                    converged=0) 
+        
+        out.list <- list(datagen.params = datagen.params,
+                         estimates=est)
+      }else{
+        # Obtain initial estimates of beta
+        init.est.beta <- as.matrix(model.indep$beta)
+        # Create new variables
+        tmpdf.long$yhat <- exp((model.indep$X) %*% init.est.beta)
+        tmpdf.long$resid <- tmpdf.long$Y - tmpdf.long$yhat 
+        tmpdf.long$resid.squared <- (tmpdf.long$resid)^2
+        tmpdf.long <- tmpdf.long %>% select(id, ActualTime, A1, A2, KnownWeight, resid, resid.squared)
+        
+        tmpdf.wide <- reshape(data = tmpdf.long,
+                              timevar = "ActualTime",
+                              idvar = c("id", "A1", "A2", "KnownWeight"),
+                              direction = "wide"
+                              )
+        # Calculate variance by time point
+        list.this.time.sd <- list()
+        for(this.time in 1:tot.time){
+          df.this.time <- tmpdf.wide %>% group_by(A1, A2) %>%
+            select(A1, A2,
+                   rsquared.t = paste("resid.squared",this.time,sep="."), w=KnownWeight) %>%
+            summarise(sd.t = sqrt(weighted.mean(x = rsquared.t, w=w)))
+          
+          df.this.time$ActualTime <- this.time
+          list.this.time.sd <- append(list.this.time.sd, list(df.this.time))
+        }
+        
+        this.time.sd <- bind_rows(list.this.time.sd)
+        # List all possible combinations of time points, two at a time
+        df.time.combos <- expand.grid(time.s = 1:tot.time, time.t = 1:tot.time)
+        # Since we only want the upper triangular of a matrix:
+        df.time.combos <- df.time.combos %>% filter(time.s < time.t)
+        # Since we will use a working AR(1) correlation matrix:
+        df.time.combos <- df.time.combos %>% filter(abs(time.s - time.t)==1)
+        
+        list.prods.combos <- list()
+        for(this.combo in 1:nrow(df.time.combos)){
+          time.s <- df.time.combos[this.combo, "time.s"]
+          time.t <- df.time.combos[this.combo, "time.t"]
+          
+          sd.time.s <- this.time.sd %>% filter(ActualTime==time.s) %>% 
+            select(-ActualTime, sd.s = sd.t)
+          sd.time.t <- this.time.sd %>% filter(ActualTime==time.t) %>% 
+            select(-ActualTime, sd.t = sd.t)
+          
+          this.prods.combos <- tmpdf.wide %>% 
+            left_join(x = ., y = sd.time.s, by = c("A1","A2")) %>%
+            left_join(x = ., y = sd.time.t, by = c("A1", "A2")) %>%
+            select(A1, A2, 
+                   r.s=paste("resid",time.s,sep="."), 
+                   r.t=paste("resid",time.t,sep="."), 
+                   sd.s, sd.t,
+                   w=KnownWeight)
+          
+          list.prods.combos <- append(list.prods.combos, list(this.prods.combos))
+        }
+        
+        df.prods.combos <- bind_rows(list.prods.combos)
+        
+        # Now, obtain AR1 working correlation parameter per DTR
+        summarydf.prods.combos <- df.prods.combos %>% group_by(A1, A2) %>% 
+          mutate(prod.st = (r.s*r.t)/(sd.s*sd.t)) %>%
+          summarise(a = weighted.mean(x = prod.st, w = w))
+        
+        # Now, form the working correlation matrix
+        corr.dims <- df.replicated.observed.Yit %>% 
+          arrange(id, desc(A1), desc(A2)) %>%
+          group_by(id, A1, A2) %>% 
+          summarise(total.ActualTime=max(ActualTime)) %>%
+          arrange(id, desc(A1), desc(A2)) %>% 
+          left_join(x = ., y = summarydf.prods.combos, by = c("A1", "A2"))
+        
+        list.corr.dims <- apply(corr.dims, 1, as.list)
+        list.workingcorr <- lapply(list.corr.dims, function(x){
+          total.ActualTime <- x$total.ActualTime
+          a <- x$a
+          mat <- AR1Mat(m = total.ActualTime, rho = a)
+          return(mat)
+        })
+        list.inverse.workingcorr <- lapply(list.workingcorr, function(x){return(solve(x))})
+        
+        # Now, convert list.working.corr into a block diagonal matrix
+        BIGMAT <- bdiag(list.inverse.workingcorr)
+        
+        # Make sure order is correct before proceeding to estimation
+        df.replicated.observed.Yit <- df.replicated.observed.Yit %>% 
+          arrange(id, desc(A1), desc(A2), wave)
+        
+        model.ar1 <- try(geemMod(formula = fo,
+                                 data = df.replicated.observed.Yit, 
+                                 id = id,
+                                 waves = wave, # No missing data 
+                                 family = FunList,
+                                 corr.mat = BIGMAT, 
+                                 corstr="fixed",
+                                 weights = KnownWeight,
+                                 scale.fix = TRUE,
+                                 fullmat = TRUE), silent = TRUE)
+        
+        if(class(model.ar1)=="try-error"){
+          est <- list(est.beta=NA,
+                      coefnames=NA,
+                      est.cov.beta=NA,
+                      converged=0) 
+          
+          out.list <- list(datagen.params = datagen.params,
+                           estimates=est)
+        }else if(model.ar1$converged == FALSE){
+          est <- list(est.beta=NA,
+                      coefnames=NA,
+                      est.cov.beta=NA,
+                      converged=0) 
+          
+          out.list <- list(datagen.params = datagen.params,
+                           estimates=est)
+        }else{
+          # Calculate estimates of the mean per DTR and time
+          est.beta <- as.matrix(model.ar1$beta)
+          coefnames <- model.ar1$coefnames
+          est.cov.beta <- model.ar1$var
+          converged <- 1*(model.ar1$converged==TRUE)
+          est <- list(est.beta = est.beta, 
+                      coefnames = coefnames,
+                      est.cov.beta = est.cov.beta, 
+                      converged = converged)
+          out.list <- list(datagen.params = datagen.params,
+                           estimates=est)
+        }
+      }
     }else{
       assert_that(working.corr %in% c("independence","ar1"), 
                   msg = "Enter valid working correlation")

@@ -74,6 +74,13 @@ ExchangeableMat <- function(m, rho){
   return(mat)
 }
 
+AR1Mat <- function(m, rho){
+  times <- 1:m
+  H <- abs(outer(times, times, "-"))
+  V <- rho^H
+  return(V)
+}
+
 eCol <- function(i,n){
   
   # Args:
