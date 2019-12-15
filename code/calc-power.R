@@ -92,6 +92,8 @@ list.df.observed <- parLapply(cl = cl,
 
 stopCluster(cl)
 
+remove(list.df.potential)
+
 # -----------------------------------------------------------------------------
 # Estimate the value of the parameters beta_j in our model for 
 # log(E{Y_t^{(a_1,a_2)}})
@@ -133,6 +135,8 @@ list.df.est.beta <- parLapply(cl = cl,
                               working.corr = use.working.corr)
 
 stopCluster(cl)
+
+remove(list.df.observed, list.df.wr)
 
 # -----------------------------------------------------------------------------
 # Specify contrasts of interest
