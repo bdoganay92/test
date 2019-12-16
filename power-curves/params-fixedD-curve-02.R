@@ -105,7 +105,7 @@ collect.correlation <- list()
 for(i in 1:length(list.input.rho)){
   input.rho <- list.input.rho[[i]]
   
-  for(j in 1:length(shortlist.input.means)){
+  for(j in 1:length(auc.shortlist.input.means)){
     input.means <- auc.shortlist.input.means[[j]]
     
     # Simulate potential outcomes for the 5000 individuals for these inputs
