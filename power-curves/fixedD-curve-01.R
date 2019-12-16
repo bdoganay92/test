@@ -1,3 +1,5 @@
+start.time <- Sys.time()
+
 library(dplyr)
 library(purrr)
 library(assertthat)
@@ -20,7 +22,7 @@ source(file.path(path.code,"analysis-utils.R"))
 input.alpha <- 0.05
 input.rand.time <- 2
 input.tot.time <- 6
-list.input.rho <- 0.5#list(0.1, 0.5, 0.9)
+list.input.rho <- list(0.1, 0.5, 0.9)
 input.cutoff <- 0
 names.seq <- matrix(c("plus.r", "plus.nr.plus", "plus.nr.minus", 
                       "minus.r", "minus.nr.plus", "minus.nr.minus"), 
@@ -107,6 +109,7 @@ for(i in 1:length(list.input.rho)){
   }
 }
 
+end.time <- Sys.time()
 ###############################################################################
 # Save workspace
 ###############################################################################

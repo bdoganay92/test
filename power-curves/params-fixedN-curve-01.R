@@ -1,3 +1,5 @@
+start.time <- Sys.time()
+
 library(dplyr)
 library(purrr)
 library(assertthat)
@@ -79,7 +81,7 @@ input.prop.zeros <- dat
 # Calculate standardized effect size and simulated within-person correlation 
 # by DTR
 ###############################################################################
-input.N <- 10000
+input.N <- 200000
 collect.delta.eos.means <- list()
 collect.delta.change.score <- list()
 collect.correlation <- list()
@@ -122,6 +124,7 @@ for(i in 1:length(list.input.rho)){
   }
 }
 
+end.time <- Sys.time()
 ###############################################################################
 # Save workspace
 ###############################################################################

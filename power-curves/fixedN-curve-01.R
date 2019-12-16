@@ -1,3 +1,5 @@
+start.time <- Sys.time()
+
 library(dplyr)
 library(purrr)
 library(assertthat)
@@ -104,6 +106,7 @@ for(i in 1:length(list.input.rho)){
   }
 }
 
+end.time <- Sys.time()
 ###############################################################################
 # Save workspace
 ###############################################################################

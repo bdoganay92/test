@@ -92,7 +92,7 @@ list.df.observed <- parLapply(cl = cl,
 
 stopCluster(cl)
 
-remove(list.df.potential)
+remove(list.df.potential, list.gridx)
 
 # -----------------------------------------------------------------------------
 # Estimate the value of the parameters beta_j in our model for 
@@ -137,6 +137,7 @@ list.df.est.beta <- parLapply(cl = cl,
 stopCluster(cl)
 
 remove(list.df.observed, list.df.wr)
+# Do not remove list.df.est.beta just yet as it will be used below
 
 # -----------------------------------------------------------------------------
 # Specify contrasts of interest
@@ -223,6 +224,8 @@ list.est.diff.eos.means.plusminus.minusplus <- lapply(list.df.est.diff.eos.means
 list.est.diff.eos.means.plusminus.minusminus <- lapply(list.df.est.diff.eos.means, function(x){return(x["plusminus.minusminus"])})
 list.est.diff.eos.means.minusminus.minusplus <- lapply(list.df.est.diff.eos.means, function(x){return(x["minusminus.minusplus"])})
 
+remove(list.df.est.diff.eos.means)
+
 list.est.diff.AUC.plusplus.plusminus <- lapply(list.df.est.diff.AUC, function(x){return(x["plusplus.plusminus"])})
 list.est.diff.AUC.plusplus.minusplus <- lapply(list.df.est.diff.AUC, function(x){return(x["plusplus.minusplus"])})
 list.est.diff.AUC.plusplus.minusminus <- lapply(list.df.est.diff.AUC, function(x){return(x["plusplus.minusminus"])})
@@ -230,12 +233,16 @@ list.est.diff.AUC.plusminus.minusplus <- lapply(list.df.est.diff.AUC, function(x
 list.est.diff.AUC.plusminus.minusminus <- lapply(list.df.est.diff.AUC, function(x){return(x["plusminus.minusminus"])})
 list.est.diff.AUC.minusminus.minusplus <- lapply(list.df.est.diff.AUC, function(x){return(x["minusminus.minusplus"])})
 
+remove(list.df.est.diff.AUC)
+
 list.est.diff.change.score.plusplus.plusminus <- lapply(list.df.est.diff.change.score, function(x){return(x["plusplus.plusminus"])})
 list.est.diff.change.score.plusplus.minusplus <- lapply(list.df.est.diff.change.score, function(x){return(x["plusplus.minusplus"])})
 list.est.diff.change.score.plusplus.minusminus <- lapply(list.df.est.diff.change.score, function(x){return(x["plusplus.minusminus"])})
 list.est.diff.change.score.plusminus.minusplus <- lapply(list.df.est.diff.change.score, function(x){return(x["plusminus.minusplus"])})
 list.est.diff.change.score.plusminus.minusminus <- lapply(list.df.est.diff.change.score, function(x){return(x["plusminus.minusminus"])})
 list.est.diff.change.score.minusminus.minusplus <- lapply(list.df.est.diff.change.score, function(x){return(x["minusminus.minusplus"])})
+
+remove(list.df.est.diff.change.score)
 
 # -----------------------------------------------------------------------------
 # Reshape list of estimates
