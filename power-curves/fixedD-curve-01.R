@@ -20,7 +20,7 @@ source(file.path(path.code,"analysis-utils.R"))
 input.alpha <- 0.05
 input.rand.time <- 2
 input.tot.time <- 6
-list.input.rho <- list(0.1, 0.5, 0.9)
+list.input.rho <- 0.5#list(0.1, 0.5, 0.9)
 input.cutoff <- 0
 names.seq <- matrix(c("plus.r", "plus.nr.plus", "plus.nr.minus", 
                       "minus.r", "minus.nr.plus", "minus.nr.minus"), 
@@ -104,53 +104,6 @@ for(i in 1:length(list.input.rho)){
       )
       collect.power <- append(collect.power, list(tmp.power))
     }
-  }
-}
-
-###############################################################################
-# Calculate standardized effect size and simulated within-person correlation 
-# by DTR
-###############################################################################
-input.N <- 10000
-collect.delta.eos.means <- list()
-collect.delta.change.score <- list()
-collect.correlation <- list()
-
-for(i in 1:length(list.input.rho)){
-  input.rho <- list.input.rho[[i]]
-  
-  for(j in 1:length(shortlist.input.means)){
-    input.means <- shortlist.input.means[[j]]
-    
-    # Simulate potential outcomes for the 5000 individuals for these inputs
-    df.list <- GeneratePotentialYit(sim=1, 
-                                    N=input.N, 
-                                    tot.time=input.tot.time, 
-                                    rand.time=input.rand.time, 
-                                    cutoff=input.cutoff, 
-                                    rho=input.rho, 
-                                    input.prop.zeros=input.prop.zeros, 
-                                    input.means=input.means)
-    
-    # Calculate delta
-    delta.eos.means <- CalcDeltaj(list.df = df.list, L = L.eos.means)
-    delta.eos.means <- ReshapeList(x = delta.eos.means, idx=this.pair)
-    delta.eos.means$idx.input.means <- j
-    
-    delta.change.score <- CalcDeltaj(list.df = df.list, L = L.change.score)
-    delta.change.score <- ReshapeList(x = delta.change.score, idx=this.pair)
-    delta.change.score$idx.input.means <- j
-    
-    # Calculate correlation
-    this.corr <- DTRCorrelationPO(df.list = df.list)
-    this.corr <- ReshapeList(x = list(this.corr), idx=1)
-    
-    # Append to list
-    collect.delta.eos.means <- append(collect.delta.eos.means, list(delta.eos.means))
-    collect.delta.change.score <- append(collect.delta.change.score, list(delta.change.score))
-    collect.correlation <- append(collect.correlation, list(this.corr))
-    
-    remove(df.list)
   }
 }
 

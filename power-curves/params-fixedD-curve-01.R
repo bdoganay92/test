@@ -46,24 +46,24 @@ L.change.score <- -t(eCol(input.rand.time, input.tot.time)) + t(eCol(input.tot.t
 D.change.score <- cbind(L.change.score, -L.change.score)
 
 ###############################################################################
-# Create list.input.means data frames where difference in end-of-study means
-# or change score between DTRs ++ and -+ is gradually increased. 
-# This will be used to calculate power when N is fixed while standardized 
-# effect size is varied
+# Create shortlist.input.means data frames for a fixed choice of 
+# difference in end-of-study means or change score between DTRs ++ and -+
+# This will be used to calculate power when standardized effect size is fixed
+# and N is varied
 ###############################################################################
 dat <- matrix(rep(NA, 6*(input.tot.time)), byrow=TRUE, ncol=input.tot.time)
 colnames(dat) <- paste("time",1:input.tot.time, sep=".")
 dat <- data.frame(names.seq, dat)
 dat <- replace(dat, is.na(dat), 1.5)
-increments <- seq(0,5,0.1)
+increments <- 2.8
 
-list.input.means <- list()
+shortlist.input.means <- list()
 for(i in 1:length(increments)){
   k <- increments[i]
   tmpdat <- dat
   tmpdat[tmpdat$seq=="minus.r","time.6"] <- tmpdat[tmpdat$seq=="minus.r","time.6"] + k
   tmpdat[tmpdat$seq=="minus.nr.plus","time.6"] <- tmpdat[tmpdat$seq=="minus.nr.plus","time.6"] + k
-  list.input.means <- append(list.input.means, list(tmpdat))
+  shortlist.input.means <- append(shortlist.input.means, list(tmpdat))
 }
 
 ###############################################################################
@@ -76,36 +76,54 @@ dat <- replace(dat, is.na(dat), 0.6)
 input.prop.zeros <- dat
 
 ###############################################################################
-# Use working ar1 correlation structure
+# Calculate standardized effect size and simulated within-person correlation 
+# by DTR
 ###############################################################################
-use.working.corr <- "ar1"
-
-###############################################################################
-# Calculate power: difference in eos means or change score
-# =============================================================================
-# N is fixed while standardized effect size is varied
-###############################################################################
-input.N <- 300
-collect.power <- list()
+input.N <- 10000
+collect.delta.eos.means <- list()
+collect.delta.change.score <- list()
+collect.correlation <- list()
 
 for(i in 1:length(list.input.rho)){
   input.rho <- list.input.rho[[i]]
   
-  for(j in 1:length(list.input.means)){
-    input.means <- list.input.means[[j]]
+  for(j in 1:length(shortlist.input.means)){
+    input.means <- shortlist.input.means[[j]]
     
-    source(file.path(path.code,"calc-power.R"))
-    power.diff.eos.means$idx.input.means <- j
-    power.diff.change.score$idx.input.means <- j
-    tmp.power <- list(eos.means = power.diff.eos.means[power.diff.eos.means$pair==this.pair,],
-                      change.score = power.diff.change.score[power.diff.change.score$pair==this.pair,]
-    )
-    collect.power <- append(collect.power, list(tmp.power))
+    # Simulate potential outcomes for the 5000 individuals for these inputs
+    df.list <- GeneratePotentialYit(sim=1, 
+                                    N=input.N, 
+                                    tot.time=input.tot.time, 
+                                    rand.time=input.rand.time, 
+                                    cutoff=input.cutoff, 
+                                    rho=input.rho, 
+                                    input.prop.zeros=input.prop.zeros, 
+                                    input.means=input.means)
+    
+    # Calculate delta
+    delta.eos.means <- CalcDeltaj(list.df = df.list, L = L.eos.means)
+    delta.eos.means <- ReshapeList(x = delta.eos.means, idx=this.pair)
+    delta.eos.means$idx.input.means <- j
+    
+    delta.change.score <- CalcDeltaj(list.df = df.list, L = L.change.score)
+    delta.change.score <- ReshapeList(x = delta.change.score, idx=this.pair)
+    delta.change.score$idx.input.means <- j
+    
+    # Calculate correlation
+    this.corr <- DTRCorrelationPO(df.list = df.list)
+    this.corr <- ReshapeList(x = list(this.corr), idx=1)
+    
+    # Append to list
+    collect.delta.eos.means <- append(collect.delta.eos.means, list(delta.eos.means))
+    collect.delta.change.score <- append(collect.delta.change.score, list(delta.change.score))
+    collect.correlation <- append(collect.correlation, list(this.corr))
+    
+    remove(df.list)
   }
 }
 
 ###############################################################################
 # Save workspace
 ###############################################################################
-save.image(file = file.path(path.output_data, "fixedN-curve-01.RData"))
+save.image(file = file.path(path.output_data, "params-fixedD-curve-01.RData"))
 

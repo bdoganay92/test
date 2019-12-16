@@ -36,20 +36,25 @@ C.plusplus <- list.C$C.plusplus
 C.plusminus <- list.C$C.plusminus
 C.minusplus <- list.C$C.minusplus
 C.minusminus <- list.C$C.minusminus
-
-# Difference in end-of-study means
-L.eos.means <- t(eCol(input.tot.time,input.tot.time))
-D.eos.means <- cbind(L.eos.means,-L.eos.means)
-
-# Difference in change score
-L.change.score <- -t(eCol(input.rand.time, input.tot.time)) + t(eCol(input.tot.time, input.tot.time))
-D.change.score <- cbind(L.change.score, -L.change.score)
+# Difference in AUC
+for(i in 1:input.tot.time){
+  if(input.tot.time==2){
+    L.AUC <- (1/2)*t(eCol(1,input.tot.time)) + (1/2)*t(eCol(input.tot.time,input.tot.time))
+  }else if(input.tot.time>2 & i==1){
+    L.AUC <- (1/2)*t(eCol(1,input.tot.time))
+  }else if(input.tot.time>2 & i==input.tot.time){
+    L.AUC <- L.AUC+(1/2)*t(eCol(input.tot.time,input.tot.time))
+  }else{
+    L.AUC <- L.AUC+t(eCol(i,input.tot.time))
+  }
+}
+D.AUC <- cbind(L.AUC,-L.AUC)
 
 ###############################################################################
-# Create list.input.means data frames where difference in end-of-study means
-# or change score between DTRs ++ and -+ is gradually increased. 
-# This will be used to calculate power when N is fixed while standardized 
-# effect size is varied
+# Create auc.list.input.means data frames for a fixed choice of 
+# difference in AUC between DTRs ++ and -+
+# This will be used to calculate power when standardized effect size is fixed
+# and N is varied
 ###############################################################################
 dat <- matrix(rep(NA, 6*(input.tot.time)), byrow=TRUE, ncol=input.tot.time)
 colnames(dat) <- paste("time",1:input.tot.time, sep=".")
@@ -57,13 +62,24 @@ dat <- data.frame(names.seq, dat)
 dat <- replace(dat, is.na(dat), 1.5)
 increments <- seq(0,5,0.1)
 
-list.input.means <- list()
+auc.list.input.means <- list()
 for(i in 1:length(increments)){
   k <- increments[i]
   tmpdat <- dat
+  
+  tmpdat[tmpdat$seq=="minus.r","time.3"] <- tmpdat[tmpdat$seq=="minus.r","time.3"] + k
+  tmpdat[tmpdat$seq=="minus.nr.plus","time.3"] <- tmpdat[tmpdat$seq=="minus.nr.plus","time.3"] + k
+  
+  tmpdat[tmpdat$seq=="minus.r","time.4"] <- tmpdat[tmpdat$seq=="minus.r","time.4"] + k
+  tmpdat[tmpdat$seq=="minus.nr.plus","time.4"] <- tmpdat[tmpdat$seq=="minus.nr.plus","time.4"] + k
+  
+  tmpdat[tmpdat$seq=="minus.r","time.5"] <- tmpdat[tmpdat$seq=="minus.r","time.5"] + k
+  tmpdat[tmpdat$seq=="minus.nr.plus","time.5"] <- tmpdat[tmpdat$seq=="minus.nr.plus","time.5"] + k
+  
   tmpdat[tmpdat$seq=="minus.r","time.6"] <- tmpdat[tmpdat$seq=="minus.r","time.6"] + k
   tmpdat[tmpdat$seq=="minus.nr.plus","time.6"] <- tmpdat[tmpdat$seq=="minus.nr.plus","time.6"] + k
-  list.input.means <- append(list.input.means, list(tmpdat))
+  
+  auc.list.input.means <- append(auc.list.input.means, list(tmpdat))
 }
 
 ###############################################################################
@@ -76,36 +92,50 @@ dat <- replace(dat, is.na(dat), 0.6)
 input.prop.zeros <- dat
 
 ###############################################################################
-# Use working ar1 correlation structure
+# Calculate standardized effect size and simulated within-person correlation 
+# by DTR
 ###############################################################################
-use.working.corr <- "ar1"
+input.N <- 10000
+collect.delta.AUC <- list()
+collect.correlation <- list()
 
-###############################################################################
-# Calculate power: difference in eos means or change score
-# =============================================================================
-# N is fixed while standardized effect size is varied
-###############################################################################
-input.N <- 300
-collect.power <- list()
 
 for(i in 1:length(list.input.rho)){
   input.rho <- list.input.rho[[i]]
   
-  for(j in 1:length(list.input.means)){
-    input.means <- list.input.means[[j]]
+  for(j in 1:length(auc.list.input.means)){
+    input.means <- auc.list.input.means[[j]]
     
-    source(file.path(path.code,"calc-power.R"))
-    power.diff.eos.means$idx.input.means <- j
-    power.diff.change.score$idx.input.means <- j
-    tmp.power <- list(eos.means = power.diff.eos.means[power.diff.eos.means$pair==this.pair,],
-                      change.score = power.diff.change.score[power.diff.change.score$pair==this.pair,]
-    )
-    collect.power <- append(collect.power, list(tmp.power))
+    # Simulate potential outcomes for the 5000 individuals for these inputs
+    df.list <- GeneratePotentialYit(sim=1, 
+                                    N=input.N, 
+                                    tot.time=input.tot.time, 
+                                    rand.time=input.rand.time, 
+                                    cutoff=input.cutoff, 
+                                    rho=input.rho, 
+                                    input.prop.zeros=input.prop.zeros, 
+                                    input.means=input.means)
+    
+    # Calculate delta
+    delta.AUC <- CalcDeltaj(list.df = df.list, L = L.AUC)
+    delta.AUC <- ReshapeList(x = delta.AUC, idx=this.pair)
+    delta.AUC$idx.input.means <- j
+    
+    # Calculate correlation
+    this.corr <- DTRCorrelationPO(df.list = df.list)
+    this.corr <- ReshapeList(x = list(this.corr), idx=1)
+    
+    # Append to list
+    collect.delta.AUC <- append(collect.delta.AUC, list(delta.AUC))
+    collect.correlation <- append(collect.correlation, list(this.corr))
+    
+    remove(df.list)
   }
 }
 
 ###############################################################################
 # Save workspace
 ###############################################################################
-save.image(file = file.path(path.output_data, "fixedN-curve-01.RData"))
+save.image(file = file.path(path.output_data, "params-fixedN-curve-02.RData"))
+
 

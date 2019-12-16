@@ -767,7 +767,7 @@ EstimateStdErrDiffs <- function(list.df, D, list.C){
   return(list.est.stderr.diff)
 }
 
-ReshapeList <- function(x, idx){
+ReshapeList <- function(x, idx=1){
   
   datagen.params <- x[[idx]]$datagen.params
   estimates <- x[[idx]]$estimates

@@ -76,17 +76,13 @@ dat <- replace(dat, is.na(dat), 0.6)
 input.prop.zeros <- dat
 
 ###############################################################################
-# Use working ar1 correlation structure
+# Calculate standardized effect size and simulated within-person correlation 
+# by DTR
 ###############################################################################
-use.working.corr <- "ar1"
-
-###############################################################################
-# Calculate power: difference in eos means or change score
-# =============================================================================
-# N is fixed while standardized effect size is varied
-###############################################################################
-input.N <- 300
-collect.power <- list()
+input.N <- 10000
+collect.delta.eos.means <- list()
+collect.delta.change.score <- list()
+collect.correlation <- list()
 
 for(i in 1:length(list.input.rho)){
   input.rho <- list.input.rho[[i]]
@@ -94,18 +90,40 @@ for(i in 1:length(list.input.rho)){
   for(j in 1:length(list.input.means)){
     input.means <- list.input.means[[j]]
     
-    source(file.path(path.code,"calc-power.R"))
-    power.diff.eos.means$idx.input.means <- j
-    power.diff.change.score$idx.input.means <- j
-    tmp.power <- list(eos.means = power.diff.eos.means[power.diff.eos.means$pair==this.pair,],
-                      change.score = power.diff.change.score[power.diff.change.score$pair==this.pair,]
-    )
-    collect.power <- append(collect.power, list(tmp.power))
+    # Simulate potential outcomes for the 5000 individuals for these inputs
+    df.list <- GeneratePotentialYit(sim=1, 
+                                    N=input.N, 
+                                    tot.time=input.tot.time, 
+                                    rand.time=input.rand.time, 
+                                    cutoff=input.cutoff, 
+                                    rho=input.rho, 
+                                    input.prop.zeros=input.prop.zeros, 
+                                    input.means=input.means)
+    
+    # Calculate delta
+    delta.eos.means <- CalcDeltaj(list.df = df.list, L = L.eos.means)
+    delta.eos.means <- ReshapeList(x = delta.eos.means, idx=this.pair)
+    delta.eos.means$idx.input.means <- j
+    
+    delta.change.score <- CalcDeltaj(list.df = df.list, L = L.change.score)
+    delta.change.score <- ReshapeList(x = delta.change.score, idx=this.pair)
+    delta.change.score$idx.input.means <- j
+    
+    # Calculate correlation
+    this.corr <- DTRCorrelationPO(df.list = df.list)
+    this.corr <- ReshapeList(x = list(this.corr), idx=1)
+    
+    # Append to list
+    collect.delta.eos.means <- append(collect.delta.eos.means, list(delta.eos.means))
+    collect.delta.change.score <- append(collect.delta.change.score, list(delta.change.score))
+    collect.correlation <- append(collect.correlation, list(this.corr))
+    
+    remove(df.list)
   }
 }
 
 ###############################################################################
 # Save workspace
 ###############################################################################
-save.image(file = file.path(path.output_data, "fixedN-curve-01.RData"))
+save.image(file = file.path(path.output_data, "params-fixedN-curve-01.RData"))
 

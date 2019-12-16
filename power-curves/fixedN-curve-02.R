@@ -119,48 +119,6 @@ for(i in 1:length(list.input.rho)){
 }
 
 ###############################################################################
-# Calculate standardized effect size and simulated within-person correlation 
-# by DTR
-###############################################################################
-input.N <- 10000
-collect.delta.AUC <- list()
-collect.correlation <- list()
-
-
-for(i in 1:length(list.input.rho)){
-  input.rho <- list.input.rho[[i]]
-  
-  for(j in 1:length(auc.list.input.means)){
-    input.means <- auc.list.input.means[[j]]
-    
-    # Simulate potential outcomes for the 5000 individuals for these inputs
-    df.list <- GeneratePotentialYit(sim=1, 
-                                    N=input.N, 
-                                    tot.time=input.tot.time, 
-                                    rand.time=input.rand.time, 
-                                    cutoff=input.cutoff, 
-                                    rho=input.rho, 
-                                    input.prop.zeros=input.prop.zeros, 
-                                    input.means=input.means)
-    
-    # Calculate delta
-    delta.AUC <- CalcDeltaj(list.df = df.list, L = L.AUC)
-    delta.AUC <- ReshapeList(x = delta.AUC, idx=this.pair)
-    delta.AUC$idx.input.means <- j
-    
-    # Calculate correlation
-    this.corr <- DTRCorrelationPO(df.list = df.list)
-    this.corr <- ReshapeList(x = list(this.corr), idx=1)
-    
-    # Append to list
-    collect.delta.AUC <- append(collect.delta.AUC, list(delta.AUC))
-    collect.correlation <- append(collect.correlation, list(this.corr))
-    
-    remove(df.list)
-  }
-}
-
-###############################################################################
 # Save workspace
 ###############################################################################
 save.image(file = file.path(path.output_data, "fixedN-curve-02.RData"))
