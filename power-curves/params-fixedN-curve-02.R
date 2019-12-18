@@ -126,6 +126,7 @@ for(i in 1:length(list.input.rho)){
     # Calculate correlation
     this.corr <- DTRCorrelationPO(df.list = df.list)
     this.corr <- ReshapeList(x = list(this.corr), idx=1)
+    this.corr$idx.input.means <- j
     
     # Append to list
     collect.delta.AUC <- append(collect.delta.AUC, list(delta.AUC))

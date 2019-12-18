@@ -114,6 +114,7 @@ for(i in 1:length(list.input.rho)){
     # Calculate correlation
     this.corr <- DTRCorrelationPO(df.list = df.list)
     this.corr <- ReshapeList(x = list(this.corr), idx=1)
+    this.corr$idx.input.means <- j
     
     # Append to list
     collect.delta.eos.means <- append(collect.delta.eos.means, list(delta.eos.means))

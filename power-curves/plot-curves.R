@@ -1,128 +1,291 @@
+library(dplyr)
 library(ggplot2)
+library(gridExtra)
+
+###############################################################################
+# Fixed standardized effect size, vary N
+###############################################################################
+
+# -----------------------------------------------------------------------------
+# Load data for plotting and organize output
+# -----------------------------------------------------------------------------
 path.output_data <- Sys.getenv("path.output_data")
+load(file.path(path.output_data, "params-fixedD-curve-01.RData"))
+collect.delta.eos.means <- bind_rows(collect.delta.eos.means) %>%
+  select(datagen.params.rho, delta=estimates)
+collect.delta.change.score <- bind_rows(collect.delta.change.score) %>%
+  select(datagen.params.rho, delta=estimates)
+collect.correlation <- bind_rows(collect.correlation) %>%
+  select(datagen.params.rho, tau_ave=estimates)
+
+path.output_data <- Sys.getenv("path.output_data")
+load(file.path(path.output_data, "fixedD-curve-01.RData"))
+collect.power.eos.means <- lapply(collect.power, function(x){return(x$eos.means)})
+collect.power.eos.means <- bind_rows(collect.power.eos.means) %>% 
+  left_join(x = ., y = collect.delta.eos.means, by = "datagen.params.rho") %>% 
+  left_join(x = ., y = collect.correlation, by = "datagen.params.rho")
+
+collect.power.change.score <- lapply(collect.power, function(x){return(x$change.score)})
+collect.power.change.score <- bind_rows(collect.power.change.score) %>% 
+  left_join(x = ., y = collect.delta.change.score, by = "datagen.params.rho") %>% 
+  left_join(x = ., y = collect.correlation, by = "datagen.params.rho")
+
+# -----------------------------------------------------------------------------
+# Load data for plotting and organize output
+# -----------------------------------------------------------------------------
+path.output_data <- Sys.getenv("path.output_data")
+load(file.path(path.output_data, "params-fixedD-curve-02.RData"))
+collect.delta.AUC <- bind_rows(collect.delta.AUC) %>%
+  select(datagen.params.rho, delta=estimates)
+collect.correlation <- bind_rows(collect.correlation) %>%
+  select(datagen.params.rho, tau_ave=estimates)
+
+path.output_data <- Sys.getenv("path.output_data")
+load(file.path(path.output_data, "fixedD-curve-02.RData"))
+collect.power.AUC <- lapply(collect.power, function(x){return(x$AUC)})
+collect.power.AUC <- bind_rows(collect.power.AUC) %>% 
+  left_join(x = ., y = collect.delta.AUC, by = "datagen.params.rho") %>% 
+  left_join(x = ., y = collect.correlation, by = "datagen.params.rho")
+
+# -----------------------------------------------------------------------------
+# Combine all outputs
+# -----------------------------------------------------------------------------
+plotlist.fixedD <- list(collect.power.eos.means = collect.power.eos.means,
+                        collect.power.change.score = collect.power.change.score,
+                        collect.power.AUC = collect.power.AUC)
 
 ###############################################################################
-# N is fixed while standardized effect size is varied
-# Working independence correlation
+# Fixed N, vary standardized effect size
 ###############################################################################
-load(file.path(path.output_data, "curve-ind-6M-FIXEDN.RData"))
 
-list.all.FIXEDN$df.collect.eos.means$datagen.params.rho <- as.factor(list.all.FIXEDN$df.collect.eos.means$datagen.params.rho)
-gg.eos.means <- ggplot(list.all.FIXEDN$df.collect.eos.means, aes(x=delta, y=power, shape=datagen.params.rho, color=datagen.params.rho))
-gg.eos.means <- gg.eos.means + geom_point() + ylim(0,1) + xlim(0,0.45) + labs(title = "End-of-Study Means")
-gg.eos.means <- gg.eos.means + stat_smooth(method = "loess", se=TRUE, fullrange=TRUE, method.args = list(control = loess.control(surface="direct")))
-gg.eos.means <- gg.eos.means + scale_shape_discrete(name="rho") + scale_color_discrete(name="rho")
+# -----------------------------------------------------------------------------
+# Load data for plotting and organize output
+# -----------------------------------------------------------------------------
+path.output_data <- Sys.getenv("path.output_data")
+load(file.path(path.output_data, "params-fixedN-curve-01.RData"))
+collect.delta.eos.means <- bind_rows(collect.delta.eos.means) %>%
+  select(datagen.params.rho, delta=estimates, idx.input.means)
+collect.delta.change.score <- bind_rows(collect.delta.change.score) %>%
+  select(datagen.params.rho, delta=estimates, idx.input.means)
+collect.correlation <- bind_rows(collect.correlation) %>%
+  select(datagen.params.rho, tau_ave=estimates, idx.input.means)
 
-list.all.FIXEDN$df.collect.AUC$datagen.params.rho <- as.factor(list.all.FIXEDN$df.collect.AUC$datagen.params.rho)
-gg.AUC <- ggplot(list.all.FIXEDN$df.collect.AUC, aes(x=delta, y=power, shape=datagen.params.rho, color=datagen.params.rho))
-gg.AUC <- gg.AUC + geom_point() + ylim(0,1) + xlim(0,0.45) + labs(title = "AUC")
-gg.AUC <- gg.AUC + stat_smooth(method = "loess", se=TRUE, fullrange=TRUE, method.args = list(control = loess.control(surface="direct")))
-gg.AUC <- gg.AUC + scale_shape_discrete(name="rho") + scale_color_discrete(name="rho")
+path.output_data <- Sys.getenv("path.output_data")
+load(file.path(path.output_data, "fixedN-curve-01.RData"))
+collect.power.eos.means <- lapply(collect.power, function(x){return(x$eos.means)})
+collect.power.eos.means <- bind_rows(collect.power.eos.means) %>% 
+  left_join(x = ., y = collect.delta.eos.means, by = c("datagen.params.rho","idx.input.means")) %>% 
+  left_join(x = ., y = collect.correlation, by = c("datagen.params.rho","idx.input.means"))
 
-list.all.FIXEDN$df.collect.change.score$datagen.params.rho <- as.factor(list.all.FIXEDN$df.collect.change.score$datagen.params.rho)
-gg.change.score <- ggplot(list.all.FIXEDN$df.collect.change.score, aes(x=delta, y=power, shape=datagen.params.rho, color=datagen.params.rho))
-gg.change.score <- gg.change.score + geom_point() + ylim(0,1) + xlim(0,0.45) + labs(title = "Change Score")
-gg.change.score <- gg.change.score + stat_smooth(method = "loess", se=TRUE, fullrange=TRUE, method.args = list(control = loess.control(surface="direct")))
-gg.change.score <- gg.change.score + scale_shape_discrete(name="rho") + scale_color_discrete(name="rho")
+collect.power.change.score <- lapply(collect.power, function(x){return(x$change.score)})
+collect.power.change.score <- bind_rows(collect.power.change.score) %>% 
+  left_join(x = ., y = collect.delta.change.score, by = c("datagen.params.rho","idx.input.means")) %>% 
+  left_join(x = ., y = collect.correlation, by = c("datagen.params.rho","idx.input.means"))
 
-gg.eos.means
-ggsave("eosmeans_ind_6M_FIXEDN.pdf", width = 7, height = 7, units = "in")
-gg.AUC
-ggsave("AUC_ind_6M_FIXEDN.pdf", width = 7, height = 7, units = "in")
-gg.change.score
-ggsave("changescore_ind_6M_FIXEDN.pdf", width = 7, height = 7, units = "in")
+# -----------------------------------------------------------------------------
+# Load data for plotting and organize output
+# -----------------------------------------------------------------------------
+path.output_data <- Sys.getenv("path.output_data")
+load(file.path(path.output_data, "params-fixedN-curve-02.RData"))
+collect.delta.AUC <- bind_rows(collect.delta.AUC) %>%
+  select(datagen.params.rho, delta=estimates, idx.input.means)
+collect.correlation <- bind_rows(collect.correlation) %>%
+  select(datagen.params.rho, tau_ave=estimates, idx.input.means)
 
-###############################################################################
-# N is fixed while standardized effect size is varied
-# Working ar1 correlation
-###############################################################################
-load(file.path(path.output_data, "curve-ar1-6M-FIXEDN.RData"))
+path.output_data <- Sys.getenv("path.output_data")
+load(file.path(path.output_data, "fixedN-curve-02.RData"))
+collect.power.AUC <- lapply(collect.power, function(x){return(x$AUC)})
+collect.power.AUC <- bind_rows(collect.power.AUC) %>% 
+  left_join(x = ., y = collect.delta.AUC, by = c("datagen.params.rho","idx.input.means")) %>% 
+  left_join(x = ., y = collect.correlation, by = c("datagen.params.rho","idx.input.means"))
 
-list.all.FIXEDN$df.collect.eos.means$datagen.params.rho <- as.factor(list.all.FIXEDN$df.collect.eos.means$datagen.params.rho)
-gg.eos.means <- ggplot(list.all.FIXEDN$df.collect.eos.means, aes(x=delta, y=power, shape=datagen.params.rho, color=datagen.params.rho))
-gg.eos.means <- gg.eos.means + geom_point() + ylim(0,1) + xlim(0,0.45) + labs(title = "End-of-Study Means")
-gg.eos.means <- gg.eos.means + stat_smooth(method = "loess", se=TRUE, fullrange=TRUE, method.args = list(control = loess.control(surface="direct")))
-gg.eos.means <- gg.eos.means + scale_shape_discrete(name="rho") + scale_color_discrete(name="rho")
-
-list.all.FIXEDN$df.collect.AUC$datagen.params.rho <- as.factor(list.all.FIXEDN$df.collect.AUC$datagen.params.rho)
-gg.AUC <- ggplot(list.all.FIXEDN$df.collect.AUC, aes(x=delta, y=power, shape=datagen.params.rho, color=datagen.params.rho))
-gg.AUC <- gg.AUC + geom_point() + ylim(0,1) + xlim(0,0.45) + labs(title = "AUC")
-gg.AUC <- gg.AUC + stat_smooth(method = "loess", se=TRUE, fullrange=TRUE, method.args = list(control = loess.control(surface="direct")))
-gg.AUC <- gg.AUC + scale_shape_discrete(name="rho") + scale_color_discrete(name="rho")
-
-list.all.FIXEDN$df.collect.change.score$datagen.params.rho <- as.factor(list.all.FIXEDN$df.collect.change.score$datagen.params.rho)
-gg.change.score <- ggplot(list.all.FIXEDN$df.collect.change.score, aes(x=delta, y=power, shape=datagen.params.rho, color=datagen.params.rho))
-gg.change.score <- gg.change.score + geom_point() + ylim(0,1) + xlim(0,0.45) + labs(title = "Change Score")
-gg.change.score <- gg.change.score + stat_smooth(method = "loess", se=TRUE, fullrange=TRUE, method.args = list(control = loess.control(surface="direct")))
-gg.change.score <- gg.change.score + scale_shape_discrete(name="rho") + scale_color_discrete(name="rho")
-
-gg.eos.means
-ggsave("eosmeans_ar1_6M_FIXEDN.pdf", width = 7, height = 7, units = "in")
-gg.AUC
-ggsave("AUC_ar1_6M_FIXEDN.pdf", width = 7, height = 7, units = "in")
-gg.change.score
-ggsave("changescore_ar1_6M_FIXEDN.pdf", width = 7, height = 7, units = "in")
+# -----------------------------------------------------------------------------
+# Combine all outputs
+# -----------------------------------------------------------------------------
+plotlist.fixedN <- list(collect.power.eos.means = collect.power.eos.means,
+                        collect.power.change.score = collect.power.change.score,
+                        collect.power.AUC = collect.power.AUC)
 
 ###############################################################################
-# Standardized effect size is fixed while N is varied
-# Working independence correlation
+# Fixed standardized effect size, vary N
 ###############################################################################
-load(file.path(path.output_data, "curve-ind-6M-FIXEDDELTA.RData"))
 
-list.all.FIXEDDELTA$df.collect.eos.means$datagen.params.rho <- as.factor(list.all.FIXEDDELTA$df.collect.eos.means$datagen.params.rho)
-gg.eos.means <- ggplot(list.all.FIXEDDELTA$df.collect.eos.means, aes(x=datagen.params.N, y=power, shape=datagen.params.rho, color=datagen.params.rho))
-gg.eos.means <- gg.eos.means + geom_point() + ylim(0,1) + xlim(0,600) + labs(title = "End-of-Study Means")
-gg.eos.means <- gg.eos.means + stat_smooth(method = "loess", se=TRUE, fullrange=TRUE, method.args = list(control = loess.control(surface="direct")))
-gg.eos.means <- gg.eos.means + scale_shape_discrete(name="rho") + scale_color_discrete(name="rho")
+# -----------------------------------------------------------------------------
+# end-of-study means
+# -----------------------------------------------------------------------------
+# Get data
+this.quantity <- "End-of-study means"
+this.plotdat <- plotlist.fixedD$collect.power.eos.means
+delta <- round(unique(this.plotdat$delta), digits=2)
+rho <- round(unique(this.plotdat$datagen.params.rho), digits=2)
+legend.labs <- apply(cbind(rho, delta), 1, function(x){
+  x <- paste("rho =",x[1],", ","delta =",x[2], sep="")
+  return(x)
+}
+)
 
-list.all.FIXEDDELTA$df.collect.AUC$datagen.params.rho <- as.factor(list.all.FIXEDDELTA$df.collect.AUC$datagen.params.rho)
-gg.AUC <- ggplot(list.all.FIXEDDELTA$df.collect.AUC, aes(x=datagen.params.N, y=power, shape=datagen.params.rho, color=datagen.params.rho))
-gg.AUC <- gg.AUC + geom_point() + ylim(0,1) + xlim(0,600) + labs(title = "AUC")
-gg.AUC <- gg.AUC + stat_smooth(method = "loess", se=TRUE, fullrange=TRUE, method.args = list(control = loess.control(surface="direct")))
-gg.AUC <- gg.AUC + scale_shape_discrete(name="rho") + scale_color_discrete(name="rho")
+# Get plots
+this.plotdat$datagen.params.rho <- as.factor(this.plotdat$datagen.params.rho)
+gg <- ggplot(this.plotdat, aes(x=datagen.params.N, y=power, shape=datagen.params.rho, linetype=datagen.params.rho))
+gg <- gg + xlim(100,max(this.plotdat$datagen.params.N)) + scale_y_continuous(breaks = seq(0,1,0.2), limits = c(0,1))
+gg <- gg + geom_point() 
+gg <- gg + stat_smooth(method = "loess", se=TRUE, fullrange=TRUE, method.args = list(control = loess.control(surface="interpolate")))
+gg <- gg + scale_shape_discrete(name=element_blank(), labels = legend.labs) + scale_linetype_discrete(name=element_blank(), labels = legend.labs)
+gg <- gg + theme(legend.position = "bottom")
+gg <- gg + geom_hline(yintercept = 0.80)
+gg <- gg + labs(title = this.quantity) + xlab("N")
 
-list.all.FIXEDDELTA$df.collect.change.score$datagen.params.rho <- as.factor(list.all.FIXEDDELTA$df.collect.change.score$datagen.params.rho)
-gg.change.score <- ggplot(list.all.FIXEDDELTA$df.collect.change.score, aes(x=datagen.params.N, y=power, shape=datagen.params.rho, color=datagen.params.rho))
-gg.change.score <- gg.change.score + geom_point() + ylim(0,1) + xlim(0,600) + labs(title = "Change Score")
-gg.change.score <- gg.change.score + stat_smooth(method = "loess", se=TRUE, fullrange=TRUE, method.args = list(control = loess.control(surface="direct")))
-gg.change.score <- gg.change.score + scale_shape_discrete(name="rho") + scale_color_discrete(name="rho")
+gg.eos.means.FIXEDDELTA <- gg
 
-gg.eos.means
-ggsave("eosmeans_ind_6M_FIXEDDELTA.pdf", width = 7, height = 7, units = "in")
-gg.AUC
-ggsave("AUC_ind_6M_FIXEDDELTA.pdf", width = 7, height = 7, units = "in")
-gg.change.score
-ggsave("changescore_ind_6M_FIXEDDELTA.pdf", width = 7, height = 7, units = "in")
+# -----------------------------------------------------------------------------
+# change score
+# -----------------------------------------------------------------------------
+# Get data
+this.quantity <- "Delayed effect"
+this.plotdat <- plotlist.fixedD$collect.power.change.score
+delta <- round(unique(this.plotdat$delta), digits=2)
+rho <- round(unique(this.plotdat$datagen.params.rho), digits=2)
+legend.labs <- apply(cbind(rho, delta), 1, function(x){
+  x <- paste("rho =",x[1],", ","delta =",x[2], sep="")
+  return(x)
+}
+)
+
+# Get plots
+this.plotdat$datagen.params.rho <- as.factor(this.plotdat$datagen.params.rho)
+gg <- ggplot(this.plotdat, aes(x=datagen.params.N, y=power, shape=datagen.params.rho, linetype=datagen.params.rho))
+gg <- gg + xlim(100,max(this.plotdat$datagen.params.N)) + scale_y_continuous(breaks = seq(0,1,0.2), limits = c(0,1))
+gg <- gg + geom_point() 
+gg <- gg + stat_smooth(method = "loess", se=TRUE, fullrange=TRUE, method.args = list(control = loess.control(surface="interpolate")))
+gg <- gg + scale_shape_discrete(name=element_blank(), labels = legend.labs) + scale_linetype_discrete(name=element_blank(), labels = legend.labs)
+gg <- gg + theme(legend.position = "bottom")
+gg <- gg + geom_hline(yintercept = 0.80)
+gg <- gg + labs(title = this.quantity) + xlab("N")
+
+gg.change.score.FIXEDDELTA <- gg
+
+# -----------------------------------------------------------------------------
+# AUC
+# -----------------------------------------------------------------------------
+# Get data
+this.quantity <- "AUC"
+this.plotdat <- plotlist.fixedD$collect.power.AUC
+delta <- round(unique(this.plotdat$delta), digits=2)
+rho <- round(unique(this.plotdat$datagen.params.rho), digits=2)
+legend.labs <- apply(cbind(rho, delta), 1, function(x){
+  x <- paste("rho =",x[1],", ","delta =",x[2], sep="")
+  return(x)
+}
+)
+
+# Get plots
+this.plotdat$datagen.params.rho <- as.factor(this.plotdat$datagen.params.rho)
+gg <- ggplot(this.plotdat, aes(x=datagen.params.N, y=power, shape=datagen.params.rho, linetype=datagen.params.rho))
+gg <- gg + xlim(100,max(this.plotdat$datagen.params.N)) + scale_y_continuous(breaks = seq(0,1,0.2), limits = c(0,1))
+gg <- gg + geom_point() 
+gg <- gg + stat_smooth(method = "loess", se=TRUE, fullrange=TRUE, method.args = list(control = loess.control(surface="interpolate")))
+gg <- gg + scale_shape_discrete(name=element_blank(), labels = legend.labs) + scale_linetype_discrete(name=element_blank(), labels = legend.labs)
+gg <- gg + theme(legend.position = "bottom")
+gg <- gg + geom_hline(yintercept = 0.80)
+gg <- gg + labs(title = this.quantity) + xlab("N")
+
+gg.AUC.FIXEDDELTA <- gg
 
 ###############################################################################
-# Standardized effect size is fixed while N is varied
-# Working ar1 correlation
+# Fixed N, vary standardized effect size
 ###############################################################################
-load(file.path(path.output_data, "curve-ar1-6M-FIXEDDELTA.RData"))
 
-list.all.FIXEDDELTA$df.collect.eos.means$datagen.params.rho <- as.factor(list.all.FIXEDDELTA$df.collect.eos.means$datagen.params.rho)
-gg.eos.means <- ggplot(list.all.FIXEDDELTA$df.collect.eos.means, aes(x=datagen.params.N, y=power, shape=datagen.params.rho, color=datagen.params.rho))
-gg.eos.means <- gg.eos.means + geom_point() + ylim(0,1) + xlim(0,600) + labs(title = "End-of-Study Means")
-gg.eos.means <- gg.eos.means + stat_smooth(method = "loess", se=TRUE, fullrange=TRUE, method.args = list(control = loess.control(surface="direct")))
-gg.eos.means <- gg.eos.means + scale_shape_discrete(name="rho") + scale_color_discrete(name="rho")
+# -----------------------------------------------------------------------------
+# end-of-study means
+# -----------------------------------------------------------------------------
+# Get data
+this.quantity <- "End-of-study means"
+this.plotdat <- plotlist.fixedN$collect.power.eos.means
+rho <- as.matrix(round(unique(this.plotdat$datagen.params.rho), digits=2))
+legend.labs <- apply(rho, 1, function(x){
+  x <- paste("rho =",x[1],sep="")
+  return(x)
+}
+)
 
-list.all.FIXEDDELTA$df.collect.AUC$datagen.params.rho <- as.factor(list.all.FIXEDDELTA$df.collect.AUC$datagen.params.rho)
-gg.AUC <- ggplot(list.all.FIXEDDELTA$df.collect.AUC, aes(x=datagen.params.N, y=power, shape=datagen.params.rho, color=datagen.params.rho))
-gg.AUC <- gg.AUC + geom_point() + ylim(0,1) + xlim(0,600) + labs(title = "AUC")
-gg.AUC <- gg.AUC + stat_smooth(method = "loess", se=TRUE, fullrange=TRUE, method.args = list(control = loess.control(surface="direct")))
-gg.AUC <- gg.AUC + scale_shape_discrete(name="rho") + scale_color_discrete(name="rho")
+# Get plots
+this.plotdat$datagen.params.rho <- as.factor(this.plotdat$datagen.params.rho)
+gg <- ggplot(this.plotdat, aes(x=delta, y=power, shape=datagen.params.rho, linetype=datagen.params.rho))
+gg <- gg + xlim(0,max(this.plotdat$delta)) + scale_y_continuous(breaks = seq(0,1,0.2), limits = c(0,1))
+gg <- gg + geom_point() 
+gg <- gg + stat_smooth(method = "loess", se=TRUE, fullrange=TRUE, method.args = list(control = loess.control(surface="interpolate")))
+gg <- gg + scale_shape_discrete(name=element_blank(), labels=legend.labs) + scale_linetype_discrete(name=element_blank(), labels=legend.labs)
+gg <- gg + theme(legend.position = "bottom")
+gg <- gg + geom_hline(yintercept = 0.80)
+gg <- gg + labs(title = this.quantity) + xlab("delta (N=301)")
 
-list.all.FIXEDDELTA$df.collect.change.score$datagen.params.rho <- as.factor(list.all.FIXEDDELTA$df.collect.change.score$datagen.params.rho)
-gg.change.score <- ggplot(list.all.FIXEDDELTA$df.collect.change.score, aes(x=datagen.params.N, y=power, shape=datagen.params.rho, color=datagen.params.rho))
-gg.change.score <- gg.change.score + geom_point() + ylim(0,1) + xlim(0,600) + labs(title = "Change Score")
-gg.change.score <- gg.change.score + stat_smooth(method = "loess", se=TRUE, fullrange=TRUE, method.args = list(control = loess.control(surface="direct")))
-gg.change.score <- gg.change.score + scale_shape_discrete(name="rho") + scale_color_discrete(name="rho")
+gg.eos.means.FIXEDN <- gg
 
-gg.eos.means
-ggsave("eosmeans_ar1_6M_FIXEDDELTA.pdf", width = 7, height = 7, units = "in")
-gg.AUC
-ggsave("AUC_ar1_6M_FIXEDDELTA.pdf", width = 7, height = 7, units = "in")
-gg.change.score
-ggsave("changescore_ar1_6M_FIXEDDELTA.pdf", width = 7, height = 7, units = "in")
+# -----------------------------------------------------------------------------
+# change score
+# -----------------------------------------------------------------------------
+# Get data
+this.quantity <- "Delayed effect"
+this.plotdat <- plotlist.fixedN$collect.power.change.score
+rho <- as.matrix(round(unique(this.plotdat$datagen.params.rho), digits=2))
+legend.labs <- apply(rho, 1, function(x){
+  x <- paste("rho =",x[1],sep="")
+  return(x)
+}
+)
+
+# Get plots
+this.plotdat$datagen.params.rho <- as.factor(this.plotdat$datagen.params.rho)
+gg <- ggplot(this.plotdat, aes(x=delta, y=power, shape=datagen.params.rho, linetype=datagen.params.rho))
+gg <- gg + xlim(0,max(this.plotdat$delta)) + scale_y_continuous(breaks = seq(0,1,0.2), limits = c(0,1))
+gg <- gg + geom_point() 
+gg <- gg + stat_smooth(method = "loess", se=TRUE, fullrange=TRUE, method.args = list(control = loess.control(surface="interpolate")))
+gg <- gg + scale_shape_discrete(name=element_blank(), labels=legend.labs) + scale_linetype_discrete(name=element_blank(), labels=legend.labs)
+gg <- gg + theme(legend.position = "bottom")
+gg <- gg + geom_hline(yintercept = 0.80)
+gg <- gg + labs(title = this.quantity) + xlab("delta (N=301)")
+
+gg.change.score.FIXEDN <- gg
+
+# -----------------------------------------------------------------------------
+# AUC
+# -----------------------------------------------------------------------------
+# Get data
+this.quantity <- "AUC"
+this.plotdat <- plotlist.fixedN$collect.power.AUC
+rho <- as.matrix(round(unique(this.plotdat$datagen.params.rho), digits=2))
+legend.labs <- apply(rho, 1, function(x){
+  x <- paste("rho =",x[1],sep="")
+  return(x)
+}
+)
+
+# Get plots
+this.plotdat$datagen.params.rho <- as.factor(this.plotdat$datagen.params.rho)
+gg <- ggplot(this.plotdat, aes(x=delta, y=power, shape=datagen.params.rho, linetype=datagen.params.rho))
+gg <- gg + xlim(0,max(this.plotdat$delta)) + scale_y_continuous(breaks = seq(0,1,0.2), limits = c(0,1))
+gg <- gg + geom_point() 
+gg <- gg + stat_smooth(method = "loess", se=TRUE, fullrange=TRUE, method.args = list(control = loess.control(surface="interpolate")))
+gg <- gg + scale_shape_discrete(name=element_blank(), labels=legend.labs) + scale_linetype_discrete(name=element_blank(), labels=legend.labs)
+gg <- gg + theme(legend.position = "bottom")
+gg <- gg + geom_hline(yintercept = 0.80)
+gg <- gg + labs(title = this.quantity) + xlab("delta (N=301)")
+
+gg.AUC.FIXEDN <- gg
+
+###############################################################################
+# Combine all plots into one grid
+###############################################################################
+plots.grid <- grid.arrange(gg.eos.means.FIXEDN, gg.eos.means.FIXEDDELTA, 
+                           gg.change.score.FIXEDN, gg.change.score.FIXEDDELTA, 
+                           gg.AUC.FIXEDN, gg.AUC.FIXEDDELTA,
+                           ncol=2)
+
+path.output_data <- Sys.getenv("path.output_data")
+ggsave(file.path(path.output_data, "powercurves.jpg"), 
+       plot = plots.grid,
+       width = 12,
+       height = 12,
+       units = "in")
 
 
