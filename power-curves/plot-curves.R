@@ -2,6 +2,8 @@ library(dplyr)
 library(ggplot2)
 library(gridExtra)
 
+use.working.corr <- "ar1"
+
 ###############################################################################
 # Fixed standardized effect size, vary N
 ###############################################################################
@@ -19,7 +21,7 @@ collect.correlation <- bind_rows(collect.correlation) %>%
   select(datagen.params.rho, tau_ave=estimates)
 
 path.output_data <- Sys.getenv("path.output_data")
-load(file.path(path.output_data, "fixedD-curve-01.RData"))
+load(file.path(path.output_data, use.working.corr, "fixedD-curve-01.RData"))
 collect.power.eos.means <- lapply(collect.power, function(x){return(x$eos.means)})
 collect.power.eos.means <- bind_rows(collect.power.eos.means) %>% 
   left_join(x = ., y = collect.delta.eos.means, by = "datagen.params.rho") %>% 
@@ -41,7 +43,7 @@ collect.correlation <- bind_rows(collect.correlation) %>%
   select(datagen.params.rho, tau_ave=estimates)
 
 path.output_data <- Sys.getenv("path.output_data")
-load(file.path(path.output_data, "fixedD-curve-02.RData"))
+load(file.path(path.output_data, use.working.corr, "fixedD-curve-02.RData"))
 collect.power.AUC <- lapply(collect.power, function(x){return(x$AUC)})
 collect.power.AUC <- bind_rows(collect.power.AUC) %>% 
   left_join(x = ., y = collect.delta.AUC, by = "datagen.params.rho") %>% 
@@ -71,7 +73,7 @@ collect.correlation <- bind_rows(collect.correlation) %>%
   select(datagen.params.rho, tau_ave=estimates, idx.input.means)
 
 path.output_data <- Sys.getenv("path.output_data")
-load(file.path(path.output_data, "fixedN-curve-01.RData"))
+load(file.path(path.output_data, use.working.corr, "fixedN-curve-01.RData"))
 collect.power.eos.means <- lapply(collect.power, function(x){return(x$eos.means)})
 collect.power.eos.means <- bind_rows(collect.power.eos.means) %>% 
   left_join(x = ., y = collect.delta.eos.means, by = c("datagen.params.rho","idx.input.means")) %>% 
@@ -93,7 +95,7 @@ collect.correlation <- bind_rows(collect.correlation) %>%
   select(datagen.params.rho, tau_ave=estimates, idx.input.means)
 
 path.output_data <- Sys.getenv("path.output_data")
-load(file.path(path.output_data, "fixedN-curve-02.RData"))
+load(file.path(path.output_data, use.working.corr, "fixedN-curve-02.RData"))
 collect.power.AUC <- lapply(collect.power, function(x){return(x$AUC)})
 collect.power.AUC <- bind_rows(collect.power.AUC) %>% 
   left_join(x = ., y = collect.delta.AUC, by = c("datagen.params.rho","idx.input.means")) %>% 
@@ -282,7 +284,7 @@ plots.grid <- grid.arrange(gg.eos.means.FIXEDN, gg.eos.means.FIXEDDELTA,
                            ncol=2)
 
 path.output_data <- Sys.getenv("path.output_data")
-ggsave(file.path(path.output_data, "powercurves.jpg"), 
+ggsave(file.path(path.output_data, use.working.corr, "powercurves.jpg"), 
        plot = plots.grid,
        width = 12,
        height = 18,

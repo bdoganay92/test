@@ -1,3 +1,10 @@
+# Specify working correlation structure
+###############################################################################
+use.working.corr <- "ar1"
+
+###############################################################################
+# Script begins
+###############################################################################
 start.time <- Sys.time()
 
 library(dplyr)
@@ -94,11 +101,6 @@ dat <- replace(dat, is.na(dat), 0.6)
 input.prop.zeros <- dat
 
 ###############################################################################
-# Use working independence correlation structure
-###############################################################################
-use.working.corr <- "ar1"
-
-###############################################################################
 # Calculate power: difference in AUC
 # =============================================================================
 # Standardized effect size is held fixed while N is varied
@@ -127,6 +129,6 @@ end.time <- Sys.time()
 ###############################################################################
 # Save workspace
 ###############################################################################
-save.image(file = file.path(path.output_data, "fixedD-curve-02.RData"))
+save.image(file = file.path(path.output_data, use.working.corr, "fixedD-curve-02.RData"))
 
 

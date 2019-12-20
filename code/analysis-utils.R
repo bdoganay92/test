@@ -314,6 +314,7 @@ AnalyzeData <- function(list.df, tot.time, rand.time, working.corr="independence
           mat <- AR1Mat(m = total.ActualTime, rho = a)
           return(mat)
         })
+        
         list.inverse.workingcorr <- lapply(list.workingcorr, function(x){return(solve(x))})
         
         # Now, convert list.working.corr into a block diagonal matrix
@@ -364,8 +365,12 @@ AnalyzeData <- function(list.df, tot.time, rand.time, working.corr="independence
                            estimates=est)
         }
       }
+    }else if(working.corr=="unstructured"){
+      
+      # ADD LATER
+      
     }else{
-      assert_that(working.corr %in% c("independence","ar1"), 
+      assert_that(working.corr %in% c("independence","ar1","unstructured"), 
                   msg = "Enter valid working correlation")
     }
   }
