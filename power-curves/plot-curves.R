@@ -285,7 +285,7 @@ path.output_data <- Sys.getenv("path.output_data")
 ggsave(file.path(path.output_data, "powercurves.jpg"), 
        plot = plots.grid,
        width = 12,
-       height = 12,
+       height = 18,
        units = "in")
 
 
