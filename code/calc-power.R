@@ -34,12 +34,13 @@ environment(geemMod) <- asNamespace("geeM")
 assert_that(length(input.tot.time)==1, msg="input.tot.time cannot be a sequence of numbers")
 assert_that(length(input.rand.time)==1, msg="input.rand.time cannot be a sequence of numbers")
 
-gridx <- expand.grid(nsim=1:2500, 
+gridx <- expand.grid(nsim=1:5000, 
                      input.N=input.N,
                      input.rand.time=input.rand.time, 
                      input.tot.time=input.tot.time,
                      input.cutoff=input.cutoff,
-                     input.rho=input.rho)
+                     input.rho=input.rho,
+                     input.n4=input.n4)
 
 list.gridx <- apply(gridx, 1, as.list)
 list.gridx <- lapply(list.gridx, function(this.list, 
@@ -82,7 +83,8 @@ list.df.potential <- parLapply(cl=cl,
                                                             cutoff=this.gridx$input.cutoff, 
                                                             rho=this.gridx$input.rho, 
                                                             input.prop.zeros=this.gridx$input.prop.zeros, 
-                                                            input.means=this.gridx$input.means)
+                                                            input.means=this.gridx$input.means,
+                                                            input.n4=this.gridx$input.n4)
                                  return(df)
                                })
 

@@ -656,7 +656,7 @@ ByGroupToLongData <- function(Y.group, n.group, group, tot.time, rand.time){
   return(reshaped.df.group)
 }
 
-GeneratePotentialYit <- function(sim, N, tot.time, rand.time, cutoff, rho, input.prop.zeros, input.means, input.n4=NULL){
+GeneratePotentialYit <- function(sim, N, tot.time, rand.time, cutoff, rho, input.prop.zeros, input.means, input.n4=NA_real_){
   
   # Calculate dimensions of correlation matrices among four groups
   corrdim.01 <- 2*tot.time - 1
@@ -705,7 +705,7 @@ GeneratePotentialYit <- function(sim, N, tot.time, rand.time, cutoff, rho, input
   remove(use.var, use.mean)
   
   # Calculate number of individuals belonging to each group
-  if(is.null(input.n4)){
+  if(is.na(input.n4)){
     n4 <- min(N*(1-p), N*(1-q))
   }else{
     n4 <- input.n4

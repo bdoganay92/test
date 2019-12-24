@@ -90,21 +90,35 @@ input.prop.zeros <- dat
 # N is fixed while standardized effect size is varied
 ###############################################################################
 input.N <- 300
+input.n4 <- NA_real_
 collect.power <- list()
+collect.coverage <- list()
 
-for(i in 1:length(list.input.rho)){
-  input.rho <- list.input.rho[[i]]
+for(idx.i in 1:length(list.input.rho)){
+  input.rho <- list.input.rho[[idx.i]]
   
-  for(j in 1:length(list.input.means)){
-    input.means <- list.input.means[[j]]
+  for(idx.j in 1:length(list.input.means)){
+    input.means <- list.input.means[[idx.j]]
     
     source(file.path(path.code,"calc-power.R"))
-    power.diff.eos.means$idx.input.means <- j
-    power.diff.change.score$idx.input.means <- j
+    power.diff.eos.means$idx.input.means <- idx.j
+    power.diff.change.score$idx.input.means <- idx.j
+    
     tmp.power <- list(eos.means = power.diff.eos.means[power.diff.eos.means$pair==this.pair,],
                       change.score = power.diff.change.score[power.diff.change.score$pair==this.pair,]
     )
     collect.power <- append(collect.power, list(tmp.power))
+    
+    source(file.path(path.code,"calc-truth.R"))
+    source(file.path(path.code,"calc-coverage.R"))
+    coverage.diff.eos.means$idx.input.means <- idx.j
+    coverage.diff.change.score$idx.input.means <- idx.j
+    
+    tmp.coverage <- list(eos.means = coverage.diff.eos.means[coverage.diff.eos.means$pair==this.pair,],
+                      change.score = coverage.diff.change.score[coverage.diff.change.score$pair==this.pair,]
+    )
+    collect.coverage <- append(collect.coverage, list(tmp.coverage))
+    
   }
 }
 

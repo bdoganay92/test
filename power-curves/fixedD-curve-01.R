@@ -91,6 +91,7 @@ input.prop.zeros <- dat
 # Standardized effect size is held fixed while N is varied
 ###############################################################################
 list.input.N <- as.list(seq(120, 600, by = 10))
+input.n4 <- NA_real_
 collect.power <- list()
 
 for(i in 1:length(list.input.rho)){
