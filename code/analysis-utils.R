@@ -138,11 +138,11 @@ AnalyzeData <- function(list.df, tot.time, rand.time, working.corr="independence
       summarise(mean.resid = weighted.mean(x = resid, w = KnownWeight),
                 mean.resid.squared = weighted.mean(x = resid.squared, w = KnownWeight),
                 mean.yhat = weighted.mean(x = yhat, w = KnownWeight)) %>%
-      mutate(sigsq = (mean.resid.squared - mean.yhat) / (mean.yhat^2)) %>%
-      select(A1, A2, ActualTime, sigsq)
+      select(A1, A2, ActualTime, mean.resid.squared, mean.resid, mean.yhat)
     
     df.replicated.observed.Yit <- left_join(df.replicated.observed.Yit, summary.df, by = c("A1", "A2", "ActualTime"))
-    disp.param <- df.replicated.observed.Yit$sigsq
+    df.replicated.observed.Yit <- df.replicated.observed.Yit %>% arrange(id, desc(A1), desc(A2), wave)
+    this.variance.param <- df.replicated.observed.Yit$mean.resid.squared
     
     # ---------------------------------------------------------------------------
     # Specify FunList
@@ -153,7 +153,7 @@ AnalyzeData <- function(list.df, tot.time, rand.time, working.corr="independence
     }
     
     VarFun <- function(mu){
-      out <- mu + disp.param*(mu^2)
+      out <- this.variance.param
       return(out)
     }
     
@@ -243,75 +243,53 @@ AnalyzeData <- function(list.df, tot.time, rand.time, working.corr="independence
         tmpdf.long$yhat <- exp((model.indep$X) %*% init.est.beta)
         tmpdf.long$resid <- tmpdf.long$Y - tmpdf.long$yhat 
         tmpdf.long$resid.squared <- (tmpdf.long$resid)^2
-        tmpdf.long <- tmpdf.long %>% select(id, ActualTime, A1, A2, KnownWeight, resid, resid.squared)
+        tmpdf.long <- tmpdf.long %>% 
+          select(id, ActualTime, A1, A2, KnownWeight, resid, resid.squared)
         
-        tmpdf.wide <- reshape(data = tmpdf.long,
-                              timevar = "ActualTime",
-                              idvar = c("id", "A1", "A2", "KnownWeight"),
-                              direction = "wide"
-                              )
-        # Calculate variance by time point
-        list.this.time.sd <- list()
-        for(this.time in 1:tot.time){
-          df.this.time <- tmpdf.wide %>% group_by(A1, A2) %>%
-            select(A1, A2,
-                   rsquared.t = paste("resid.squared",this.time,sep="."), w=KnownWeight) %>%
-            summarise(sd.t = sqrt(weighted.mean(x = rsquared.t, w=w)))
-          
-          df.this.time$ActualTime <- this.time
-          list.this.time.sd <- append(list.this.time.sd, list(df.this.time))
-        }
+        sd.df.long <- tmpdf.long %>% 
+          group_by(ActualTime, A1, A2) %>%
+          summarise(sd.t.a1a2 = sqrt(weighted.mean(x = resid.squared, w=KnownWeight)))
         
-        this.time.sd <- bind_rows(list.this.time.sd)
-        # List all possible combinations of time points, two at a time
-        df.time.combos <- expand.grid(time.s = 1:tot.time, time.t = 1:tot.time)
-        # Since we only want the upper triangular of a matrix:
-        df.time.combos <- df.time.combos %>% filter(time.s < time.t)
-        # Since we will use a working AR(1) correlation matrix:
-        df.time.combos <- df.time.combos %>% filter(abs(time.s - time.t)==1)
+        # Get the weighted average of cross products
+        tmpdf.long <- tmpdf.long %>% 
+          group_by(id, A1, A2) %>% 
+          mutate(resid.s = resid, resid.t = c(tail(resid, n=-1), NA)) %>% 
+          mutate(product.st = resid.s*resid.t)
         
-        list.prods.combos <- list()
-        for(this.combo in 1:nrow(df.time.combos)){
-          time.s <- df.time.combos[this.combo, "time.s"]
-          time.t <- df.time.combos[this.combo, "time.t"]
-          
-          sd.time.s <- this.time.sd %>% filter(ActualTime==time.s) %>% 
-            select(-ActualTime, sd.s = sd.t)
-          sd.time.t <- this.time.sd %>% filter(ActualTime==time.t) %>% 
-            select(-ActualTime, sd.t = sd.t)
-          
-          this.prods.combos <- tmpdf.wide %>% 
-            left_join(x = ., y = sd.time.s, by = c("A1","A2")) %>%
-            left_join(x = ., y = sd.time.t, by = c("A1", "A2")) %>%
-            select(A1, A2, 
-                   r.s=paste("resid",time.s,sep="."), 
-                   r.t=paste("resid",time.t,sep="."), 
-                   sd.s, sd.t,
-                   w=KnownWeight)
-          
-          list.prods.combos <- append(list.prods.combos, list(this.prods.combos))
-        }
+        df.prods.combos <-  tmpdf.long %>% 
+          select(id, ActualTime, A1, A2, KnownWeight, product.st)
         
-        df.prods.combos <- bind_rows(list.prods.combos)
+        summarydf.prods.combos <- df.prods.combos %>% 
+          group_by(ActualTime, A1, A2) %>%
+          summarise(a = weighted.mean(x = product.st, w = KnownWeight)) %>%
+          arrange(desc(A1), desc(A2), ActualTime) %>%
+          left_join(x = ., y = sd.df.long, by = c("ActualTime","A1","A2")) %>%
+          group_by(A1, A2) %>%
+          arrange(ActualTime) %>%
+          mutate(sd.tplus1.a1a2 = c(tail(sd.t.a1a2, n=-1), NA)) %>%
+          arrange(desc(A1), desc(A2), ActualTime) %>%
+          mutate(rho.lag1 = a/(sd.t.a1a2*sd.tplus1.a1a2)) %>%
+          filter(!is.na(sd.tplus1.a1a2))
         
-        # Now, obtain AR1 working correlation parameter per DTR
-        summarydf.prods.combos <- df.prods.combos %>% group_by(A1, A2) %>% 
-          mutate(prod.st = (r.s*r.t)/(sd.s*sd.t)) %>%
-          summarise(a = weighted.mean(x = prod.st, w = w))
+        summarydf.prods.combos.byDTR <- summarydf.prods.combos %>% 
+          group_by(A1, A2) %>%
+          summarise(rho = mean(rho.lag1)) %>%
+          arrange(desc(A1), desc(A2))
         
         # Now, form the working correlation matrix
         corr.dims <- df.replicated.observed.Yit %>% 
           arrange(id, desc(A1), desc(A2)) %>%
           group_by(id, A1, A2) %>% 
           summarise(total.ActualTime=max(ActualTime)) %>%
-          arrange(id, desc(A1), desc(A2)) %>% 
-          left_join(x = ., y = summarydf.prods.combos, by = c("A1", "A2"))
+          arrange(id, desc(A1), desc(A2))
+        
+        corr.dims <- corr.dims %>% 
+          left_join(x = ., y = summarydf.prods.combos.byDTR, by = c("A1", "A2")) %>%
+          arrange(id, desc(A1), desc(A2))
         
         list.corr.dims <- apply(corr.dims, 1, as.list)
         list.workingcorr <- lapply(list.corr.dims, function(x){
-          total.ActualTime <- x$total.ActualTime
-          a <- x$a
-          mat <- AR1Mat(m = total.ActualTime, rho = a)
+          mat <- AR1Mat(m = x$total.ActualTime, rho = x$rho)
           return(mat)
         })
         
@@ -365,12 +343,8 @@ AnalyzeData <- function(list.df, tot.time, rand.time, working.corr="independence
                            estimates=est)
         }
       }
-    }else if(working.corr=="unstructured"){
-      
-      # ADD LATER
-      
     }else{
-      assert_that(working.corr %in% c("independence","ar1","unstructured"), 
+      assert_that(working.corr %in% c("independence","ar1"), 
                   msg = "Enter valid working correlation")
     }
   }

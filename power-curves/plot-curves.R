@@ -128,11 +128,11 @@ legend.labs <- apply(cbind(rho, delta), 1, function(x){
 
 # Get plots
 this.plotdat$datagen.params.rho <- as.factor(this.plotdat$datagen.params.rho)
-gg <- ggplot(this.plotdat, aes(x=datagen.params.N, y=power, shape=datagen.params.rho, linetype=datagen.params.rho))
+gg <- ggplot(this.plotdat, aes(x=datagen.params.N, y=power, shape=datagen.params.rho, color=datagen.params.rho))
 gg <- gg + xlim(100,max(this.plotdat$datagen.params.N)) + scale_y_continuous(breaks = seq(0,1,0.2), limits = c(0,1))
 gg <- gg + geom_point() 
 gg <- gg + stat_smooth(method = "loess", se=TRUE, fullrange=TRUE, method.args = list(control = loess.control(surface="interpolate")))
-gg <- gg + scale_shape_discrete(name=element_blank(), labels = legend.labs) + scale_linetype_discrete(name=element_blank(), labels = legend.labs)
+gg <- gg + scale_shape_discrete(name=element_blank(), labels = legend.labs) + scale_color_discrete(name=element_blank(), labels = legend.labs)
 gg <- gg + theme(legend.position = "bottom")
 gg <- gg + geom_hline(yintercept = 0.80)
 gg <- gg + labs(title = this.quantity) + xlab("N")
@@ -155,11 +155,11 @@ legend.labs <- apply(cbind(rho, delta), 1, function(x){
 
 # Get plots
 this.plotdat$datagen.params.rho <- as.factor(this.plotdat$datagen.params.rho)
-gg <- ggplot(this.plotdat, aes(x=datagen.params.N, y=power, shape=datagen.params.rho, linetype=datagen.params.rho))
+gg <- ggplot(this.plotdat, aes(x=datagen.params.N, y=power, shape=datagen.params.rho, color=datagen.params.rho))
 gg <- gg + xlim(100,max(this.plotdat$datagen.params.N)) + scale_y_continuous(breaks = seq(0,1,0.2), limits = c(0,1))
 gg <- gg + geom_point() 
 gg <- gg + stat_smooth(method = "loess", se=TRUE, fullrange=TRUE, method.args = list(control = loess.control(surface="interpolate")))
-gg <- gg + scale_shape_discrete(name=element_blank(), labels = legend.labs) + scale_linetype_discrete(name=element_blank(), labels = legend.labs)
+gg <- gg + scale_shape_discrete(name=element_blank(), labels = legend.labs) + scale_color_discrete(name=element_blank(), labels = legend.labs)
 gg <- gg + theme(legend.position = "bottom")
 gg <- gg + geom_hline(yintercept = 0.80)
 gg <- gg + labs(title = this.quantity) + xlab("N")
@@ -182,11 +182,11 @@ legend.labs <- apply(cbind(rho, delta), 1, function(x){
 
 # Get plots
 this.plotdat$datagen.params.rho <- as.factor(this.plotdat$datagen.params.rho)
-gg <- ggplot(this.plotdat, aes(x=datagen.params.N, y=power, shape=datagen.params.rho, linetype=datagen.params.rho))
+gg <- ggplot(this.plotdat, aes(x=datagen.params.N, y=power, shape=datagen.params.rho, color=datagen.params.rho))
 gg <- gg + xlim(100,max(this.plotdat$datagen.params.N)) + scale_y_continuous(breaks = seq(0,1,0.2), limits = c(0,1))
 gg <- gg + geom_point() 
 gg <- gg + stat_smooth(method = "loess", se=TRUE, fullrange=TRUE, method.args = list(control = loess.control(surface="interpolate")))
-gg <- gg + scale_shape_discrete(name=element_blank(), labels = legend.labs) + scale_linetype_discrete(name=element_blank(), labels = legend.labs)
+gg <- gg + scale_shape_discrete(name=element_blank(), labels = legend.labs) + scale_color_discrete(name=element_blank(), labels = legend.labs)
 gg <- gg + theme(legend.position = "bottom")
 gg <- gg + geom_hline(yintercept = 0.80)
 gg <- gg + labs(title = this.quantity) + xlab("N")
@@ -212,11 +212,11 @@ legend.labs <- apply(rho, 1, function(x){
 
 # Get plots
 this.plotdat$datagen.params.rho <- as.factor(this.plotdat$datagen.params.rho)
-gg <- ggplot(this.plotdat, aes(x=delta, y=power, shape=datagen.params.rho, linetype=datagen.params.rho))
+gg <- ggplot(this.plotdat, aes(x=delta, y=power, shape=datagen.params.rho, color=datagen.params.rho))
 gg <- gg + xlim(0,max(this.plotdat$delta)) + scale_y_continuous(breaks = seq(0,1,0.2), limits = c(0,1))
 gg <- gg + geom_point() 
 gg <- gg + stat_smooth(method = "loess", se=TRUE, fullrange=TRUE, method.args = list(control = loess.control(surface="interpolate")))
-gg <- gg + scale_shape_discrete(name=element_blank(), labels=legend.labs) + scale_linetype_discrete(name=element_blank(), labels=legend.labs)
+gg <- gg + scale_shape_discrete(name=element_blank(), labels=legend.labs) + scale_color_discrete(name=element_blank(), labels=legend.labs)
 gg <- gg + theme(legend.position = "bottom")
 gg <- gg + geom_hline(yintercept = 0.80)
 gg <- gg + labs(title = this.quantity) + xlab("delta (N=301)")
@@ -238,11 +238,11 @@ legend.labs <- apply(rho, 1, function(x){
 
 # Get plots
 this.plotdat$datagen.params.rho <- as.factor(this.plotdat$datagen.params.rho)
-gg <- ggplot(this.plotdat, aes(x=delta, y=power, shape=datagen.params.rho, linetype=datagen.params.rho))
+gg <- ggplot(this.plotdat, aes(x=delta, y=power, shape=datagen.params.rho, color=datagen.params.rho))
 gg <- gg + xlim(0,max(this.plotdat$delta)) + scale_y_continuous(breaks = seq(0,1,0.2), limits = c(0,1))
 gg <- gg + geom_point() 
 gg <- gg + stat_smooth(method = "loess", se=TRUE, fullrange=TRUE, method.args = list(control = loess.control(surface="interpolate")))
-gg <- gg + scale_shape_discrete(name=element_blank(), labels=legend.labs) + scale_linetype_discrete(name=element_blank(), labels=legend.labs)
+gg <- gg + scale_shape_discrete(name=element_blank(), labels=legend.labs) + scale_color_discrete(name=element_blank(), labels=legend.labs)
 gg <- gg + theme(legend.position = "bottom")
 gg <- gg + geom_hline(yintercept = 0.80)
 gg <- gg + labs(title = this.quantity) + xlab("delta (N=301)")
@@ -264,11 +264,11 @@ legend.labs <- apply(rho, 1, function(x){
 
 # Get plots
 this.plotdat$datagen.params.rho <- as.factor(this.plotdat$datagen.params.rho)
-gg <- ggplot(this.plotdat, aes(x=delta, y=power, shape=datagen.params.rho, linetype=datagen.params.rho))
+gg <- ggplot(this.plotdat, aes(x=delta, y=power, shape=datagen.params.rho, color=datagen.params.rho))
 gg <- gg + xlim(0,max(this.plotdat$delta)) + scale_y_continuous(breaks = seq(0,1,0.2), limits = c(0,1))
 gg <- gg + geom_point() 
 gg <- gg + stat_smooth(method = "loess", se=TRUE, fullrange=TRUE, method.args = list(control = loess.control(surface="interpolate")))
-gg <- gg + scale_shape_discrete(name=element_blank(), labels=legend.labs) + scale_linetype_discrete(name=element_blank(), labels=legend.labs)
+gg <- gg + scale_shape_discrete(name=element_blank(), labels=legend.labs) + scale_color_discrete(name=element_blank(), labels=legend.labs)
 gg <- gg + theme(legend.position = "bottom")
 gg <- gg + geom_hline(yintercept = 0.80)
 gg <- gg + labs(title = this.quantity) + xlab("delta (N=301)")
@@ -278,16 +278,29 @@ gg.AUC.FIXEDN <- gg
 ###############################################################################
 # Combine all plots into one grid
 ###############################################################################
-plots.grid <- grid.arrange(gg.eos.means.FIXEDN, gg.eos.means.FIXEDDELTA, 
-                           gg.change.score.FIXEDN, gg.change.score.FIXEDDELTA, 
-                           gg.AUC.FIXEDN, gg.AUC.FIXEDDELTA,
-                           ncol=2)
+plots.grid <- grid.arrange(gg.eos.means.FIXEDN, 
+                           gg.change.score.FIXEDN,
+                           gg.AUC.FIXEDN,
+                           ncol=1)
 
 path.output_data <- Sys.getenv("path.output_data")
-ggsave(file.path(path.output_data, use.working.corr, "powercurves.jpg"), 
+ggsave(file.path(path.output_data, use.working.corr, "powercurves.FIXEDN.jpg"), 
        plot = plots.grid,
-       width = 12,
+       width = 6,
        height = 18,
        units = "in")
 
+###############################################################################
+# Combine all plots into one grid
+###############################################################################
+plots.grid <- grid.arrange(gg.eos.means.FIXEDDELTA, 
+                           gg.change.score.FIXEDDELTA,
+                           gg.AUC.FIXEDDELTA,
+                           ncol=1)
 
+path.output_data <- Sys.getenv("path.output_data")
+ggsave(file.path(path.output_data, use.working.corr, "powercurves.FIXEDDELTA.jpg"), 
+       plot = plots.grid,
+       width = 6,
+       height = 18,
+       units = "in")
