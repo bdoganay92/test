@@ -1,7 +1,0 @@
-Content of .Renviron file below the dashed lines.
-Change '~' to path where the CountSMART folder is stored.
-=====================================================================
-=====================================================================
-path.input_data = "~/CountSMART/run-sanity-checks/dat-checks"
-path.output_data = "~/CountSMART/run-sanity-checks/output-checks"
-path.code = "~/CountSMART/code"
