@@ -1,10 +1,3 @@
-# Specify working correlation structure
-###############################################################################
-use.working.corr <- "ar1"
-
-###############################################################################
-# Script begins
-###############################################################################
 start.time <- Sys.time()
 
 library(dplyr)
@@ -29,7 +22,7 @@ source(file.path(path.code,"analysis-utils.R"))
 input.alpha <- 0.05
 input.rand.time <- 2
 input.tot.time <- 6
-list.input.rho <- list(0.1, 0.5, 0.9)
+list.input.rho <- as.list(seq(0,0.99,by=0.1))
 input.cutoff <- 0
 names.seq <- matrix(c("plus.r", "plus.nr.plus", "plus.nr.minus", 
                       "minus.r", "minus.nr.plus", "minus.nr.minus"), 
@@ -101,27 +94,40 @@ dat <- replace(dat, is.na(dat), 0.6)
 input.prop.zeros <- dat
 
 ###############################################################################
-# Calculate estimated covariance of regression model parameters:
-# difference in AUC
-# =============================================================================
-# N is fixed while standardized effect size is varied
+# Calculate standardized effect size and simulated within-person correlation 
+# by DTR
 ###############################################################################
 input.N <- 10000
-input.n4 <- NA_real_
-collect.estimated.covmat <- list()
+collect.correlation <- list()
 
-for(idx.i in 1:length(list.input.rho)){
-  input.rho <- list.input.rho[[idx.i]]
+for(i in 1:length(list.input.rho)){
+  input.rho <- list.input.rho[[i]]
   
-  for(idx.j in 1:length(list.input.means)){
-    input.means <- auc.list.input.means[[idx.j]]
+  for(j in 1:length(auc.list.input.means)){
+    input.means <- auc.list.input.means[[j]]
     
-    source(file.path(path.code,"calc-covmat.R"))
-    list.df.est.beta <- lapply(list.df.est.beta, function(x){
-      x$datagen.params$input.means <- idx.j
-      return(x)
-    })
-    collect.estimated.covmat <- append(collect.estimated.covmat, list(list.df.est.beta))
+    for(k in 1:5000){
+      # Simulate potential outcomes for the 10000 individuals for these inputs
+      df.list <- GeneratePotentialYit(sim=k, 
+                                      N=input.N, 
+                                      tot.time=input.tot.time, 
+                                      rand.time=input.rand.time, 
+                                      cutoff=input.cutoff, 
+                                      rho=input.rho, 
+                                      input.prop.zeros=input.prop.zeros, 
+                                      input.means=input.means)
+      
+      # Calculate correlation
+      this.corr <- DTRCorrelationPO(df.list = df.list)
+      this.corr <- ReshapeList(x = list(this.corr), idx=1)
+      this.corr$idx.input.means <- j
+      this.corr$sim <- k
+      
+      # Append to list
+      collect.correlation <- append(collect.correlation, list(this.corr))
+    }
+    
+    remove(df.list)
   }
 }
 
@@ -129,5 +135,6 @@ end.time <- Sys.time()
 ###############################################################################
 # Save workspace
 ###############################################################################
-save.image(file = file.path(path.output_data, use.working.corr, "estimated-covmat-02.RData"))
+save.image(file = file.path(path.output_data, "params-curve-02.RData"))
+
 

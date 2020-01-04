@@ -64,7 +64,7 @@ dat <- matrix(rep(NA, 6*(input.tot.time)), byrow=TRUE, ncol=input.tot.time)
 colnames(dat) <- paste("time",1:input.tot.time, sep=".")
 dat <- data.frame(names.seq, dat)
 dat <- replace(dat, is.na(dat), 1.5)
-increments <- 1
+increments <- seq(0.5, 5.5, 0.5)
 
 list.input.means <- list()
 for(i in 1:length(increments)){

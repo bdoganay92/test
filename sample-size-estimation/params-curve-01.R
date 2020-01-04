@@ -1,10 +1,3 @@
-# Specify working correlation structure
-###############################################################################
-use.working.corr <- "ar1"
-
-###############################################################################
-# Script begins
-###############################################################################
 start.time <- Sys.time()
 
 library(dplyr)
@@ -29,7 +22,7 @@ source(file.path(path.code,"analysis-utils.R"))
 input.alpha <- 0.05
 input.rand.time <- 2
 input.tot.time <- 6
-list.input.rho <- list(0.1, 0.5, 0.9)
+list.input.rho <- as.list(seq(0,0.99,by=0.1))
 input.cutoff <- 0
 names.seq <- matrix(c("plus.r", "plus.nr.plus", "plus.nr.minus", 
                       "minus.r", "minus.nr.plus", "minus.nr.minus"), 
@@ -45,50 +38,34 @@ C.plusplus <- list.C$C.plusplus
 C.plusminus <- list.C$C.plusminus
 C.minusplus <- list.C$C.minusplus
 C.minusminus <- list.C$C.minusminus
-# Difference in AUC
-for(i in 1:input.tot.time){
-  if(input.tot.time==2){
-    L.AUC <- (1/2)*t(eCol(1,input.tot.time)) + (1/2)*t(eCol(input.tot.time,input.tot.time))
-  }else if(input.tot.time>2 & i==1){
-    L.AUC <- (1/2)*t(eCol(1,input.tot.time))
-  }else if(input.tot.time>2 & i==input.tot.time){
-    L.AUC <- L.AUC+(1/2)*t(eCol(input.tot.time,input.tot.time))
-  }else{
-    L.AUC <- L.AUC+t(eCol(i,input.tot.time))
-  }
-}
-D.AUC <- cbind(L.AUC,-L.AUC)
+
+# Difference in end-of-study means
+L.eos.means <- t(eCol(input.tot.time,input.tot.time))
+D.eos.means <- cbind(L.eos.means,-L.eos.means)
+
+# Difference in change score
+L.change.score <- -t(eCol(input.rand.time, input.tot.time)) + t(eCol(input.tot.time, input.tot.time))
+D.change.score <- cbind(L.change.score, -L.change.score)
 
 ###############################################################################
-# Create auc.list.input.means data frames for a fixed choice of 
-# difference in AUC between DTRs ++ and -+
-# This will be used to calculate power when standardized effect size is fixed
-# and N is varied
+# Create list.input.means data frames where difference in end-of-study means
+# or change score between DTRs ++ and -+ is gradually increased. 
+# This will be used to calculate power when N is fixed while standardized 
+# effect size is varied
 ###############################################################################
 dat <- matrix(rep(NA, 6*(input.tot.time)), byrow=TRUE, ncol=input.tot.time)
 colnames(dat) <- paste("time",1:input.tot.time, sep=".")
 dat <- data.frame(names.seq, dat)
 dat <- replace(dat, is.na(dat), 1.5)
-increments <- seq(0.5, 18, 0.5)/3.5
+increments <- seq(0.5, 5.5, 0.5)
 
-auc.list.input.means <- list()
+list.input.means <- list()
 for(i in 1:length(increments)){
   k <- increments[i]
   tmpdat <- dat
-  
-  tmpdat[tmpdat$seq=="minus.r","time.3"] <- tmpdat[tmpdat$seq=="minus.r","time.3"] + k
-  tmpdat[tmpdat$seq=="minus.nr.plus","time.3"] <- tmpdat[tmpdat$seq=="minus.nr.plus","time.3"] + k
-  
-  tmpdat[tmpdat$seq=="minus.r","time.4"] <- tmpdat[tmpdat$seq=="minus.r","time.4"] + k
-  tmpdat[tmpdat$seq=="minus.nr.plus","time.4"] <- tmpdat[tmpdat$seq=="minus.nr.plus","time.4"] + k
-  
-  tmpdat[tmpdat$seq=="minus.r","time.5"] <- tmpdat[tmpdat$seq=="minus.r","time.5"] + k
-  tmpdat[tmpdat$seq=="minus.nr.plus","time.5"] <- tmpdat[tmpdat$seq=="minus.nr.plus","time.5"] + k
-  
   tmpdat[tmpdat$seq=="minus.r","time.6"] <- tmpdat[tmpdat$seq=="minus.r","time.6"] + k
   tmpdat[tmpdat$seq=="minus.nr.plus","time.6"] <- tmpdat[tmpdat$seq=="minus.nr.plus","time.6"] + k
-  
-  auc.list.input.means <- append(auc.list.input.means, list(tmpdat))
+  list.input.means <- append(list.input.means, list(tmpdat))
 }
 
 ###############################################################################
@@ -101,27 +78,40 @@ dat <- replace(dat, is.na(dat), 0.6)
 input.prop.zeros <- dat
 
 ###############################################################################
-# Calculate estimated covariance of regression model parameters:
-# difference in AUC
-# =============================================================================
-# N is fixed while standardized effect size is varied
+# Calculate standardized effect size and simulated within-person correlation 
+# by DTR
 ###############################################################################
 input.N <- 10000
-input.n4 <- NA_real_
-collect.estimated.covmat <- list()
+collect.correlation <- list()
 
-for(idx.i in 1:length(list.input.rho)){
-  input.rho <- list.input.rho[[idx.i]]
+for(i in 1:length(list.input.rho)){
+  input.rho <- list.input.rho[[i]]
   
-  for(idx.j in 1:length(list.input.means)){
-    input.means <- auc.list.input.means[[idx.j]]
+  for(j in 1:length(list.input.means)){
+    input.means <- list.input.means[[j]]
     
-    source(file.path(path.code,"calc-covmat.R"))
-    list.df.est.beta <- lapply(list.df.est.beta, function(x){
-      x$datagen.params$input.means <- idx.j
-      return(x)
-    })
-    collect.estimated.covmat <- append(collect.estimated.covmat, list(list.df.est.beta))
+    for(k in 1:5000){
+      # Simulate potential outcomes for the 10000 individuals for these inputs
+      df.list <- GeneratePotentialYit(sim=k, 
+                                      N=input.N, 
+                                      tot.time=input.tot.time, 
+                                      rand.time=input.rand.time, 
+                                      cutoff=input.cutoff, 
+                                      rho=input.rho, 
+                                      input.prop.zeros=input.prop.zeros, 
+                                      input.means=input.means)
+      
+      # Calculate correlation
+      this.corr <- DTRCorrelationPO(df.list = df.list)
+      this.corr <- ReshapeList(x = list(this.corr), idx=1)
+      this.corr$idx.input.means <- j
+      this.corr$sim <- k
+      
+      # Append to list
+      collect.correlation <- append(collect.correlation, list(this.corr))
+    }
+    
+    remove(df.list)
   }
 }
 
@@ -129,5 +119,5 @@ end.time <- Sys.time()
 ###############################################################################
 # Save workspace
 ###############################################################################
-save.image(file = file.path(path.output_data, use.working.corr, "estimated-covmat-02.RData"))
+save.image(file = file.path(path.output_data, "params-curve-01.RData"))
 
