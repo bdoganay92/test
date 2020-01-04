@@ -113,7 +113,7 @@ collect.estimated.covmat <- list()
 for(idx.i in 1:length(list.input.rho)){
   input.rho <- list.input.rho[[idx.i]]
   
-  for(idx.j in 1:length(list.input.means)){
+  for(idx.j in 1:length(auc.list.input.means)){
     input.means <- auc.list.input.means[[idx.j]]
     
     source(file.path(path.code,"calc-covmat.R"))
