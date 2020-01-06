@@ -69,7 +69,7 @@ dat <- matrix(rep(NA, 6*(input.tot.time)), byrow=TRUE, ncol=input.tot.time)
 colnames(dat) <- paste("time",1:input.tot.time, sep=".")
 dat <- data.frame(names.seq, dat)
 dat <- replace(dat, is.na(dat), 1.5)
-increments <- seq(0.5, 18, 0.5)/3.5
+increments <- seq(0.5, 15, 0.5)/3.5
 
 auc.list.input.means <- list()
 for(i in 1:length(increments)){
@@ -106,7 +106,7 @@ input.prop.zeros <- dat
 # =============================================================================
 # N is fixed while standardized effect size is varied
 ###############################################################################
-input.N <- 10000
+input.N <- 5000
 input.n4 <- NA_real_
 collect.estimated.covmat <- list()
 
@@ -122,6 +122,7 @@ for(idx.i in 1:length(list.input.rho)){
       return(x)
     })
     collect.estimated.covmat <- append(collect.estimated.covmat, list(list.df.est.beta))
+    remove(list.df.est.beta)
   }
 }
 
