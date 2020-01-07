@@ -69,7 +69,7 @@ dat <- matrix(rep(NA, 6*(input.tot.time)), byrow=TRUE, ncol=input.tot.time)
 colnames(dat) <- paste("time",1:input.tot.time, sep=".")
 dat <- data.frame(names.seq, dat)
 dat <- replace(dat, is.na(dat), 1.5)
-increments <- seq(0.5, 15, 0.5)/3.5
+increments <- seq(3, 15, 3)/3.5
 
 auc.list.input.means <- list()
 for(i in 1:length(increments)){
@@ -108,7 +108,7 @@ input.prop.zeros <- dat
 ###############################################################################
 input.N <- 5000
 input.n4 <- NA_real_
-collect.estimated.covmat <- list()
+collect.estimates <- list()
 
 for(idx.i in 1:length(list.input.rho)){
   input.rho <- list.input.rho[[idx.i]]
@@ -117,12 +117,37 @@ for(idx.i in 1:length(list.input.rho)){
     input.means <- auc.list.input.means[[idx.j]]
     
     source(file.path(path.code,"calc-covmat.R"))
-    list.df.est.beta <- lapply(list.df.est.beta, function(x){
-      x$datagen.params$input.means <- idx.j
-      return(x)
+    
+    ###########################################################################
+    # Get mean of covmat
+    ###########################################################################
+    list.covmat.beta <- discard(list.df.est.beta, function(x){
+      return(x$estimates$converged==0)
     })
-    collect.estimated.covmat <- append(collect.estimated.covmat, list(list.df.est.beta))
-    remove(list.df.est.beta)
+    list.covmat.beta <- lapply(list.covmat.beta, function(x){
+      covmat <- (x$estimates$est.cov.beta)
+      covmat <- as.matrix(covmat)
+      return(covmat)
+    })
+    sum.covmat.beta <- reduce(.x = list.covmat.beta, .f = `+`)
+    
+    list.converged.beta <- lapply(list.df.est.beta, function(x){
+      covmat <- (x$estimates$converged)
+      return(covmat)
+    })
+    sum.converged.beta <- reduce(.x = list.converged.beta, .f = `+`)
+    
+    mean.covmat.beta <- sum.covmat.beta/sum.converged.beta
+    mean.sandwich.beta <- input.N*mean.covmat.beta
+    
+    datagen.params <- list.df.est.beta[[length(list.df.est.beta)]]$datagen.params
+    datagen.params$input.means <- idx.j
+    
+    out.list <- list(datagen.params = datagen.params,
+                     estimates = mean.sandwich.beta)
+    
+    collect.estimates <- append(collect.estimates, out.list)
+    remove(list.df.est.beta, list.covmat.beta, list.converged.beta)
   }
 }
 

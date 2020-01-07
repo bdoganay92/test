@@ -22,7 +22,7 @@ source(file.path(path.code,"analysis-utils.R"))
 input.alpha <- 0.05
 input.rand.time <- 2
 input.tot.time <- 6
-list.input.rho <- as.list(seq(0,0.99,by=0.1))
+list.input.rho <- as.list(seq(0,0.99,by=0.05))
 input.cutoff <- 0
 names.seq <- matrix(c("plus.r", "plus.nr.plus", "plus.nr.minus", 
                       "minus.r", "minus.nr.plus", "minus.nr.minus"), 
@@ -57,7 +57,7 @@ dat <- matrix(rep(NA, 6*(input.tot.time)), byrow=TRUE, ncol=input.tot.time)
 colnames(dat) <- paste("time",1:input.tot.time, sep=".")
 dat <- data.frame(names.seq, dat)
 dat <- replace(dat, is.na(dat), 1.5)
-increments <- seq(0.5, 5.5, 0.5)
+increments <- seq(0.5, 2.5, 0.5)
 
 list.input.means <- list()
 for(i in 1:length(increments)){
@@ -81,7 +81,8 @@ input.prop.zeros <- dat
 # Calculate standardized effect size and simulated within-person correlation 
 # by DTR
 ###############################################################################
-input.N <- 10000
+input.N <- 5000
+input.n4 <- NA_real_
 collect.correlation <- list()
 
 for(i in 1:length(list.input.rho)){
@@ -90,28 +91,71 @@ for(i in 1:length(list.input.rho)){
   for(j in 1:length(list.input.means)){
     input.means <- list.input.means[[j]]
     
-    for(k in 1:5000){
-      # Simulate potential outcomes for the 10000 individuals for these inputs
-      df.list <- GeneratePotentialYit(sim=k, 
-                                      N=input.N, 
-                                      tot.time=input.tot.time, 
-                                      rand.time=input.rand.time, 
-                                      cutoff=input.cutoff, 
-                                      rho=input.rho, 
-                                      input.prop.zeros=input.prop.zeros, 
-                                      input.means=input.means)
-      
-      # Calculate correlation
-      this.corr <- DTRCorrelationPO(df.list = df.list)
-      this.corr <- ReshapeList(x = list(this.corr), idx=1)
-      this.corr$idx.input.means <- j
-      this.corr$sim <- k
-      
-      # Append to list
-      collect.correlation <- append(collect.correlation, list(this.corr))
-    }
+    gridx <- expand.grid(nsim=1:5000, 
+                         input.N=input.N,
+                         input.rand.time=input.rand.time, 
+                         input.tot.time=input.tot.time,
+                         input.cutoff=input.cutoff,
+                         input.rho=input.rho,
+                         input.n4=input.n4)
     
-    remove(df.list)
+    list.gridx <- apply(gridx, 1, as.list)
+    list.gridx <- lapply(list.gridx, function(this.list, 
+                                              means=input.means,
+                                              prop.zeros=input.prop.zeros){
+      this.list$input.means <- input.means
+      this.list$input.prop.zeros <- input.prop.zeros
+      return(this.list)
+    })
+    
+    ncore <- detectCores()
+    cl <- makeCluster(ncore - 1)
+    clusterSetRNGStream(cl, 102399)
+    clusterExport(cl, c("path.code",
+                        "path.input_data",
+                        "path.output_data",
+                        "list.gridx",
+                        "j"))
+    clusterEvalQ(cl,
+                 {
+                   library(dplyr)
+                   library(assertthat)
+                   library(rootSolve)
+                   library(mvtnorm)
+                   library(geeM)
+                   source(file.path(path.code, "input-utils.R"))
+                   source(file.path(path.code, "datagen-utils.R"))
+                   source(file.path(path.code, "analysis-utils.R"))
+                 })
+    
+    list.df.potential <- parLapply(cl=cl,
+                                   X=list.gridx,
+                                   fun=function(this.gridx){
+                                     df <- GeneratePotentialYit(sim=this.gridx$nsim, 
+                                                                N=this.gridx$input.N, 
+                                                                tot.time=this.gridx$input.tot.time, 
+                                                                rand.time=this.gridx$input.rand.time, 
+                                                                cutoff=this.gridx$input.cutoff, 
+                                                                rho=this.gridx$input.rho, 
+                                                                input.prop.zeros=this.gridx$input.prop.zeros, 
+                                                                input.means=this.gridx$input.means,
+                                                                input.n4=this.gridx$input.n4)
+                                     return(df)
+                                   })
+    
+    list.corr <- parLapply(cl=cl,
+                           X=list.df.potential,
+                           fun=function(this.list){
+                             this.corr <- DTRCorrelationPO(df.list = this.list)
+                             this.corr <- ReshapeList(x = list(this.corr), idx=1)
+                             this.corr$idx.input.means <- j
+                             return(this.corr)
+                           })
+    
+    stopCluster(cl)
+    
+    remove(list.df.potential, list.gridx)
+    collect.correlation <- append(collect.correlation, list.corr)
   }
 }
 
