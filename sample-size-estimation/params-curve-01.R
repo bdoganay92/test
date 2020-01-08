@@ -81,7 +81,7 @@ input.prop.zeros <- dat
 # Calculate standardized effect size and simulated within-person correlation 
 # by DTR
 ###############################################################################
-input.N <- 5000
+input.N <- 1000
 input.n4 <- NA_real_
 collect.correlation <- list()
 

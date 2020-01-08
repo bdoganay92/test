@@ -106,7 +106,7 @@ input.prop.zeros <- dat
 # =============================================================================
 # N is fixed while standardized effect size is varied
 ###############################################################################
-input.N <- 5000
+input.N <- 1000
 input.n4 <- NA_real_
 collect.estimates <- list()
 
