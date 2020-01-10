@@ -101,37 +101,61 @@ for(idx.i in 1:length(list.input.rho)){
     input.means <- list.input.means[[idx.j]]
     
     source(file.path(path.code,"calc-covmat.R"))
+    datagen.params <- list.df.est.beta[[length(list.df.est.beta)]]$datagen.params
+    datagen.params$input.means <- idx.j
     
     ###########################################################################
     # Get mean of covmat
     ###########################################################################
-    list.covmat.beta <- discard(list.df.est.beta, function(x){
-      return(x$estimates$converged==0)
-    })
-    list.covmat.beta <- lapply(list.covmat.beta, function(x){
-      covmat <- (x$estimates$est.cov.beta)
-      covmat <- as.matrix(covmat)
-      return(covmat)
-    })
-    sum.covmat.beta <- reduce(.x = list.covmat.beta, .f = `+`)
     
+    # First, determine how many simulation runs resulted in convergence
     list.converged.beta <- lapply(list.df.est.beta, function(x){
-      covmat <- (x$estimates$converged)
-      return(covmat)
+      converged <- (x$estimates$converged)
+      return(converged)
     })
     sum.converged.beta <- reduce(.x = list.converged.beta, .f = `+`)
     
-    mean.covmat.beta <- sum.covmat.beta/sum.converged.beta
-    mean.sandwich.beta <- input.N*mean.covmat.beta
+    # Discard list elements corresponding to simulation runs
+    # that did not converge
+    list.df.est.beta <- discard(list.df.est.beta, function(x){
+      return(x$estimates$converged==0)
+    })
     
-    datagen.params <- list.df.est.beta[[length(list.df.est.beta)]]$datagen.params
-    datagen.params$input.means <- idx.j
+    # Calculate standard error of differences
+    list.C <- CreateC(input.tot.time = input.tot.time, input.rand.time = input.rand.time)
+    list.stderr.eos.means <- lapply(list.df.est.beta, EstimateStdErrDiffs, D = D.eos.means, list.C = list.C)
+    list.stderr.change.score <- lapply(list.df.est.beta, EstimateStdErrDiffs, D = D.change.score, list.C = list.C)
     
-    out.list <- list(datagen.params = datagen.params,
-                     estimates = mean.sandwich.beta)
+    # Only keep those list elements corresponding to the comparison
+    # between DTRs plusplus vs. minusplus
+    list.stderr.eos.means <- lapply(list.stderr.eos.means, function(x){
+      return(list(x$plusplus.minusplus))
+    })
+    list.stderr.eos.means <- lapply(list.stderr.eos.means, ReshapeList)
     
-    collect.estimates <- append(collect.estimates, out.list)
-    remove(list.df.est.beta, list.covmat.beta, list.converged.beta)
+    list.stderr.change.score <- lapply(list.stderr.change.score, function(x){
+      return(list(x$plusplus.minusplus))
+    })
+    list.stderr.change.score <- lapply(list.stderr.change.score, ReshapeList)
+    
+    # Change from list to data frame and then calculate mean across all Monte Carlo samples
+    df.stderr.eos.means <- bind_rows(list.stderr.eos.means)
+    df.stderr.change.score <- bind_rows(list.stderr.change.score)
+    mean.stderr.eos.means <- sum(df.stderr.eos.means$estimates)/sum.converged.beta
+    mean.stderr.change.score <- sum(df.stderr.change.score$estimates)/sum.converged.beta
+    mean.sandwich.eos.means <- (datagen.params$N) * ((mean.stderr.eos.means)^2)
+    mean.sandwich.change.score <- (datagen.params$N) * ((mean.stderr.change.score)^2)
+    
+    out.df <- cbind(datagen.params,
+                    mean.stderr.eos.means,
+                    mean.stderr.change.score,
+                    mean.sandwich.eos.means,
+                    mean.sandwich.change.score)
+    
+    out.df <- as.data.frame(out.df)
+    
+    collect.estimates <- append(collect.estimates, list(out.df))
+    remove(list.df.est.beta, list.converged.beta, list.stderr.eos.means, list.stderr.change.score)
   }
 }
 
