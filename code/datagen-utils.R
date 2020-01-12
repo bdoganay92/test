@@ -868,6 +868,84 @@ DTRCorrelationPO <- function(df.list){
   return(list.out)
 }
 
+SeqCorrelationPO <- function(df.list){
+  
+  # Args:
+  #   df: ADDLATER
+  
+  datagen.params <- df.list$datagen.params
+  df <- df.list$df.potential.Yit
+  
+  # Sequence (+1,1)
+  widedat.plus.r <- df %>% filter(A1==1 & A2==1 & R==1) %>% select(id, t, Yit) %>%
+    reshape(data = ., timevar = "t", idvar = "id", direction = "wide") %>%
+    select(-id)
+  
+  cormat.plus.r <- suppressWarnings(cor(widedat.plus.r))
+  
+  # Sequence (+1,0,+1)
+  widedat.plus.nr.plus <- df %>% filter(A1==1 & A2==1 & R==0) %>% select(id, t, Yit) %>%
+    reshape(data = ., timevar = "t", idvar = "id", direction = "wide") %>%
+    select(-id)
+  
+  cormat.plus.nr.plus <- cor(widedat.plus.nr.plus)
+  
+  # Sequence (+1,0,-1)
+  widedat.plus.nr.minus <- df %>% filter(A1==1 & A2==-1 & R==0) %>% select(id, t, Yit) %>%
+    reshape(data = ., timevar = "t", idvar = "id", direction = "wide") %>%
+    select(-id)
+  
+  cormat.plus.nr.minus <- cor(widedat.plus.nr.minus)
+  
+  # Sequence (-1,1)
+  widedat.minus.r <- df %>% filter(A1==-1 & A2==1 & R==1) %>% select(id, t, Yit) %>%
+    reshape(data = ., timevar = "t", idvar = "id", direction = "wide") %>%
+    select(-id)
+  
+  cormat.minus.r <- suppressWarnings(cor(widedat.minus.r))
+  
+  # Sequence (-1,0,+1)
+  widedat.minus.nr.plus <- df %>% filter(A1==-1 & A2==1 & R==0) %>% select(id, t, Yit) %>%
+    reshape(data = ., timevar = "t", idvar = "id", direction = "wide") %>%
+    select(-id)
+  
+  cormat.minus.nr.plus <- cor(widedat.minus.nr.plus)
+  
+  # Sequence (-1,0,-1)
+  widedat.minus.nr.minus <- df %>% filter(A1==-1 & A2==-1 & R==0) %>% select(id, t, Yit) %>%
+    reshape(data = ., timevar = "t", idvar = "id", direction = "wide") %>%
+    select(-id)
+  
+  cormat.minus.nr.minus <- cor(widedat.minus.nr.minus)
+  
+  # Across all sequences
+  plus.r = c(cormat.plus.r[upper.tri(cormat.plus.r)],
+             cormat.plus.r[lower.tri(cormat.plus.r)])
+  
+  plus.nr.plus = c(cormat.plus.nr.plus[upper.tri(cormat.plus.nr.plus)],
+                   cormat.plus.nr.plus[lower.tri(cormat.plus.nr.plus)])
+  
+  plus.nr.minus = c(cormat.plus.nr.minus[upper.tri(cormat.plus.nr.minus)],
+                    cormat.plus.nr.minus[lower.tri(cormat.plus.nr.minus)])
+  
+  minus.r = c(cormat.minus.r[upper.tri(cormat.minus.r)],
+              cormat.minus.r[lower.tri(cormat.minus.r)])
+  
+  minus.nr.plus = c(cormat.minus.nr.plus[upper.tri(cormat.minus.nr.plus)],
+                    cormat.minus.nr.plus[lower.tri(cormat.minus.nr.plus)])
+  
+  minus.nr.minus = c(cormat.minus.nr.minus[upper.tri(cormat.minus.nr.minus)],
+                     cormat.minus.nr.minus[lower.tri(cormat.minus.nr.minus)])
+  
+  all.seq <- c(plus.r, plus.nr.plus, plus.nr.minus,
+               minus.r, minus.nr.plus, minus.nr.minus)
+  tau.ave <- mean(all.seq, na.rm=TRUE)
+  list.out <- list(datagen.params = datagen.params,
+                   estimates = data.frame(tau.ave = tau.ave))
+  
+  return(list.out)
+}
+
 CalcDeltaj <- function(list.df, L){
   
   # Args:

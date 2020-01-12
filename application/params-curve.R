@@ -22,7 +22,7 @@ source(file.path(path.code,"analysis-utils.R"))
 input.alpha <- 0.05
 input.rand.time <- 2
 input.tot.time <- 6
-list.input.rho <- as.list(seq(0,0.99,by=0.05))
+list.input.rho <- as.list(seq(0,1,by=0.02))
 input.cutoff <- 0
 this.pair <- 2 # Compare DTR plus.plus vs. DTR minus.plus
 
@@ -44,7 +44,8 @@ CheckInputData(input.prop.zeros, rand.time = input.rand.time, tot.time = input.t
 ###############################################################################
 input.N <- 1000
 input.n4 <- NA_real_
-collect.correlation <- list()
+collect.correlation.DTR <- list()
+collect.correlation.seq <- list()
 
 for(i in 1:length(list.input.rho)){
   input.rho <- list.input.rho[[i]]
@@ -100,18 +101,27 @@ for(i in 1:length(list.input.rho)){
                                    return(df)
                                  })
   
-  list.corr <- parLapply(cl=cl,
-                         X=list.df.potential,
-                         fun=function(this.list){
-                           this.corr <- DTRCorrelationPO(df.list = this.list)
-                           this.corr <- ReshapeList(x = list(this.corr), idx=1)
-                           return(this.corr)
-                         })
+  list.corr.DTR <- parLapply(cl=cl,
+                             X=list.df.potential,
+                             fun=function(this.list){
+                               this.corr <- DTRCorrelationPO(df.list = this.list)
+                               this.corr <- ReshapeList(x = list(this.corr), idx=1)
+                               return(this.corr)
+                             })
+  
+  list.corr.seq <- parLapply(cl=cl,
+                             X=list.df.potential,
+                             fun=function(this.list){
+                               this.corr <- SeqCorrelationPO(df.list = this.list)
+                               this.corr <- ReshapeList(x = list(this.corr), idx=1)
+                               return(this.corr)
+                             })
   
   stopCluster(cl)
   
   remove(list.df.potential, list.gridx)
-  collect.correlation <- append(collect.correlation, list.corr)
+  collect.correlation.DTR <- append(collect.correlation.DTR, list.corr.DTR)
+  collect.correlation.seq <- append(collect.correlation.seq, list.corr.seq)
 }
 
 end.time <- Sys.time()
