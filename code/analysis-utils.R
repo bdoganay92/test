@@ -300,7 +300,8 @@ AnalyzeData <- function(list.df, tot.time, rand.time, working.corr="independence
         
         # Make sure order is correct before proceeding to estimation
         df.replicated.observed.Yit <- df.replicated.observed.Yit %>% 
-          arrange(id, desc(A1), desc(A2), wave)
+          arrange(id, desc(A1), desc(A2), wave, ActualTime) %>%
+          select(id, wave, ActualTime, KnownWeight, A1, A2, R, Y)
         
         model.ar1 <- try(geemMod(formula = fo,
                                  data = df.replicated.observed.Yit, 
