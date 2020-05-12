@@ -210,6 +210,68 @@ ByGroupGenerateU <- function(n.group, corrdim, corrmat){
   return(U)
 }
 
+ReadInput <- function(input.df, tot.time, rand.time){
+  
+  # Args:
+  #   input.df: data frame containing means or proportions of zeros
+  #   tot.time: Total no. of time points
+  #   rand.time: Time when second randomization occurred (time is 1-indexed)
+  
+  # ---------------------------------------------------------------------------
+  # Begin tasks
+  # ---------------------------------------------------------------------------
+  
+  initial <- input.df[1,"time.1"]
+  plus <- input.df[1,paste("time.",2:rand.time,sep="")]
+  minus <- input.df[4,paste("time.",2:rand.time,sep="")]
+  plus.r <- input.df[1,paste("time.",(rand.time+1):tot.time,sep="")]
+  plus.nr.plus <- input.df[2,paste("time.",(rand.time+1):tot.time,sep="")]
+  plus.nr.minus <- input.df[3,paste("time.",(rand.time+1):tot.time,sep="")]
+  minus.r <- input.df[4,paste("time.",(rand.time+1):tot.time,sep="")]
+  minus.nr.plus <- input.df[5,paste("time.",(rand.time+1):tot.time,sep="")]
+  minus.nr.minus <- input.df[6,paste("time.",(rand.time+1):tot.time,sep="")]
+  
+  group.01 <- list(initial = initial,
+                   plus = plus,
+                   minus = minus,
+                   plus.r = plus.r,
+                   minus.r = minus.r)
+  
+  group.02 <- list(initial = initial,
+                   plus = plus,
+                   minus = minus,
+                   plus.r = plus.r,
+                   minus.nr.plus = minus.nr.plus,
+                   minus.nr.minus = minus.nr.minus)
+  
+  group.03 <- list(initial = initial,
+                   plus = plus,
+                   minus = minus,
+                   minus.r = minus.r,
+                   plus.nr.plus = plus.nr.plus,
+                   plus.nr.minus = plus.nr.minus)
+  
+  group.04 <- list(initial = initial,
+                   plus = plus,
+                   minus = minus,
+                   plus.nr.plus = plus.nr.plus,
+                   plus.nr.minus = plus.nr.minus,
+                   minus.nr.plus = minus.nr.plus,
+                   minus.nr.minus = minus.nr.minus)
+  
+  group.01 <- lapply(group.01, as.numeric)
+  group.02 <- lapply(group.02, as.numeric)
+  group.03 <- lapply(group.03, as.numeric)
+  group.04 <- lapply(group.04, as.numeric)
+  
+  all.groups <- list(group.01 = group.01,
+                     group.02 = group.02,
+                     group.03 = group.03,
+                     group.04 = group.04)
+  
+  return(all.groups)
+}
+
 ByGroupMatrixToList <- function(mat, group, rand.time, tot.time){
   
   # Args:
@@ -945,83 +1007,4 @@ SeqCorrelationPO <- function(df.list){
   
   return(list.out)
 }
-
-CalcDeltaj <- function(list.df, L){
-  
-  # Args:
-  #   df: ADDLATER
-  #   L: ADDLATER
-  
-  datagen.params <- list.df$datagen.params
-  df <- list.df$df.potential.Yit
-  
-  # DTR (++)
-  widedat.plusplus <- df %>% filter(A1==1 & A2==1) %>% select(id, t, Yit) %>%
-    reshape(data = ., timevar = "t", idvar = "id", direction = "wide") %>%
-    select(-id)
-  
-  Q.plusplus <- apply(widedat.plusplus, 1, function(this.participant.row, Lmat=L){
-    return(Lmat %*% this.participant.row)
-  })
-  
-  meanQ.plusplus <- mean(Q.plusplus)
-  varQ.plusplus <- var(Q.plusplus)
-  
-  # DTR (+-)
-  widedat.plusminus <- df %>% filter(A1==1 & A2==-1) %>% select(id, t, Yit) %>%
-    reshape(data = ., timevar = "t", idvar = "id", direction = "wide") %>%
-    select(-id)
-  
-  Q.plusminus <- apply(widedat.plusminus, 1, function(this.participant.row, Lmat=L){
-    return(Lmat %*% this.participant.row)
-  })
-  
-  meanQ.plusminus <- mean(Q.plusminus)
-  varQ.plusminus <- var(Q.plusminus)
-  
-  # DTR (-+)
-  widedat.minusplus <- df %>% filter(A1==-1 & A2==1) %>% select(id, t, Yit) %>%
-    reshape(data = ., timevar = "t", idvar = "id", direction = "wide") %>%
-    select(-id)
-  
-  Q.minusplus <- apply(widedat.minusplus, 1, function(this.participant.row, Lmat=L){
-    return(Lmat %*% this.participant.row)
-  })
-  
-  meanQ.minusplus <- mean(Q.minusplus)
-  varQ.minusplus <- var(Q.minusplus)
-  
-  # DTR (--)
-  widedat.minusminus <- df %>% filter(A1==-1 & A2==-1) %>% select(id, t, Yit) %>%
-    reshape(data = ., timevar = "t", idvar = "id", direction = "wide") %>%
-    select(-id)
-  
-  Q.minusminus <- apply(widedat.minusminus, 1, function(this.participant.row, Lmat=L){
-    return(Lmat %*% this.participant.row)
-  })
-  
-  meanQ.minusminus <- mean(Q.minusminus)
-  varQ.minusminus <- var(Q.minusminus)
-  
-  #############################################################################
-  # Calculate delta_j
-  #############################################################################
-  delta.plusplus.plusminus <- abs((meanQ.plusplus - meanQ.plusminus))/sqrt((varQ.plusplus + varQ.plusminus)/2)
-  delta.plusplus.minusplus <- abs((meanQ.plusplus - meanQ.minusplus))/sqrt((varQ.plusplus + varQ.minusplus)/2)
-  delta.plusplus.minusminus <- abs((meanQ.plusplus - meanQ.minusminus))/sqrt((varQ.plusplus + varQ.minusminus)/2)
-  delta.plusminus.minusplus <- abs((meanQ.plusminus - meanQ.minusplus))/sqrt((varQ.plusminus + varQ.minusplus)/2)
-  delta.plusminus.minusminus <- abs((meanQ.plusminus - meanQ.minusminus))/sqrt((varQ.plusminus + varQ.minusminus)/2)
-  delta.minusminus.minusplus <- abs((meanQ.minusminus - meanQ.minusplus))/sqrt((varQ.minusminus + varQ.minusplus)/2)
-  
-  outdf <- list(plusplus.plusminus = list(datagen.params = datagen.params, estimates=data.frame(delta.plusplus.plusminus=delta.plusplus.plusminus)),
-                plusplus.minusplus = list(datagen.params = datagen.params, estimates=data.frame(delta.plusplus.minusplus=delta.plusplus.minusplus)),
-                plusplus.minusminus = list(datagen.params = datagen.params, estimates=data.frame(delta.plusplus.minusminus=delta.plusplus.minusminus)),
-                plusminus.minusplus = list(datagen.params = datagen.params, estimates=data.frame(delta.plusminus.minusplus=delta.plusminus.minusplus)),
-                plusminus.minusminus = list(datagen.params = datagen.params, estimates=data.frame(delta.plusminus.minusminus=delta.plusminus.minusminus)),
-                minusminus.minusplus = list(datagen.params = datagen.params, estimates=data.frame(delta.minusminus.minusplus=delta.minusminus.minusplus)))
-  
-  return(outdf)
-}
-
-
 

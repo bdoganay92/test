@@ -6,10 +6,12 @@ library(mvtnorm)
 library(geeM)
 library(parallel)
 library(ggplot2)
+library(gridExtra)
 
 path.code <- Sys.getenv("path.code")
 path.input_data <- Sys.getenv("path.input_data")
 path.output_data <- Sys.getenv("path.output_data")
+
 source(file.path(path.code,"input-utils.R"))
 source(file.path(path.code,"datagen-utils.R"))
 source(file.path(path.code,"analysis-utils.R"))
@@ -17,6 +19,7 @@ source(file.path(path.code, "geemMod.r"))
 environment(geemMod) <- asNamespace("geeM")
 
 # Note that 
+#   - input.M
 #   - input.rand.time, input.tot.time, 
 #   - input.N
 #   - input.rho
@@ -28,13 +31,7 @@ environment(geemMod) <- asNamespace("geeM")
 # -----------------------------------------------------------------------------
 # Combine all inputs into a grid
 # -----------------------------------------------------------------------------
-# input.tot.time and input.rand.time cannot be sequences of numbers
-# but input.N, input.cutoff, and input.rho could be specified as sequences 
-# of numbers
-assert_that(length(input.tot.time)==1, msg="input.tot.time cannot be a sequence of numbers")
-assert_that(length(input.rand.time)==1, msg="input.rand.time cannot be a sequence of numbers")
-
-gridx <- expand.grid(nsim=1:5000, 
+gridx <- expand.grid(nsim=1:input.M, 
                      input.N=input.N,
                      input.rand.time=input.rand.time, 
                      input.tot.time=input.tot.time,
