@@ -22,7 +22,7 @@ environment(geemMod) <- asNamespace("geeM")
 ###############################################################################
 # User-specified design parameters
 ###############################################################################
-input.N <- 700
+input.N <- 500
 input.alpha <- 0.05
 
 this.pair <- 2
@@ -30,7 +30,7 @@ input.rand.time <- 2
 input.tot.time <- 6
 input.cutoff <- 0
 
-input.rho <- 0.80
+input.rho <- 0.75
 
 # Means and proportion of zeros
 input.means <- read.csv(file.path(path.input_data, "input_means.csv"))
@@ -264,9 +264,32 @@ print(coverage.diff.AUC)
 print(bias.diff.eos.means)
 print(bias.diff.AUC)
 
+###############################################################################
+# Now, power can be calculated
+###############################################################################
+power.diff.eos.means <- left_join(est.diff.eos.means, est.stderr.diff.eos.means, by = c("datagen.params.N", "datagen.params.rho", "datagen.params.sim")) %>%
+  rename(est.diff=estimates.x, est.stderr=estimates.y) %>%
+  mutate(z = est.diff/est.stderr) %>%
+  mutate(is.reject = abs(z)>qnorm(1-(input.alpha/2))) %>%
+  group_by(datagen.params.N, datagen.params.rho) %>%
+  summarise(power = mean(is.reject, na.rm=TRUE))
+
+power.diff.AUC <- left_join(est.diff.AUC, est.stderr.diff.AUC, by = c("datagen.params.N", "datagen.params.rho", "datagen.params.sim")) %>%
+  rename(est.diff=estimates.x, est.stderr=estimates.y) %>%
+  mutate(z = est.diff/est.stderr) %>%
+  mutate(is.reject = abs(z)>qnorm(1-(input.alpha/2))) %>%
+  group_by(datagen.params.N, datagen.params.rho) %>%
+  summarise(power = mean(is.reject, na.rm=TRUE))
+
+###############################################################################
+# Display power
+###############################################################################
+print(power.diff.eos.means)
+print(power.diff.AUC)
+
 # Audio notification
 beep("mario")
 
 # Save RData
-save.image(file = file.path(path.output_data, "coverage_d_1_N_700.RData"))
+save.image(file = file.path(path.output_data, paste("coverage_and_power_","d_",d,"_N_",input.N,".RData", sep="")))
 

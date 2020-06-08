@@ -43,7 +43,7 @@ CheckInputData(input.df = input.prop.zeros, rand.time = input.rand.time, tot.tim
 ###############################################################################
 # Vary the means
 ###############################################################################
-d <- -1
+d <- 0.5
 input.means$time.3[4:5] <- input.means$time.3[4:5] + 0.10*d
 input.means$time.4[4:5] <- input.means$time.4[4:5] + 0.50*d
 input.means$time.5[4:5] <- input.means$time.5[4:5] + 0.90*d
@@ -219,5 +219,4 @@ print(N.required.AUC)
 beep("mario")
 
 # Save RData
-save.image(file = file.path(path.output_data, "Nrequired_d_-1.0.RData"))
-
+save.image(file = file.path(path.output_data, paste("Nrequired_", "rho_", input.rho,  "_d_", d, ".RData", sep="")))
