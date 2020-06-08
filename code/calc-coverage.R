@@ -7,6 +7,7 @@ library(geeM)
 library(parallel)
 library(ggplot2)
 library(gridExtra)
+library(beepr)
 
 path.code <- Sys.getenv("path.code")
 path.input_data <- Sys.getenv("path.input_data")
@@ -22,19 +23,53 @@ environment(geemMod) <- asNamespace("geeM")
 # User-specified design parameters
 ###############################################################################
 input.N <- 700
-this.pair <- 2
-input.power <- 0.80
 input.alpha <- 0.05
+
+this.pair <- 2
 input.rand.time <- 2
 input.tot.time <- 6
 input.cutoff <- 0
+
 input.rho <- 0.80
+
+# Means and proportion of zeros
 input.means <- read.csv(file.path(path.input_data, "input_means.csv"))
 input.prop.zeros  <- read.csv(file.path(path.input_data, "input_prop_zeros.csv"))
 
 # Check that input data is in the correct format
 CheckInputData(input.df = input.means, rand.time = input.rand.time, tot.time = input.tot.time)
 CheckInputData(input.df = input.prop.zeros, rand.time = input.rand.time, tot.time = input.tot.time)
+
+###############################################################################
+# Vary the means
+###############################################################################
+d <- 1
+input.means$time.3[4:5] <- input.means$time.3[4:5] + d
+input.means$time.4[4:5] <- input.means$time.4[4:5] + d
+input.means$time.5[4:5] <- input.means$time.5[4:5] + d
+input.means$time.6[4:5] <- input.means$time.6[4:5] + d
+
+###############################################################################
+# Vary the proportion of zeros
+###############################################################################
+m <- 1
+
+input.prop.zeros$time.3[1:2] <- input.prop.zeros$time.3[1:2] * m
+input.prop.zeros$time.4[1:2] <- input.prop.zeros$time.4[1:2] * m
+input.prop.zeros$time.5[1:2] <- input.prop.zeros$time.5[1:2] * m
+input.prop.zeros$time.6[1:2] <- input.prop.zeros$time.6[1:2] * m
+
+input.prop.zeros$time.3[4:5] <- input.prop.zeros$time.3[4:5] * m
+input.prop.zeros$time.4[4:5] <- input.prop.zeros$time.4[4:5] * m
+input.prop.zeros$time.5[4:5] <- input.prop.zeros$time.5[4:5] * m
+input.prop.zeros$time.6[4:5] <- input.prop.zeros$time.6[4:5] * m
+
+###############################################################################
+# Other inputs required in simulation (not specified by user)
+###############################################################################
+input.M <- 1000
+input.n4 <- NA_real_
+use.working.corr <- "ar1"
 
 ###############################################################################
 # Specify L and D matrices for contrasts of interest 
@@ -58,13 +93,6 @@ for(i in 1:input.tot.time){
   }
 }
 D.AUC <- cbind(L.AUC,-L.AUC)
-
-###############################################################################
-# Other inputs required in simulation (not specified by user)
-###############################################################################
-input.M <- 30
-input.n4 <- NA_real_
-use.working.corr <- "ar1"
 
 ###############################################################################
 # Calculate estimates of beta and covmat
@@ -211,10 +239,34 @@ coverage.diff.AUC <- left_join(est.diff.AUC, est.stderr.diff.AUC, by = c("datage
   summarise(coverage = mean(is.cover, na.rm=TRUE))
 
 ###############################################################################
-# Display coverage
+# Calculate bias in estimates
+###############################################################################
+bias.diff.eos.means <- left_join(est.diff.eos.means, est.stderr.diff.eos.means, by = c("datagen.params.N", "datagen.params.rho", "datagen.params.sim")) %>%
+  rename(est.diff=estimates.x, est.stderr=estimates.y) %>%
+  mutate(truth.diff = diff.eos.means, truth.stderr = sqrt(var(est.diff, na.rm=TRUE))) %>%
+  mutate(bias.diff = est.diff - truth.diff, bias.stderr = est.stderr - truth.stderr) %>%
+  group_by(datagen.params.N, datagen.params.rho) %>%
+  summarise(ave.bias.diff = mean(bias.diff, na.rm=TRUE), ave.bias.stderr = mean(bias.stderr, na.rm=TRUE))
+
+bias.diff.AUC <- left_join(est.diff.AUC, est.stderr.diff.AUC, by = c("datagen.params.N", "datagen.params.rho", "datagen.params.sim")) %>%
+  rename(est.diff=estimates.x, est.stderr=estimates.y) %>%
+  mutate(truth.diff = diff.AUC, truth.stderr = sqrt(var(est.diff, na.rm=TRUE))) %>%
+  mutate(bias.diff = est.diff - truth.diff, bias.stderr = est.stderr - truth.stderr) %>%
+  group_by(datagen.params.N, datagen.params.rho) %>%
+  summarise(ave.bias.diff = mean(bias.diff, na.rm=TRUE), ave.bias.stderr = mean(bias.stderr, na.rm=TRUE))
+
+###############################################################################
+# Display results
 ###############################################################################
 print(coverage.diff.eos.means)
 print(coverage.diff.AUC)
 
+print(bias.diff.eos.means)
+print(bias.diff.AUC)
 
+# Audio notification
+beep("mario")
+
+# Save RData
+save.image(file = file.path(path.output_data, "coverage_d_1_N_700.RData"))
 

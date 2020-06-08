@@ -133,6 +133,8 @@ list.df.est.beta <- parLapply(cl = cl,
                               rand.time = input.rand.time,
                               working.corr = use.working.corr)
 
+
+
 stopCluster(cl)
 
 remove(list.df.observed, list.df.wr)

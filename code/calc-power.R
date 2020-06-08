@@ -7,6 +7,7 @@ library(geeM)
 library(parallel)
 library(ggplot2)
 library(gridExtra)
+library(beepr)
 
 path.code <- Sys.getenv("path.code")
 path.input_data <- Sys.getenv("path.input_data")
@@ -21,20 +22,54 @@ environment(geemMod) <- asNamespace("geeM")
 ###############################################################################
 # User-specified design parameters
 ###############################################################################
-input.N <- 700
-this.pair <- 2
-input.power <- 0.80
+input.N <- 300
 input.alpha <- 0.05
+
+this.pair <- 2
 input.rand.time <- 2
 input.tot.time <- 6
 input.cutoff <- 0
-input.rho <- 0.80
+
+input.rho <- 0.85
+
+# Means and proportion of zeros
 input.means <- read.csv(file.path(path.input_data, "input_means.csv"))
 input.prop.zeros  <- read.csv(file.path(path.input_data, "input_prop_zeros.csv"))
 
 # Check that input data is in the correct format
 CheckInputData(input.df = input.means, rand.time = input.rand.time, tot.time = input.tot.time)
 CheckInputData(input.df = input.prop.zeros, rand.time = input.rand.time, tot.time = input.tot.time)
+
+###############################################################################
+# Vary the means
+###############################################################################
+d <- 1
+input.means$time.3[4:5] <- input.means$time.3[4:5] + d
+input.means$time.4[4:5] <- input.means$time.4[4:5] + d
+input.means$time.5[4:5] <- input.means$time.5[4:5] + d
+input.means$time.6[4:5] <- input.means$time.6[4:5] + d
+
+###############################################################################
+# Vary the proportion of zeros
+###############################################################################
+m <- 1
+
+input.prop.zeros$time.3[1:2] <- input.prop.zeros$time.3[1:2] * m
+input.prop.zeros$time.4[1:2] <- input.prop.zeros$time.4[1:2] * m
+input.prop.zeros$time.5[1:2] <- input.prop.zeros$time.5[1:2] * m
+input.prop.zeros$time.6[1:2] <- input.prop.zeros$time.6[1:2] * m
+
+input.prop.zeros$time.3[4:5] <- input.prop.zeros$time.3[4:5] * m
+input.prop.zeros$time.4[4:5] <- input.prop.zeros$time.4[4:5] * m
+input.prop.zeros$time.5[4:5] <- input.prop.zeros$time.5[4:5] * m
+input.prop.zeros$time.6[4:5] <- input.prop.zeros$time.6[4:5] * m
+
+###############################################################################
+# Other inputs required in simulation (not specified by user)
+###############################################################################
+input.M <- 1000
+input.n4 <- NA_real_
+use.working.corr <- "ar1"
 
 ###############################################################################
 # Specify L and D matrices for contrasts of interest 
@@ -60,16 +95,13 @@ for(i in 1:input.tot.time){
 D.AUC <- cbind(L.AUC,-L.AUC)
 
 ###############################################################################
-# Other inputs required in simulation (not specified by user)
-###############################################################################
-input.M <- 30
-input.n4 <- NA_real_
-use.working.corr <- "ar1"
-
-###############################################################################
 # Calculate estimates of beta and covmat
 ###############################################################################
+begin.time <- Sys.time()
+
 source(file.path(path.code,"calc-covmat.R"))
+
+end.time <- Sys.time()
 
 ###############################################################################
 # Using estimated values of beta, calculate estimated value of contrasts of
@@ -177,4 +209,11 @@ power.diff.AUC <- left_join(est.diff.AUC, est.stderr.diff.AUC, by = c("datagen.p
 ###############################################################################
 print(power.diff.eos.means)
 print(power.diff.AUC)
+
+# Audio notification
+beep("mario")
+
+# Save RData
+save.image(file = file.path(path.output_data, "power.RData"))
+
 

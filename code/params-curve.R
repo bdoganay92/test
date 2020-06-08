@@ -7,6 +7,7 @@ library(geeM)
 library(parallel)
 library(ggplot2)
 library(gridExtra)
+library(beepr)
 
 path.code <- Sys.getenv("path.code")
 path.input_data <- Sys.getenv("path.input_data")
@@ -21,18 +22,41 @@ environment(geemMod) <- asNamespace("geeM")
 ###############################################################################
 # User-specified design parameters
 ###############################################################################
-this.pair <- 2
-input.power <- 0.80
-input.alpha <- 0.05
 input.rand.time <- 2
 input.tot.time <- 6
 input.cutoff <- 0
+
+# Means and proportion of zeros
 input.means <- read.csv(file.path(path.input_data, "input_means.csv"))
 input.prop.zeros  <- read.csv(file.path(path.input_data, "input_prop_zeros.csv"))
 
 # Check that input data is in the correct format
 CheckInputData(input.df = input.means, rand.time = input.rand.time, tot.time = input.tot.time)
 CheckInputData(input.df = input.prop.zeros, rand.time = input.rand.time, tot.time = input.tot.time)
+
+###############################################################################
+# Vary the means
+###############################################################################
+d <- 1
+input.means$time.3[4:5] <- input.means$time.3[4:5] + 0.10*d
+input.means$time.4[4:5] <- input.means$time.4[4:5] + 0.50*d
+input.means$time.5[4:5] <- input.means$time.5[4:5] + 0.90*d
+input.means$time.6[4:5] <- input.means$time.6[4:5] + d
+
+###############################################################################
+# Vary the proportion of zeros
+###############################################################################
+m <- 1
+
+input.prop.zeros$time.3[1:2] <- input.prop.zeros$time.3[1:2] * m
+input.prop.zeros$time.4[1:2] <- input.prop.zeros$time.4[1:2] * m
+input.prop.zeros$time.5[1:2] <- input.prop.zeros$time.5[1:2] * m
+input.prop.zeros$time.6[1:2] <- input.prop.zeros$time.6[1:2] * m
+
+input.prop.zeros$time.3[4:5] <- input.prop.zeros$time.3[4:5] * m
+input.prop.zeros$time.4[4:5] <- input.prop.zeros$time.4[4:5] * m
+input.prop.zeros$time.5[4:5] <- input.prop.zeros$time.5[4:5] * m
+input.prop.zeros$time.6[4:5] <- input.prop.zeros$time.6[4:5] * m
 
 ###############################################################################
 # Specify L and D matrices for contrasts of interest 
@@ -60,15 +84,17 @@ D.AUC <- cbind(L.AUC,-L.AUC)
 ###############################################################################
 # Other inputs required in simulation (not specified by user)
 ###############################################################################
-input.M <- 30
-input.N <- 500
+input.M <- 1000
+input.N <- 5000
 input.n4 <- NA_real_
-list.input.rho <- as.list(seq(0,1,by=0.30))
+list.input.rho <- as.list(seq(0,1,by=0.05))
 
 ###############################################################################
 # Calculate correlation
 ###############################################################################
 collect.correlation <- list()
+
+begin.time <- Sys.time()
 
 for(i in 1:length(list.input.rho)){
   input.rho <- list.input.rho[[i]]
@@ -127,16 +153,31 @@ for(i in 1:length(list.input.rho)){
   list.corr <- parLapply(cl=cl,
                          X=list.df.potential,
                          fun=function(this.list){
-                           this.corr <- DTRCorrelationPO(df.list = this.list)
-                           this.corr <- ReshapeList(x = list(this.corr), idx=1)
+                           this.corr <- SeqCorrelationPO(df.list = this.list)
                            return(this.corr)
                          })
+  
+  list.tau.ave <- parLapply(cl=cl,
+                            X=list.corr,
+                            fun=function(this.list){
+                              this.tau.ave <- ReshapeList(x = list(this.list))
+                              return(this.tau.ave)
+                            })
+  
+  list.cormat <- parLapply(cl=cl,
+                            X=list.corr,
+                            fun=function(this.list){
+                              cormat <- this.list$cormat
+                              return(cormat)
+                            })
   
   stopCluster(cl)
   
   remove(list.df.potential, list.gridx)
-  collect.correlation <- append(collect.correlation, list.corr)
+  collect.correlation <- append(collect.correlation, list.tau.ave)
 }
+
+end.time <- Sys.time()
 
 collect.correlation <- do.call(rbind, collect.correlation)
 
@@ -153,7 +194,9 @@ simulated.correlation <- collect.correlation %>%
 ###############################################################################
 print(simulated.correlation)
 
+# Audio notification
+beep("mario")
 
-
-
+# Save RData
+save.image(file = file.path(path.output_data, "corr_d_1.RData"))
 

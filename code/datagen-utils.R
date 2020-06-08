@@ -1002,8 +1002,17 @@ SeqCorrelationPO <- function(df.list){
   all.seq <- c(plus.r, plus.nr.plus, plus.nr.minus,
                minus.r, minus.nr.plus, minus.nr.minus)
   tau.ave <- mean(all.seq, na.rm=TRUE)
+  
+  cormat <- list(cormat.plus.r = cormat.plus.r,
+                 cormat.plus.nr.plus = cormat.plus.nr.plus,
+                 cormat.plus.nr.minus = cormat.plus.nr.minus,
+                 cormat.minus.r = cormat.minus.r,
+                 cormat.minus.nr.plus = cormat.minus.nr.plus,
+                 cormat.minus.nr.minus = cormat.minus.nr.minus)
+  
   list.out <- list(datagen.params = datagen.params,
-                   estimates = data.frame(tau.ave = tau.ave))
+                   estimates = data.frame(tau.ave = tau.ave),
+                   cormat = cormat)
   
   return(list.out)
 }
