@@ -30,7 +30,7 @@ input.rand.time <- 2
 input.tot.time <- 6
 input.cutoff <- 0
 
-input.rho <- 0.75
+input.rho <- 0.20
 
 # Means and proportion of zeros
 input.means <- read.csv(file.path(path.input_data, "input_means.csv"))
@@ -43,7 +43,7 @@ CheckInputData(input.df = input.prop.zeros, rand.time = input.rand.time, tot.tim
 ###############################################################################
 # Vary the means
 ###############################################################################
-d <- 0.5
+d <- 1
 input.means$time.3[4:5] <- input.means$time.3[4:5] + 0.10*d
 input.means$time.4[4:5] <- input.means$time.4[4:5] + 0.50*d
 input.means$time.5[4:5] <- input.means$time.5[4:5] + 0.90*d
