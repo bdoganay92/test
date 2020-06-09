@@ -4,40 +4,14 @@
 # Setting all.names=FALSE in the call to ls() removes all variables in the
 # current environment except those beginning with a "."
 
-load(file.path(.path.output_data, "corr_d_-2.0.RData"))
-simulated.correlation$d <- d
-.collect.all.corr <- append(.collect.all.corr, list(simulated.correlation))
-rm(list = ls(all.names = FALSE))
+.alld <- c(-2,-1.5,-1,-0.5,0,0.5,1)
 
-load(file.path(.path.output_data, "corr_d_-1.5.RData"))
-simulated.correlation$d <- d
-.collect.all.corr <- append(.collect.all.corr, list(simulated.correlation))
-rm(list = ls(all.names = FALSE))
-
-load(file.path(.path.output_data, "corr_d_-1.0.RData"))
-simulated.correlation$d <- d
-.collect.all.corr <- append(.collect.all.corr, list(simulated.correlation))
-rm(list = ls(all.names = FALSE))
-
-load(file.path(.path.output_data, "corr_d_-0.5.RData"))
-simulated.correlation$d <- d
-.collect.all.corr <- append(.collect.all.corr, list(simulated.correlation))
-rm(list = ls(all.names = FALSE))
-
-load(file.path(.path.output_data, "corr_d_0.0.RData"))
-simulated.correlation$d <- d
-.collect.all.corr <- append(.collect.all.corr, list(simulated.correlation))
-rm(list = ls(all.names = FALSE))
-
-load(file.path(.path.output_data, "corr_d_0.5.RData"))
-simulated.correlation$d <- d
-.collect.all.corr <- append(.collect.all.corr, list(simulated.correlation))
-rm(list = ls(all.names = FALSE))
-
-load(file.path(.path.output_data, "corr_d_1.0.RData"))
-simulated.correlation$d <- d
-.collect.all.corr <- append(.collect.all.corr, list(simulated.correlation))
-rm(list = ls(all.names = FALSE))
+for(i in 1:length(.alld)){
+  load(file.path(.path.output_data, paste("corr_d_", .alld[i], ".RData", sep="")))
+  simulated.correlation$d <- d
+  .collect.all.corr <- append(.collect.all.corr, list(simulated.correlation))
+  rm(list = ls(all.names = FALSE))
+}
 
 # Combine all results into one plot
 .collect.all.corr <- lapply(.collect.all.corr, function(x){
@@ -53,6 +27,4 @@ for(i in 1:length(.collect.all.corr)){
   plotdat <- .collect.all.corr[[i]]
   lines(x = plotdat$datagen.params.rho, y = plotdat$simulated.corr, type="o")
 }
-
-
 
