@@ -27,36 +27,12 @@ input.tot.time <- 6
 input.cutoff <- 0
 
 # Means and proportion of zeros
-input.means <- read.csv(file.path(path.input_data, "input_means.csv"))
+input.means <- read.csv(file.path(path.input_data, "input_means_d_-1.csv"))
 input.prop.zeros  <- read.csv(file.path(path.input_data, "input_prop_zeros.csv"))
 
 # Check that input data is in the correct format
 CheckInputData(input.df = input.means, rand.time = input.rand.time, tot.time = input.tot.time)
 CheckInputData(input.df = input.prop.zeros, rand.time = input.rand.time, tot.time = input.tot.time)
-
-###############################################################################
-# Vary the means
-###############################################################################
-d <- 1
-input.means$time.3[4:5] <- input.means$time.3[4:5] + 0.10*d
-input.means$time.4[4:5] <- input.means$time.4[4:5] + 0.50*d
-input.means$time.5[4:5] <- input.means$time.5[4:5] + 0.90*d
-input.means$time.6[4:5] <- input.means$time.6[4:5] + d
-
-###############################################################################
-# Vary the proportion of zeros
-###############################################################################
-m <- 1
-
-input.prop.zeros$time.3[1:2] <- input.prop.zeros$time.3[1:2] * m
-input.prop.zeros$time.4[1:2] <- input.prop.zeros$time.4[1:2] * m
-input.prop.zeros$time.5[1:2] <- input.prop.zeros$time.5[1:2] * m
-input.prop.zeros$time.6[1:2] <- input.prop.zeros$time.6[1:2] * m
-
-input.prop.zeros$time.3[4:5] <- input.prop.zeros$time.3[4:5] * m
-input.prop.zeros$time.4[4:5] <- input.prop.zeros$time.4[4:5] * m
-input.prop.zeros$time.5[4:5] <- input.prop.zeros$time.5[4:5] * m
-input.prop.zeros$time.6[4:5] <- input.prop.zeros$time.6[4:5] * m
 
 ###############################################################################
 # Specify L and D matrices for contrasts of interest 
@@ -84,15 +60,15 @@ D.AUC <- cbind(L.AUC,-L.AUC)
 ###############################################################################
 # Other inputs required in simulation (not specified by user)
 ###############################################################################
-input.M <- 1000
+input.M <- 5000
 input.N <- 5000
 input.n4 <- NA_real_
-list.input.rho <- as.list(seq(0,1,by=0.05))
+list.input.rho <- as.list(seq(0,1,0.05))
 
 ###############################################################################
 # Calculate correlation
 ###############################################################################
-collect.correlation <- list()
+collect.correlation.tau <- list()
 
 begin.time <- Sys.time()
 
@@ -157,46 +133,123 @@ for(i in 1:length(list.input.rho)){
                            return(this.corr)
                          })
   
-  list.tau.ave <- parLapply(cl=cl,
-                            X=list.corr,
-                            fun=function(this.list){
-                              this.tau.ave <- ReshapeList(x = list(this.list))
-                              return(this.tau.ave)
-                            })
-  
+  # Note: list.cormat is of length input.M
   list.cormat <- parLapply(cl=cl,
-                            X=list.corr,
-                            fun=function(this.list){
-                              cormat <- this.list$cormat
-                              return(cormat)
-                            })
+                           X=list.corr,
+                           fun=function(this.list){
+                             cormat <- this.list$cormat
+                             return(cormat)
+                           })
   
+  # Grab for each sequence
+  list.cormat.plus.r <- parLapply(cl=cl,
+                                  X=list.cormat,
+                                  fun=function(this.list){
+                                    cormat <- this.list$cormat.plus.r
+                                    return(cormat)
+                                  })
+  
+  list.cormat.plus.nr.plus <- parLapply(cl=cl,
+                                        X=list.cormat,
+                                        fun=function(this.list){
+                                          cormat <- this.list$cormat.plus.nr.plus
+                                          return(cormat)
+                                        })
+  
+  list.cormat.plus.nr.minus <- parLapply(cl=cl,
+                                         X=list.cormat,
+                                         fun=function(this.list){
+                                           cormat <- this.list$cormat.plus.nr.minus
+                                           return(cormat)
+                                         })
+  
+  list.cormat.minus.r <- parLapply(cl=cl,
+                                   X=list.cormat,
+                                   fun=function(this.list){
+                                     cormat <- this.list$cormat.minus.r
+                                     return(cormat)
+                                   })
+  
+  list.cormat.minus.nr.plus <- parLapply(cl=cl,
+                                         X=list.cormat,
+                                         fun=function(this.list){
+                                           cormat <- this.list$cormat.minus.nr.plus
+                                           return(cormat)
+                                         })
+  
+  list.cormat.minus.nr.minus <- parLapply(cl=cl,
+                                          X=list.cormat,
+                                          fun=function(this.list){
+                                            cormat <- this.list$cormat.minus.nr.minus
+                                            return(cormat)
+                                          })
+  
+  # Reduce the lists
+  cormat.plus.r <- reduce(list.cormat.plus.r, function(matrix1,matrix2){return(matrix1+matrix2)})
+  cormat.plus.nr.plus <- reduce(list.cormat.plus.nr.plus, function(matrix1,matrix2){return(matrix1+matrix2)})
+  cormat.plus.nr.minus <- reduce(list.cormat.plus.nr.minus, function(matrix1,matrix2){return(matrix1+matrix2)})
+  
+  cormat.minus.r <- reduce(list.cormat.minus.r, function(matrix1,matrix2){return(matrix1+matrix2)})
+  cormat.minus.nr.plus <- reduce(list.cormat.minus.nr.plus, function(matrix1,matrix2){return(matrix1+matrix2)})
+  cormat.minus.nr.minus <- reduce(list.cormat.minus.nr.minus, function(matrix1,matrix2){return(matrix1+matrix2)})
+  
+  # Take average across all simulated datasets
+  cormat.plus.r <- cormat.plus.r/input.M
+  cormat.plus.nr.plus <- cormat.plus.nr.plus/input.M
+  cormat.plus.nr.minus <- cormat.plus.nr.minus/input.M
+  
+  cormat.minus.r <- cormat.minus.r/input.M
+  cormat.minus.nr.plus <- cormat.minus.nr.plus/input.M
+  cormat.minus.nr.minus <- cormat.minus.nr.minus/input.M
+  
+  # Across all sequences
+  plus.r = c(cormat.plus.r[upper.tri(cormat.plus.r)],
+             cormat.plus.r[lower.tri(cormat.plus.r)])
+  
+  plus.nr.plus = c(cormat.plus.nr.plus[upper.tri(cormat.plus.nr.plus)],
+                   cormat.plus.nr.plus[lower.tri(cormat.plus.nr.plus)])
+  
+  plus.nr.minus = c(cormat.plus.nr.minus[upper.tri(cormat.plus.nr.minus)],
+                    cormat.plus.nr.minus[lower.tri(cormat.plus.nr.minus)])
+  
+  minus.r = c(cormat.minus.r[upper.tri(cormat.minus.r)],
+              cormat.minus.r[lower.tri(cormat.minus.r)])
+  
+  minus.nr.plus = c(cormat.minus.nr.plus[upper.tri(cormat.minus.nr.plus)],
+                    cormat.minus.nr.plus[lower.tri(cormat.minus.nr.plus)])
+  
+  minus.nr.minus = c(cormat.minus.nr.minus[upper.tri(cormat.minus.nr.minus)],
+                     cormat.minus.nr.minus[lower.tri(cormat.minus.nr.minus)])
+  
+  all.seq <- c(plus.r, plus.nr.plus, plus.nr.minus,
+               minus.r, minus.nr.plus, minus.nr.minus)
+  tau.mean <- mean(all.seq, na.rm=TRUE)
+  tau.max <- max(all.seq, na.rm=TRUE)
+  tau.min <- min(all.seq, na.rm=TRUE)
+  
+  # Exit parallel computation for this value of rho
   stopCluster(cl)
   
+  # Keep record of results
+  list.est.tau <- list(data.frame(datagen.params.rho = input.rho, tau.min = tau.min, tau.mean = tau.mean, tau.max = tau.max))
+  collect.correlation.tau <- append(collect.correlation.tau, list.est.tau)
+  
+  # Prepare for next iteration
   remove(list.df.potential, list.gridx)
-  collect.correlation <- append(collect.correlation, list.tau.ave)
 }
 
 end.time <- Sys.time()
 
-collect.correlation <- do.call(rbind, collect.correlation)
-
-###############################################################################
-# Calculate simulated correlation by taking the average across all
-# Monte Carlo samples
-###############################################################################
-simulated.correlation <- collect.correlation %>% 
-  group_by(datagen.params.N, datagen.params.rho) %>% 
-  summarise(simulated.corr=mean(estimates))
-
+collect.correlation.tau <- do.call(rbind, collect.correlation.tau)
+  
 ###############################################################################
 # Display simulated correlation
 ###############################################################################
-print(simulated.correlation)
+print(collect.correlation.tau)
 
 # Audio notification
 beep("mario")
 
 # Save RData
-save.image(file = file.path(path.output_data, "corr_d_1.RData"))
+save(collect.correlation.tau, file = file.path(path.output_data, "correspondence_between_rho_and_tau.RData"))
 

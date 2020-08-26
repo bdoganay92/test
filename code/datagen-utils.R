@@ -875,61 +875,6 @@ GenerateObservedYit <- function(df.list){
   return(out.list)
 }
 
-DTRCorrelationPO <- function(df.list){
-  
-  # Args:
-  #   df: ADDLATER
-  
-  datagen.params <- df.list$datagen.params
-  df <- df.list$df.potential.Yit
-  
-  # DTR (++)
-  widedat.plusplus <- df %>% filter(A1==1 & A2==1) %>% select(id, t, Yit) %>%
-    reshape(data = ., timevar = "t", idvar = "id", direction = "wide") %>%
-    select(-id)
-  
-  cormat.plusplus <- cor(widedat.plusplus)
-  
-  # DTR (+-)
-  widedat.plusminus <- df %>% filter(A1==1 & A2==-1) %>% select(id, t, Yit) %>%
-    reshape(data = ., timevar = "t", idvar = "id", direction = "wide") %>%
-    select(-id)
-  
-  cormat.plusminus <- cor(widedat.plusminus)
-  
-  # DTR (-+)
-  widedat.minusplus <- df %>% filter(A1==-1 & A2==1) %>% select(id, t, Yit) %>%
-    reshape(data = ., timevar = "t", idvar = "id", direction = "wide") %>%
-    select(-id)
-  
-  cormat.minusplus <- cor(widedat.minusplus)
-  
-  # DTR (--)
-  widedat.minusminus <- df %>% filter(A1==-1 & A2==-1) %>% select(id, t, Yit) %>%
-    reshape(data = ., timevar = "t", idvar = "id", direction = "wide") %>%
-    select(-id)
-  
-  cormat.minusminus <- cor(widedat.minusminus)
-  
-  # Across all DTRs
-  plusplus = c(cormat.plusplus[upper.tri(cormat.plusplus)],
-               cormat.plusplus[lower.tri(cormat.plusplus)])
-  plusminus = c(cormat.plusminus[upper.tri(cormat.plusminus)],
-                cormat.plusminus[lower.tri(cormat.plusminus)])
-  minusplus = c(cormat.minusplus[upper.tri(cormat.minusplus)],
-                cormat.minusplus[lower.tri(cormat.minusplus)])
-  minusminus = c(cormat.minusminus[upper.tri(cormat.minusminus)],
-                 cormat.minusminus[lower.tri(cormat.minusminus)])
-  
-  all.DTRs <- c(plusplus, plusminus, minusplus, minusminus)
-  tau.ave <- mean(all.DTRs)
-  
-  list.out <- list(datagen.params = datagen.params,
-                   estimates = data.frame(tau.ave = tau.ave))
-  
-  return(list.out)
-}
-
 SeqCorrelationPO <- function(df.list){
   
   # Args:
@@ -980,28 +925,6 @@ SeqCorrelationPO <- function(df.list){
   
   cormat.minus.nr.minus <- cor(widedat.minus.nr.minus)
   
-  # Across all sequences
-  plus.r = c(cormat.plus.r[upper.tri(cormat.plus.r)],
-             cormat.plus.r[lower.tri(cormat.plus.r)])
-  
-  plus.nr.plus = c(cormat.plus.nr.plus[upper.tri(cormat.plus.nr.plus)],
-                   cormat.plus.nr.plus[lower.tri(cormat.plus.nr.plus)])
-  
-  plus.nr.minus = c(cormat.plus.nr.minus[upper.tri(cormat.plus.nr.minus)],
-                    cormat.plus.nr.minus[lower.tri(cormat.plus.nr.minus)])
-  
-  minus.r = c(cormat.minus.r[upper.tri(cormat.minus.r)],
-              cormat.minus.r[lower.tri(cormat.minus.r)])
-  
-  minus.nr.plus = c(cormat.minus.nr.plus[upper.tri(cormat.minus.nr.plus)],
-                    cormat.minus.nr.plus[lower.tri(cormat.minus.nr.plus)])
-  
-  minus.nr.minus = c(cormat.minus.nr.minus[upper.tri(cormat.minus.nr.minus)],
-                     cormat.minus.nr.minus[lower.tri(cormat.minus.nr.minus)])
-  
-  all.seq <- c(plus.r, plus.nr.plus, plus.nr.minus,
-               minus.r, minus.nr.plus, minus.nr.minus)
-  tau.ave <- mean(all.seq, na.rm=TRUE)
   
   cormat <- list(cormat.plus.r = cormat.plus.r,
                  cormat.plus.nr.plus = cormat.plus.nr.plus,
@@ -1010,9 +933,7 @@ SeqCorrelationPO <- function(df.list){
                  cormat.minus.nr.plus = cormat.minus.nr.plus,
                  cormat.minus.nr.minus = cormat.minus.nr.minus)
   
-  list.out <- list(datagen.params = datagen.params,
-                   estimates = data.frame(tau.ave = tau.ave),
-                   cormat = cormat)
+  list.out <- list(datagen.params = datagen.params, cormat = cormat)
   
   return(list.out)
 }
