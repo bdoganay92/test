@@ -1,5 +1,6 @@
-.df.vary.params <- expand.grid(d = c(-2, -1.5, -1, -0.5, 0, 0.5, 1),
-                               N = c(250, 500))
+.df.vary.params <- expand.grid(d = c(-2),
+                               rho = c(0.20, 0.45, 0.75),
+                               N = seq(100, 1100, 25))
 
 for(.idx.vary.params in 1:nrow(.df.vary.params)){
   
@@ -35,7 +36,7 @@ for(.idx.vary.params in 1:nrow(.df.vary.params)){
   input.tot.time <- 6
   input.cutoff <- 0
   
-  input.rho <- 0.75
+  input.rho <- .df.vary.params[.idx.vary.params, "rho"]
   
   # Means and proportion of zeros
   input.means <- read.csv(file.path(path.input_data, "input_means.csv"))
@@ -313,7 +314,7 @@ for(.idx.vary.params in 1:nrow(.df.vary.params)){
   beep("mario")
   
   # Save RData
-  save.image(file = file.path(path.output_data, paste("coverage_and_power_","d_",d,"_N_",input.N,".RData", sep="")))
+  save.image(file = file.path(path.output_data, paste("coverage_and_power_","d_",d,"_N_",input.N,"_rho_",input.rho,".RData", sep="")))
   
   print(.idx.vary.params)
   rm(list = ls(all.names = FALSE))
