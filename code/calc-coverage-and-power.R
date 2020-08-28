@@ -1,6 +1,5 @@
-.df.vary.params <- expand.grid(d = c(-2),
-                               rho = c(0.20, 0.45, 0.75),
-                               N = seq(100, 1100, 25))
+.df.vary.params <- expand.grid(rho = c(0.80),
+                               N = c(100, 150, 200, 250, 300, 350, 400, 450, 500))
 
 for(.idx.vary.params in 1:nrow(.df.vary.params)){
   
@@ -45,30 +44,6 @@ for(.idx.vary.params in 1:nrow(.df.vary.params)){
   # Check that input data is in the correct format
   CheckInputData(input.df = input.means, rand.time = input.rand.time, tot.time = input.tot.time)
   CheckInputData(input.df = input.prop.zeros, rand.time = input.rand.time, tot.time = input.tot.time)
-  
-  ###############################################################################
-  # Vary the means
-  ###############################################################################
-  d <- .df.vary.params[.idx.vary.params, "d"]
-  input.means$time.3[4:5] <- input.means$time.3[4:5] + d
-  input.means$time.4[4:5] <- input.means$time.4[4:5] + d
-  input.means$time.5[4:5] <- input.means$time.5[4:5] + d
-  input.means$time.6[4:5] <- input.means$time.6[4:5] + d
-  
-  ###############################################################################
-  # Vary the proportion of zeros
-  ###############################################################################
-  m <- 1
-  
-  input.prop.zeros$time.3[1:2] <- input.prop.zeros$time.3[1:2] * m
-  input.prop.zeros$time.4[1:2] <- input.prop.zeros$time.4[1:2] * m
-  input.prop.zeros$time.5[1:2] <- input.prop.zeros$time.5[1:2] * m
-  input.prop.zeros$time.6[1:2] <- input.prop.zeros$time.6[1:2] * m
-  
-  input.prop.zeros$time.3[4:5] <- input.prop.zeros$time.3[4:5] * m
-  input.prop.zeros$time.4[4:5] <- input.prop.zeros$time.4[4:5] * m
-  input.prop.zeros$time.5[4:5] <- input.prop.zeros$time.5[4:5] * m
-  input.prop.zeros$time.6[4:5] <- input.prop.zeros$time.6[4:5] * m
   
   ###############################################################################
   # Other inputs required in simulation (not specified by user)
@@ -314,7 +289,11 @@ for(.idx.vary.params in 1:nrow(.df.vary.params)){
   beep("mario")
   
   # Save RData
-  save.image(file = file.path(path.output_data, paste("coverage_and_power_","d_",d,"_N_",input.N,"_rho_",input.rho,".RData", sep="")))
+  save(power.diff.eos.means, power.diff.AUC,
+       bias.diff.eos.means, bias.diff.AUC,
+       coverage.diff.eos.means, coverage.diff.AUC,
+       truth.var.est.diff.eos.means, truth.var.est.diff.AUC,
+       file = file.path(path.output_data, paste("coverage_and_power_","_N_",input.N,"_rho_",input.rho,".RData", sep="")))
   
   print(.idx.vary.params)
   rm(list = ls(all.names = FALSE))

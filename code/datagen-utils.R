@@ -65,7 +65,7 @@ ExchangeableMat <- function(m, rho){
   # ---------------------------------------------------------------------------
   assert_that(is.scalar(m), msg = "m must be a scalar")
   assert_that((m>0) & (as.integer(m)==m), msg = "m must be a positive integer")
-  assert_that((rho>=0) & (rho<=1), msg = "rho must be between 0 and 1")
+  assert_that((rho>=-1) & (rho<=1), msg = "rho must be between -1 and 1")
   
   # ---------------------------------------------------------------------------
   # Begin tasks

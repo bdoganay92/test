@@ -41,30 +41,6 @@ CheckInputData(input.df = input.means, rand.time = input.rand.time, tot.time = i
 CheckInputData(input.df = input.prop.zeros, rand.time = input.rand.time, tot.time = input.tot.time)
 
 ###############################################################################
-# Vary the means
-###############################################################################
-d <- 1
-input.means$time.3[4:5] <- input.means$time.3[4:5] + 0.10*d
-input.means$time.4[4:5] <- input.means$time.4[4:5] + 0.50*d
-input.means$time.5[4:5] <- input.means$time.5[4:5] + 0.90*d
-input.means$time.6[4:5] <- input.means$time.6[4:5] + d
-
-###############################################################################
-# Vary the proportion of zeros
-###############################################################################
-m <- 1
-
-input.prop.zeros$time.3[1:2] <- input.prop.zeros$time.3[1:2] * m
-input.prop.zeros$time.4[1:2] <- input.prop.zeros$time.4[1:2] * m
-input.prop.zeros$time.5[1:2] <- input.prop.zeros$time.5[1:2] * m
-input.prop.zeros$time.6[1:2] <- input.prop.zeros$time.6[1:2] * m
-
-input.prop.zeros$time.3[4:5] <- input.prop.zeros$time.3[4:5] * m
-input.prop.zeros$time.4[4:5] <- input.prop.zeros$time.4[4:5] * m
-input.prop.zeros$time.5[4:5] <- input.prop.zeros$time.5[4:5] * m
-input.prop.zeros$time.6[4:5] <- input.prop.zeros$time.6[4:5] * m
-
-###############################################################################
 # Specify L and D matrices for contrasts of interest 
 # Below, these are specified for end-of-study means and AUC
 ###############################################################################
@@ -90,7 +66,7 @@ D.AUC <- cbind(L.AUC,-L.AUC)
 ###############################################################################
 # Other inputs required in simulation (not specified by user)
 ###############################################################################
-input.M <- 1000
+input.M <- 5000
 input.N <- 5000  # This is N_old
 input.n4 <- NA_real_
 use.working.corr <- "ar1"
@@ -219,4 +195,6 @@ print(N.required.AUC)
 beep("mario")
 
 # Save RData
-save.image(file = file.path(path.output_data, paste("Nrequired_", "rho_", input.rho,  "_d_", d, ".RData", sep="")))
+save(N.required.eos.means, N.required.AUC, file = file.path(path.output_data, "Nrequired.RData"))
+
+
