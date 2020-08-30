@@ -99,7 +99,7 @@ remove(list.df.potential, list.gridx)
 # -----------------------------------------------------------------------------
 ncore <- detectCores()
 cl <- makeCluster(ncore - 1)
-clusterSetRNGStream(cl, 102399)
+clusterSetRNGStream(cl, 752043)
 clusterExport(cl, c("path.code",
                     "path.input_data",
                     "path.output_data",

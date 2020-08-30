@@ -25,36 +25,12 @@ this.pair <- 2
 input.rand.time <- 2
 input.tot.time <- 6
 input.cutoff <- 0
-input.means <- read.csv(file.path(path.input_data, "input_means.csv"))
+input.means <- read.csv(file.path(path.input_data, "input_means_d_-1.csv"))
 input.prop.zeros  <- read.csv(file.path(path.input_data, "input_prop_zeros.csv"))
 
 # Check that input data is in the correct format
 CheckInputData(input.df = input.means, rand.time = input.rand.time, tot.time = input.tot.time)
 CheckInputData(input.df = input.prop.zeros, rand.time = input.rand.time, tot.time = input.tot.time)
-
-###############################################################################
-# Vary the means
-###############################################################################
-d <- 1
-input.means$time.3[4:5] <- input.means$time.3[4:5] + 0.10*d
-input.means$time.4[4:5] <- input.means$time.4[4:5] + 0.50*d
-input.means$time.5[4:5] <- input.means$time.5[4:5] + 0.90*d
-input.means$time.6[4:5] <- input.means$time.6[4:5] + d
-
-###############################################################################
-# Vary the proportion of zeros
-###############################################################################
-m <- 1
-
-input.prop.zeros$time.3[1:2] <- input.prop.zeros$time.3[1:2] * m
-input.prop.zeros$time.4[1:2] <- input.prop.zeros$time.4[1:2] * m
-input.prop.zeros$time.5[1:2] <- input.prop.zeros$time.5[1:2] * m
-input.prop.zeros$time.6[1:2] <- input.prop.zeros$time.6[1:2] * m
-
-input.prop.zeros$time.3[4:5] <- input.prop.zeros$time.3[4:5] * m
-input.prop.zeros$time.4[4:5] <- input.prop.zeros$time.4[4:5] * m
-input.prop.zeros$time.5[4:5] <- input.prop.zeros$time.5[4:5] * m
-input.prop.zeros$time.6[4:5] <- input.prop.zeros$time.6[4:5] * m
 
 ###############################################################################
 # Specify L and D matrices for contrasts of interest 

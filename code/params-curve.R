@@ -27,7 +27,7 @@ input.tot.time <- 6
 input.cutoff <- 0
 
 # Means and proportion of zeros
-input.means <- read.csv(file.path(path.input_data, "input_means_d_-1.csv"))
+input.means <- read.csv(file.path(path.input_data, "input_means_d_0.csv"))
 input.prop.zeros  <- read.csv(file.path(path.input_data, "input_prop_zeros.csv"))
 
 # Check that input data is in the correct format
@@ -60,10 +60,10 @@ D.AUC <- cbind(L.AUC,-L.AUC)
 ###############################################################################
 # Other inputs required in simulation (not specified by user)
 ###############################################################################
-input.M <- 5000
-input.N <- 5000
+input.M <- 7000
+input.N <- 3000
 input.n4 <- NA_real_
-list.input.rho <- as.list(seq(0,1,0.05))
+list.input.rho <- as.list(seq(-0.10,1,0.05))
 
 ###############################################################################
 # Calculate correlation

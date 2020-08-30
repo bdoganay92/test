@@ -30,10 +30,10 @@ input.rand.time <- 2
 input.tot.time <- 6
 input.cutoff <- 0
 
-input.rho <- 0.20
+input.rho <- 0.80
 
 # Means and proportion of zeros
-input.means <- read.csv(file.path(path.input_data, "input_means.csv"))
+input.means <- read.csv(file.path(path.input_data, "input_means_d_0.csv"))
 input.prop.zeros  <- read.csv(file.path(path.input_data, "input_prop_zeros.csv"))
 
 # Check that input data is in the correct format
@@ -66,8 +66,8 @@ D.AUC <- cbind(L.AUC,-L.AUC)
 ###############################################################################
 # Other inputs required in simulation (not specified by user)
 ###############################################################################
-input.M <- 5000
-input.N <- 5000  # This is N_old
+input.M <- 7000
+input.N <- 3000  # This is N_old
 input.n4 <- NA_real_
 use.working.corr <- "ar1"
 
@@ -195,6 +195,6 @@ print(N.required.AUC)
 beep("mario")
 
 # Save RData
-save(N.required.eos.means, N.required.AUC, file = file.path(path.output_data, "Nrequired.RData"))
+save(N.required.eos.means, N.required.AUC, file = file.path(path.output_data, paste("Nrequired","_rho_",input.rho, ".RData", sep="")))
 
 

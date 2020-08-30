@@ -1,5 +1,5 @@
 .df.vary.params <- expand.grid(rho = c(0.80),
-                               N = c(100, 150, 200, 250, 300, 350, 400, 450, 500))
+                               N = seq(100,600,25))
 
 for(.idx.vary.params in 1:nrow(.df.vary.params)){
   
@@ -38,8 +38,8 @@ for(.idx.vary.params in 1:nrow(.df.vary.params)){
   input.rho <- .df.vary.params[.idx.vary.params, "rho"]
   
   # Means and proportion of zeros
-  input.means <- read.csv(file.path(path.input_data, "input_means.csv"))
-  input.prop.zeros  <- read.csv(file.path(path.input_data, "input_prop_zeros.csv"))
+  input.means <- read.csv(file.path(path.input_data, "input_means_d_-1.csv"))  # input file
+  input.prop.zeros  <- read.csv(file.path(path.input_data, "input_prop_zeros.csv"))  # input file
   
   # Check that input data is in the correct format
   CheckInputData(input.df = input.means, rand.time = input.rand.time, tot.time = input.tot.time)
@@ -48,7 +48,7 @@ for(.idx.vary.params in 1:nrow(.df.vary.params)){
   ###############################################################################
   # Other inputs required in simulation (not specified by user)
   ###############################################################################
-  input.M <- 1000
+  input.M <- 7000
   input.n4 <- NA_real_
   use.working.corr <- "ar1"
   
@@ -91,7 +91,7 @@ for(.idx.vary.params in 1:nrow(.df.vary.params)){
   # Now, continue calculations
   ncore <- detectCores()
   cl <- makeCluster(ncore - 1)
-  clusterSetRNGStream(cl, 102399)
+  clusterSetRNGStream(cl, 73556469)
   clusterExport(cl, c("path.code",
                       "path.input_data",
                       "path.output_data",
@@ -259,9 +259,6 @@ for(.idx.vary.params in 1:nrow(.df.vary.params)){
   print(bias.diff.eos.means)
   print(bias.diff.AUC)
   
-  print(truth.var.est.diff.eos.means)
-  print(truth.var.est.diff.AUC)
-  
   ###############################################################################
   # Now, power can be calculated
   ###############################################################################
@@ -292,7 +289,7 @@ for(.idx.vary.params in 1:nrow(.df.vary.params)){
   save(power.diff.eos.means, power.diff.AUC,
        bias.diff.eos.means, bias.diff.AUC,
        coverage.diff.eos.means, coverage.diff.AUC,
-       truth.var.est.diff.eos.means, truth.var.est.diff.AUC,
+       diff.eos.means, diff.AUC,
        file = file.path(path.output_data, paste("coverage_and_power_","_N_",input.N,"_rho_",input.rho,".RData", sep="")))
   
   print(.idx.vary.params)
