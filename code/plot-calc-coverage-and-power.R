@@ -78,9 +78,10 @@ for(.idx.grid in 1:length(.rho.grid)){
   axis(1, at = seq(.N.min, .N.max, .N.increment))
   axis(2, at = seq(0, 0.10, 0.01))
   abline(h = 0.05, lty=1)
-  abline(h = 0.03, lty=2)
-  abline(h = 0.07, lty=2)
-  legend("bottomright", c("alpha=0.05 - 0.02", "alpha=0.05", "alpha=0.05 + 0.02"), lty=c(2,1,2), cex = 0.80)
+  abline(h = 0.06, lty=2)
+  abline(h = 0.07, lty=3)
+  abline(h = 0.08, lty=4)
+  legend("bottomright", c("alpha=0.05", "alpha=0.05 + 0.01", "alpha=0.05 + 0.02", "alpha=0.05 + 0.03"), lty=c(1,2,3,4), cex = 0.80)
   
   title(main = "Difference in End-of-Study Means")
   points(x = .df.grid[.df.grid$rho==.rho.grid[.idx.grid], "N"], 
@@ -101,9 +102,10 @@ for(.idx.grid in 1:length(.rho.grid)){
   axis(1, at = seq(.N.min, .N.max, .N.increment))
   axis(2, at = seq(0, 0.10, 0.01))
   abline(h = 0.05, lty=1)
-  abline(h = 0.03, lty=2)
-  abline(h = 0.07, lty=2)
-  legend("bottomright", c("alpha=0.05 - 0.02", "alpha=0.05", "alpha=0.05 + 0.02"), lty=c(2,1,2), cex = 0.80)
+  abline(h = 0.06, lty=2)
+  abline(h = 0.07, lty=3)
+  abline(h = 0.08, lty=4)
+  legend("bottomright", c("alpha=0.05", "alpha=0.05 + 0.01", "alpha=0.05 + 0.02", "alpha=0.05 + 0.03"), lty=c(1,2,3,4), cex = 0.80)
   
   title(main = "Difference in AUC")
   points(x = .df.grid[.df.grid$rho==.rho.grid[.idx.grid], "N"], 
