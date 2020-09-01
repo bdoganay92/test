@@ -66,7 +66,7 @@ D.AUC <- cbind(L.AUC,-L.AUC)
 ###############################################################################
 # Other inputs required in simulation (not specified by user)
 ###############################################################################
-input.M <- 10000
+input.M <- 6000
 input.N <- 600  # This is N_old
 input.n4 <- NA_real_
 use.working.corr <- "ar1"

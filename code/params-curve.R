@@ -60,8 +60,8 @@ D.AUC <- cbind(L.AUC,-L.AUC)
 ###############################################################################
 # Other inputs required in simulation (not specified by user)
 ###############################################################################
-input.M <- 10000
-input.N <- 600
+input.M <- 6000
+input.N <- 500
 input.n4 <- NA_real_
 list.input.rho <- as.list(seq(-0.10,1,0.05))
 

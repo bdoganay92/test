@@ -1,5 +1,5 @@
 path.output_data <- Sys.getenv("path.output_data")
-load(file.path(path.output_data, "correspondence_between_rho_and_tau.RData"))
+load(file.path(path.output_data, "sim_results_d_0","correspondence_between_rho_and_tau.RData"))
 
 # Get x-axis and y-axis limits of plots
 rho.min.plotval <- min(collect.correlation.tau$datagen.params.rho)
@@ -18,18 +18,18 @@ plot(x=-2,
      ylab="tau")
 
 abline(a=0,b=1,lty=2)
-axis(1, seq(rho.min.plotval, rho.max.plotval, 0.10))
-axis(2, seq(tau.min.plotval, tau.max.plotval, 0.10))
+axis(1, seq(round(rho.min.plotval, 1), round(rho.max.plotval, 1), 0.10))
+axis(2, seq(round(tau.min.plotval, 1), round(tau.max.plotval, 1), 0.10))
 
 # Begin drawing lines corresponding to tau.mean, tau.min, and tau.max
-lines(x = collect.correlation.tau$datagen.params.rho, y = collect.correlation.tau$tau.min, type="o", col="darkgreen", lwd=1.7, lty=3)
-lines(x = collect.correlation.tau$datagen.params.rho, y = collect.correlation.tau$tau.mean, type="o", col="blue", lwd=1.7, lty=1)
-lines(x = collect.correlation.tau$datagen.params.rho, y = collect.correlation.tau$tau.max, type="o", col="red", lwd=1.7, lty=4)
+lines(x = collect.correlation.tau$datagen.params.rho, y = collect.correlation.tau$tau.min, type="o", col="darkgreen", lwd=2, lty=3)
+lines(x = collect.correlation.tau$datagen.params.rho, y = collect.correlation.tau$tau.mean, type="o", col="blue", lwd=2, lty=1)
+lines(x = collect.correlation.tau$datagen.params.rho, y = collect.correlation.tau$tau.max, type="o", col="red", lwd=2, lty=4)
 
 # Finally, add legend
 legend("topleft", 
        legend=c("tau_min", "tau_mean", "tau_max", "rho=tau"), 
        col=c("darkgreen","blue","red","black"), 
        lty=c(3,1,4,2), 
-       lwd=c(2,2,2,1))
+       lwd=c(3,3,3,1))
 
