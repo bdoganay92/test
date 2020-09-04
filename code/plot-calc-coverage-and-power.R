@@ -1,11 +1,24 @@
 ###############################################################################
-# User-specified design parameters
+# User-specified design parameters when using input_means_d_-1.csv
+# to calculate power
 ###############################################################################
 .N.min <- 100
 .N.max <- 600
 .N.increment <- 25
 .rho.grid <- c(0.80)
 .rho.colors <- c("goldenrod3")
+.this.folder <- "sim_results_d_-1"
+
+###############################################################################
+# User-specified design parameters when using input_means_d_0.csv
+# to calculate power
+###############################################################################
+.N.min <- 100
+.N.max <- 800
+.N.increment <- 25
+.rho.grid <- c(0.30, 0.60, 0.80)
+.rho.colors <- c("tomato", "darkolivegreen","cornflowerblue")
+.this.folder <- "sim_results_d_0"
 
 ###############################################################################
 # Proceed with steps required to plot output of the script
@@ -39,7 +52,7 @@
 for(.idx.grid in 1:nrow(.df.grid)){
   input.N <- .df.grid[.idx.grid, "N"]
   input.rho <- .df.grid[.idx.grid, "rho"]
-  load(file.path(.path.output_data, paste("coverage_and_power_","_N_",input.N,"_rho_",input.rho,".RData", sep="")))
+  load(file.path(.path.output_data, .this.folder, paste("coverage_and_power_","_N_",input.N,"_rho_",input.rho,".RData", sep="")))
   
   # Fill in .df.grid
   .df.grid[.idx.grid, "power.diff.eos.means"] <- power.diff.eos.means$power
@@ -54,6 +67,8 @@ for(.idx.grid in 1:nrow(.df.grid)){
   # Remove objects from namespace and proceed to next iteration of loop
   rm(list = ls(all.names = FALSE))
 }
+
+View(.df.grid)
 
 ###############################################################################
 # Code for plotting when, in truth, Delta_Q = 0
@@ -223,10 +238,83 @@ for(.idx.grid in 1:length(.rho.grid)){
 # Code for plotting when, in truth, Delta_Q > 0
 ###############################################################################
 
+# Plot sample size vs. power
+# Display plots for end-of-study means and AUC side-by-side
 
+op <- par(mfrow = c(1,2), pty="m")
+par(mfrow = c(1,2), pty="m")
 
+# Power: difference in end-of-study means
+plot(-1, 
+     type="n",
+     xlim = c(.N.min, .N.max),
+     ylim = c(0,1),
+     xaxt="n",
+     yaxt="n",
+     xlab = "N",
+     ylab = "Power to Reject H0")
 
+axis(1, at = seq(.N.min, .N.max, .N.increment*2))
+axis(2, at = seq(0, 1, 0.10))
+abline(h = 0.80, lty=2)
+abline(h = 1, lty=3)
+title(main = "Difference in End-of-Study Means")
 
+for(.idx.grid in 1:length(.rho.grid)){
+  lines(x = .df.grid[.df.grid$rho==.rho.grid[.idx.grid], "N"], 
+        y = .df.grid[.df.grid$rho==.rho.grid[.idx.grid], "power.diff.eos.means"],
+        type="l", col = .rho.colors[.idx.grid])
+  points(x = .df.grid[.df.grid$rho==.rho.grid[.idx.grid], "N"], 
+         y = .df.grid[.df.grid$rho==.rho.grid[.idx.grid], "power.diff.eos.means"],
+         pch=21, 
+         bg=.rho.colors[.idx.grid])
+}
+
+legend("bottomright", 
+       c("rho=0.30", "rho=0.60", "rho=0.80"), 
+       pch=21,
+       lwd=c(1,1,1),
+       col = c("tomato", "darkolivegreen","cornflowerblue"),
+       pt.bg = c("tomato", "darkolivegreen","cornflowerblue"), 
+       pt.lwd = c(3,3,3),
+       cex = 0.80)
+
+# Power: difference in AUC
+plot(-1, 
+     type="n",
+     xlim = c(.N.min, .N.max),
+     ylim = c(0,1),
+     xaxt="n",
+     yaxt="n",
+     xlab = "N",
+     ylab = "Power to Reject H0")
+
+axis(1, at = seq(.N.min, .N.max, .N.increment*2))
+axis(2, at = seq(0, 1, 0.10))
+abline(h = 0.80, lty=2)
+abline(h = 1, lty=3)
+title(main = "Difference in AUC")
+
+for(.idx.grid in 1:length(.rho.grid)){
+  lines(x = .df.grid[.df.grid$rho==.rho.grid[.idx.grid], "N"], 
+        y = .df.grid[.df.grid$rho==.rho.grid[.idx.grid], "power.diff.AUC"],
+        type="l", col = .rho.colors[.idx.grid])
+  points(x = .df.grid[.df.grid$rho==.rho.grid[.idx.grid], "N"], 
+         y = .df.grid[.df.grid$rho==.rho.grid[.idx.grid], "power.diff.AUC"],
+         pch=21, 
+         bg=.rho.colors[.idx.grid])
+}
+
+legend("bottomright", 
+       c("rho=0.30", "rho=0.60", "rho=0.80"), 
+       pch=21,
+       lwd=c(1,1,1),
+       col = c("tomato", "darkolivegreen","cornflowerblue"),
+       pt.bg = c("tomato", "darkolivegreen","cornflowerblue"), 
+       pt.lwd=c(3,3,3),
+       cex = 0.80)
+
+par(op)
 
 
 

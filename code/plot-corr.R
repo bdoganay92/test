@@ -28,7 +28,7 @@ lines(x = collect.correlation.tau$datagen.params.rho, y = collect.correlation.ta
 
 # Finally, add legend
 legend("topleft", 
-       legend=c("tau_min", "tau_mean", "tau_max", "rho=tau"), 
+       legend=c("tau_min", "tau_mean", "tau_max", "45 degree line"), 
        col=c("darkgreen","blue","red","black"), 
        lty=c(3,1,4,2), 
        lwd=c(3,3,3,1))
