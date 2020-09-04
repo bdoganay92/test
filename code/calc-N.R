@@ -33,8 +33,8 @@ input.cutoff <- 0
 input.rho <- 0.80
 
 # Means and proportion of zeros
-input.means <- read.csv(file.path(path.input_data, "input_means_d_0.csv"))
-input.prop.zeros  <- read.csv(file.path(path.input_data, "input_prop_zeros.csv"))
+input.means <- read.csv(file.path(path.input_data, "input_means_d_0.csv"))  # input file: change to appropriate file
+input.prop.zeros  <- read.csv(file.path(path.input_data, "input_prop_zeros.csv"))  # input file: change to appropriate file
 
 # Check that input data is in the correct format
 CheckInputData(input.df = input.means, rand.time = input.rand.time, tot.time = input.tot.time)
