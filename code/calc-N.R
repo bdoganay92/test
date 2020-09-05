@@ -30,7 +30,7 @@ input.rand.time <- 2
 input.tot.time <- 6
 input.cutoff <- 0
 
-input.rho <- 0.80
+input.rho <- 0.60
 
 # Means and proportion of zeros
 input.means <- read.csv(file.path(path.input_data, "input_means_d_0.csv"))  # input file: change to appropriate file
@@ -67,7 +67,7 @@ D.AUC <- cbind(L.AUC,-L.AUC)
 # Other inputs required in simulation (not specified by user)
 ###############################################################################
 input.M <- 6000
-input.N <- 600  # This is N_old
+input.N <- 700  # This is N_old
 input.n4 <- NA_real_
 use.working.corr <- "ar1"
 

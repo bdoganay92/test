@@ -26,7 +26,7 @@ input.rand.time <- 2
 input.tot.time <- 6
 input.cutoff <- 0
 # For input.means, change input_means_d_-1.csv to other inputs such as input_means_d_0.csv
-input.means <- read.csv(file.path(path.input_data, "input_means_d_-1.csv")) 
+input.means <- read.csv(file.path(path.input_data, "input_means_d_0.csv")) 
 input.prop.zeros  <- read.csv(file.path(path.input_data, "input_prop_zeros.csv"))
 
 # Check that input data is in the correct format
