@@ -38,7 +38,7 @@ for(.idx.vary.params in 1:nrow(.df.vary.params)){
   input.rho <- .df.vary.params[.idx.vary.params, "rho"]
   
   # Means and proportion of zeros
-  input.means <- read.csv(file.path(path.input_data, "input_means_d_0.csv"))  # input file: change to appropriate file
+  input.means <- read.csv(file.path(path.input_data, "input_means_d_-1.csv"))  # input file: change to appropriate file
   input.prop.zeros  <- read.csv(file.path(path.input_data, "input_prop_zeros.csv"))  # input file: change to appropriate file
   
   # Check that input data is in the correct format
@@ -261,6 +261,7 @@ for(.idx.vary.params in 1:nrow(.df.vary.params)){
   
   ###############################################################################
   # Now, power can be calculated
+  # Use asymptotic distribution
   ###############################################################################
   power.diff.eos.means <- left_join(est.diff.eos.means, est.stderr.diff.eos.means, by = c("datagen.params.N", "datagen.params.rho", "datagen.params.sim")) %>%
     rename(est.diff=estimates.x, est.stderr=estimates.y) %>%
@@ -277,10 +278,32 @@ for(.idx.vary.params in 1:nrow(.df.vary.params)){
     summarise(power = mean(is.reject, na.rm=TRUE))
   
   ###############################################################################
+  # Now, power can be calculated
+  # Use parametric bootstrap
+  ###############################################################################
+  bootstrap.eos.means.LB <- quantile(est.diff.eos.means$estimates, .025)
+  bootstrap.eos.means.UB <- quantile(est.diff.eos.means$estimates, .975)
+  bootstrap.eos.means.test <- (est.diff.eos.means$estimates >=  bootstrap.eos.means.LB) & (est.diff.eos.means$estimates <= bootstrap.eos.means.UB)
+  bootstrap.eos.means.power <- 1-mean(bootstrap.eos.means.test)
+  
+  bootstrap.AUC.LB <- quantile(est.diff.AUC$estimates, .025)
+  bootstrap.AUC.UB <- quantile(est.diff.AUC$estimates, .975)
+  bootstrap.AUC.test <- (est.diff.AUC$estimates >=  bootstrap.AUC.LB) & (est.diff.AUC$estimates <= bootstrap.AUC.UB)
+  bootstrap.AUC.power <- 1-mean(bootstrap.AUC.test)
+  
+  ###############################################################################
   # Display power
   ###############################################################################
+  print("power based on asymptotic distribution")
   print(power.diff.eos.means)
   print(power.diff.AUC)
+  
+  ###############################################################################
+  # Display power
+  ###############################################################################
+  print("power based on parametric bootstrap")
+  print(bootstrap.eos.means.power)
+  print(bootstrap.AUC.power)
   
   # Audio notification
   beep("mario")
@@ -290,6 +313,8 @@ for(.idx.vary.params in 1:nrow(.df.vary.params)){
        bias.diff.eos.means, bias.diff.AUC,
        coverage.diff.eos.means, coverage.diff.AUC,
        diff.eos.means, diff.AUC,
+       bootstrap.eos.means.power,
+       bootstrap.AUC.power,
        file = file.path(path.output_data, paste("coverage_and_power_","_N_",input.N,"_rho_",input.rho,".RData", sep="")))
   
   print(.idx.vary.params)
