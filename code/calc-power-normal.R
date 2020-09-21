@@ -1,5 +1,5 @@
-.df.vary.params <- expand.grid(rho = c(0.80),
-                               N = seq(100,600,25))
+.df.vary.params <- expand.grid(rho = c(0.30, 0.80),
+                               N = seq(100,800,50))
 
 for(.idx.vary.params in 1:nrow(.df.vary.params)){
   
@@ -17,6 +17,7 @@ for(.idx.vary.params in 1:nrow(.df.vary.params)){
   path.code <- Sys.getenv("path.code")
   path.input_data <- Sys.getenv("path.input_data")
   path.output_data <- Sys.getenv("path.output_data")
+  this.folder <- "sim_results_d_-1"
   
   source(file.path(path.code,"input-utils.R"))
   source(file.path(path.code,"datagen-utils.R"))
@@ -48,7 +49,7 @@ for(.idx.vary.params in 1:nrow(.df.vary.params)){
   ###############################################################################
   # Other inputs required in simulation (not specified by user)
   ###############################################################################
-  input.M <- 6000
+  input.M <- 5000
   input.n4 <- NA_real_
   use.working.corr <- "ar1"
   
@@ -199,27 +200,6 @@ for(.idx.vary.params in 1:nrow(.df.vary.params)){
   assert_that(!is.na(diff.AUC), msg = "invalid option entered")
   
   ###############################################################################
-  # Now, coverage can be calculated
-  ###############################################################################
-  coverage.diff.eos.means <- left_join(est.diff.eos.means, est.stderr.diff.eos.means, by = c("datagen.params.N", "datagen.params.rho", "datagen.params.sim")) %>%
-    rename(est.diff=estimates.x, est.stderr=estimates.y) %>%
-    mutate(LB = est.diff - qnorm(1-(input.alpha/2))*est.stderr, 
-           UB = est.diff + qnorm(1-(input.alpha/2))*est.stderr,
-           truth = diff.eos.means) %>%
-    mutate(is.cover = (truth>=LB)&(truth<=UB)) %>%
-    group_by(datagen.params.N, datagen.params.rho) %>%
-    summarise(coverage = mean(is.cover, na.rm=TRUE))
-  
-  coverage.diff.AUC <- left_join(est.diff.AUC, est.stderr.diff.AUC, by = c("datagen.params.N", "datagen.params.rho", "datagen.params.sim")) %>%
-    rename(est.diff=estimates.x, est.stderr=estimates.y) %>%
-    mutate(LB = est.diff - qnorm(1-(input.alpha/2))*est.stderr, 
-           UB = est.diff + qnorm(1-(input.alpha/2))*est.stderr,
-           truth = diff.AUC) %>%
-    mutate(is.cover = (truth>=LB)&(truth<=UB)) %>%
-    group_by(datagen.params.N, datagen.params.rho) %>%
-    summarise(coverage = mean(is.cover, na.rm=TRUE))
-  
-  ###############################################################################
   # Calculate bias in estimates
   ###############################################################################
   bias.diff.eos.means <- left_join(est.diff.eos.means, est.stderr.diff.eos.means, by = c("datagen.params.N", "datagen.params.rho", "datagen.params.sim")) %>%
@@ -251,26 +231,17 @@ for(.idx.vary.params in 1:nrow(.df.vary.params)){
     select(datagen.params.N, datagen.params.rho, truth.var.est)
   
   ###############################################################################
-  # Display coverage, bias, and standard error
-  ###############################################################################
-  print(coverage.diff.eos.means)
-  print(coverage.diff.AUC)
-  
-  print(bias.diff.eos.means)
-  print(bias.diff.AUC)
-  
-  ###############################################################################
   # Now, power can be calculated
   # Use asymptotic distribution
   ###############################################################################
-  power.diff.eos.means <- left_join(est.diff.eos.means, est.stderr.diff.eos.means, by = c("datagen.params.N", "datagen.params.rho", "datagen.params.sim")) %>%
+  normal.power.diff.eos.means <- left_join(est.diff.eos.means, est.stderr.diff.eos.means, by = c("datagen.params.N", "datagen.params.rho", "datagen.params.sim")) %>%
     rename(est.diff=estimates.x, est.stderr=estimates.y) %>%
     mutate(z = est.diff/est.stderr) %>%
     mutate(is.reject = abs(z)>qnorm(1-(input.alpha/2))) %>%
     group_by(datagen.params.N, datagen.params.rho) %>%
     summarise(power = mean(is.reject, na.rm=TRUE))
   
-  power.diff.AUC <- left_join(est.diff.AUC, est.stderr.diff.AUC, by = c("datagen.params.N", "datagen.params.rho", "datagen.params.sim")) %>%
+  normal.power.diff.AUC <- left_join(est.diff.AUC, est.stderr.diff.AUC, by = c("datagen.params.N", "datagen.params.rho", "datagen.params.sim")) %>%
     rename(est.diff=estimates.x, est.stderr=estimates.y) %>%
     mutate(z = est.diff/est.stderr) %>%
     mutate(is.reject = abs(z)>qnorm(1-(input.alpha/2))) %>%
@@ -278,44 +249,21 @@ for(.idx.vary.params in 1:nrow(.df.vary.params)){
     summarise(power = mean(is.reject, na.rm=TRUE))
   
   ###############################################################################
-  # Now, power can be calculated
-  # Use parametric bootstrap
-  ###############################################################################
-  bootstrap.eos.means.LB <- quantile(est.diff.eos.means$estimates, .025)
-  bootstrap.eos.means.UB <- quantile(est.diff.eos.means$estimates, .975)
-  bootstrap.eos.means.test <- (est.diff.eos.means$estimates >=  bootstrap.eos.means.LB) & (est.diff.eos.means$estimates <= bootstrap.eos.means.UB)
-  bootstrap.eos.means.power <- 1-mean(bootstrap.eos.means.test)
-  
-  bootstrap.AUC.LB <- quantile(est.diff.AUC$estimates, .025)
-  bootstrap.AUC.UB <- quantile(est.diff.AUC$estimates, .975)
-  bootstrap.AUC.test <- (est.diff.AUC$estimates >=  bootstrap.AUC.LB) & (est.diff.AUC$estimates <= bootstrap.AUC.UB)
-  bootstrap.AUC.power <- 1-mean(bootstrap.AUC.test)
-  
-  ###############################################################################
   # Display power
   ###############################################################################
-  print("power based on asymptotic distribution")
-  print(power.diff.eos.means)
-  print(power.diff.AUC)
-  
-  ###############################################################################
-  # Display power
-  ###############################################################################
-  print("power based on parametric bootstrap")
-  print(bootstrap.eos.means.power)
-  print(bootstrap.AUC.power)
+  print("Power based on Normal approximation")
+  print(normal.power.diff.eos.means)
+  print(normal.power.diff.AUC)
   
   # Audio notification
   beep("mario")
   
   # Save RData
-  save(power.diff.eos.means, power.diff.AUC,
+  save(normal.power.diff.eos.means, normal.power.diff.AUC,
        bias.diff.eos.means, bias.diff.AUC,
-       coverage.diff.eos.means, coverage.diff.AUC,
        diff.eos.means, diff.AUC,
-       bootstrap.eos.means.power,
-       bootstrap.AUC.power,
-       file = file.path(path.output_data, paste("coverage_and_power_","_N_",input.N,"_rho_",input.rho,".RData", sep="")))
+       est.diff.eos.means, est.diff.AUC,
+       file = file.path(path.output_data, paste("normal_power_","_N_",input.N,"_rho_",input.rho,".RData", sep="")))
   
   print(.idx.vary.params)
   rm(list = ls(all.names = FALSE))
