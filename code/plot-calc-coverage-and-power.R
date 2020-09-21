@@ -10,17 +10,6 @@
 .this.folder <- "sim_results_d_-1"
 
 ###############################################################################
-# User-specified design parameters when using input_means_d_0.csv
-# to calculate power
-###############################################################################
-.N.min <- 100
-.N.max <- 800
-.N.increment <- 25
-.rho.grid <- c(0.30, 0.60, 0.80)
-.rho.colors <- c("tomato", "darkolivegreen","cornflowerblue")
-.this.folder <- "sim_results_d_0"
-
-###############################################################################
 # Proceed with steps required to plot output of the script
 # calc-coverage-and-power.R
 #
@@ -41,6 +30,9 @@
 .df.grid$power.diff.eos.means <- NA_real_
 .df.grid$power.diff.AUC <- NA_real_
 
+.df.grid$bootstrap.power.diff.eos.means <- NA_real_
+.df.grid$bootstrap.power.diff.AUC <- NA_real_
+
 .df.grid$bias.diff.eos.means.estimates <- NA_real_
 .df.grid$bias.diff.eos.means.stderr <- NA_real_
 
@@ -57,6 +49,9 @@ for(.idx.grid in 1:nrow(.df.grid)){
   # Fill in .df.grid
   .df.grid[.idx.grid, "power.diff.eos.means"] <- power.diff.eos.means$power
   .df.grid[.idx.grid, "power.diff.AUC"] <- power.diff.AUC$power
+  
+  .df.grid[.idx.grid, "bootstrap.power.diff.eos.means"] <- bootstrap.eos.means.power
+  .df.grid[.idx.grid, "bootstrap.power.diff.AUC"] <- bootstrap.AUC.power
   
   .df.grid[.idx.grid, "bias.diff.eos.means.estimates"] <- bias.diff.eos.means$ave.bias.diff
   .df.grid[.idx.grid, "bias.diff.eos.means.stderr"] <- bias.diff.eos.means$ave.bias.stderr
@@ -77,8 +72,8 @@ View(.df.grid)
 # Plot sample size vs. power
 # Display plots for end-of-study means and AUC side-by-side
 for(.idx.grid in 1:length(.rho.grid)){
-  op <- par(mfrow = c(1,2), pty="m")
-  par(mfrow = c(1,2), pty="m")
+  op <- par() # save default settings
+  par(mfrow = c(2,2), pty="m", mai = c(1.02, 0.82+0.5, 0.82, 0.42))
   
   # Power: difference in end-of-study means
   plot(-1, 
@@ -88,15 +83,14 @@ for(.idx.grid in 1:length(.rho.grid)){
        xaxt="n",
        yaxt="n",
        xlab = "N",
-       ylab = "Power to Reject H0 when difference is zero")
+       ylab = "Power to Reject H0 when difference is zero \n(Normal Approximation)")
   
   axis(1, at = seq(.N.min, .N.max, .N.increment))
   axis(2, at = seq(0, 0.10, 0.01))
   abline(h = 0.05, lty=1)
   abline(h = 0.06, lty=2)
-  abline(h = 0.07, lty=3)
-  abline(h = 0.08, lty=4)
-  legend("bottomright", c("alpha=0.05", "alpha=0.05 + 0.01", "alpha=0.05 + 0.02", "alpha=0.05 + 0.03"), lty=c(1,2,3,4), cex = 0.80)
+  abline(h = 0.04, lty=2)
+  legend("bottomright", c("alpha=0.05", "alpha=0.05 + 0.01", "alpha=0.05 - 0.01"), lty=c(1,2,2), cex = 0.80)
   
   title(main = "Difference in End-of-Study Means")
   points(x = .df.grid[.df.grid$rho==.rho.grid[.idx.grid], "N"], 
@@ -112,19 +106,64 @@ for(.idx.grid in 1:length(.rho.grid)){
        xaxt="n",
        yaxt="n",
        xlab = "N",
-       ylab = "Power to Reject H0 when difference is zero")
+       ylab = "Power to Reject H0 when difference is zero \n(Normal Approximation)")
   
   axis(1, at = seq(.N.min, .N.max, .N.increment))
   axis(2, at = seq(0, 0.10, 0.01))
   abline(h = 0.05, lty=1)
   abline(h = 0.06, lty=2)
-  abline(h = 0.07, lty=3)
-  abline(h = 0.08, lty=4)
-  legend("bottomright", c("alpha=0.05", "alpha=0.05 + 0.01", "alpha=0.05 + 0.02", "alpha=0.05 + 0.03"), lty=c(1,2,3,4), cex = 0.80)
+  abline(h = 0.04, lty=2)
+  legend("bottomright", c("alpha=0.05", "alpha=0.05 + 0.01", "alpha=0.05 - 0.01"), lty=c(1,2,2), cex = 0.80)
   
   title(main = "Difference in AUC")
   points(x = .df.grid[.df.grid$rho==.rho.grid[.idx.grid], "N"], 
          y = .df.grid[.df.grid$rho==.rho.grid[.idx.grid], "power.diff.AUC"], 
+         pch=21, 
+         bg=.rho.colors[.idx.grid])
+  
+  # Power: difference in end-of-study means
+  plot(-1, 
+       type="n",
+       xlim = c(.N.min, .N.max),
+       ylim = c(0,0.10),
+       xaxt="n",
+       yaxt="n",
+       xlab = "N",
+       ylab = "Power to Reject H0 when difference is zero \n(Parametric Bootstrap)")
+  
+  axis(1, at = seq(.N.min, .N.max, .N.increment))
+  axis(2, at = seq(0, 0.10, 0.01))
+  abline(h = 0.05, lty=1)
+  abline(h = 0.06, lty=2)
+  abline(h = 0.04, lty=2)
+  legend("bottomright", c("alpha=0.05", "alpha=0.05 + 0.01", "alpha=0.05 - 0.01"), lty=c(1,2,2), cex = 0.80)
+  
+  title(main = "Difference in End-of-Study Means")
+  points(x = .df.grid[.df.grid$rho==.rho.grid[.idx.grid], "N"], 
+         y = .df.grid[.df.grid$rho==.rho.grid[.idx.grid], "bootstrap.power.diff.eos.means"],
+         pch=21, 
+         bg=.rho.colors[.idx.grid])
+  
+  # Power: difference in AUC
+  plot(-1, 
+       type="n",
+       xlim = c(.N.min, .N.max),
+       ylim = c(0,0.10),
+       xaxt="n",
+       yaxt="n",
+       xlab = "N",
+       ylab = "Power to Reject H0 when difference is zero \n(Parametric Bootstrap)")
+  
+  axis(1, at = seq(.N.min, .N.max, .N.increment))
+  axis(2, at = seq(0, 0.10, 0.01))
+  abline(h = 0.05, lty=1)
+  abline(h = 0.06, lty=2)
+  abline(h = 0.04, lty=2)
+  legend("bottomright", c("alpha=0.05", "alpha=0.05 + 0.01", "alpha=0.05 - 0.01"), lty=c(1,2,2), cex = 0.80)
+  
+  title(main = "Difference in AUC")
+  points(x = .df.grid[.df.grid$rho==.rho.grid[.idx.grid], "N"], 
+         y = .df.grid[.df.grid$rho==.rho.grid[.idx.grid], "bootstrap.power.diff.AUC"], 
          pch=21, 
          bg=.rho.colors[.idx.grid])
   
@@ -151,9 +190,9 @@ for(.idx.grid in 1:length(.rho.grid)){
   axis(1, at = seq(.N.min, .N.max, .N.increment))
   axis(2, at = seq(-0.20, 0.20, 0.05))
   abline(h = 0, lty=1)
-  abline(h = 0.01, lty=2)
-  abline(h = -0.01, lty=2)
-  legend("bottomright", c("mean bias=0", "mean bias=+0.01", "mean bias=-0.01"), lty=c(2,1,2), cex = 0.80)
+  abline(h = 0.05, lty=2)
+  abline(h = -0.05, lty=2)
+  legend("bottomright", c("mean bias=0", "mean bias=+0.05", "mean bias=-0.05"), lty=c(2,1,2), cex = 0.80)
   
   title(main = "Difference in End-of-Study Means")
   points(x = .df.grid[.df.grid$rho==.rho.grid[.idx.grid], "N"], 
@@ -174,9 +213,9 @@ for(.idx.grid in 1:length(.rho.grid)){
   axis(1, at = seq(.N.min, .N.max, .N.increment))
   axis(2, at = seq(-0.20, 0.20, 0.05))
   abline(h = 0, lty=1)
-  abline(h = 0.01, lty=2)
-  abline(h = -0.01, lty=2)
-  legend("bottomright", c("mean bias=0", "mean bias=+0.01", "mean bias=-0.01"), lty=c(2,1,2), cex = 0.80)
+  abline(h = 0.05, lty=2)
+  abline(h = -0.05, lty=2)
+  legend("bottomright", c("mean bias=0", "mean bias=+0.05", "mean bias=-0.05"), lty=c(2,1,2), cex = 0.80)
   
   title(main = "Difference in AUC")
   points(x = .df.grid[.df.grid$rho==.rho.grid[.idx.grid], "N"], 
@@ -197,9 +236,9 @@ for(.idx.grid in 1:length(.rho.grid)){
   axis(1, at = seq(.N.min, .N.max, .N.increment))
   axis(2, at = seq(-0.20, 0.20, 0.05))
   abline(h = 0, lty=1)
-  abline(h = 0.01, lty=2)
-  abline(h = -0.01, lty=2)
-  legend("bottomright", c("mean bias=0", "mean bias=+0.01", "mean bias=-0.01"), lty=c(2,1,2), cex = 0.80)
+  abline(h = 0.05, lty=2)
+  abline(h = -0.05, lty=2)
+  legend("bottomright", c("mean bias=0", "mean bias=+0.05", "mean bias=-0.05"), lty=c(2,1,2), cex = 0.80)
   
   title(main = "Difference in End-of-Study Means")
   points(x = .df.grid[.df.grid$rho==.rho.grid[.idx.grid], "N"], 
@@ -221,9 +260,9 @@ for(.idx.grid in 1:length(.rho.grid)){
   axis(1, at = seq(.N.min, .N.max, .N.increment))
   axis(2, at = seq(-0.20, 0.20, 0.05))
   abline(h = 0, lty=1)
-  abline(h = 0.01, lty=2)
-  abline(h = -0.01, lty=2)
-  legend("bottomright", c("mean bias=0", "mean bias=+0.01", "mean bias=-0.01"), lty=c(2,1,2), cex = 0.80)
+  abline(h = 0.05, lty=2)
+  abline(h = -0.05, lty=2)
+  legend("bottomright", c("mean bias=0", "mean bias=+0.05", "mean bias=-0.05"), lty=c(2,1,2), cex = 0.80)
   
   title(main = "Difference in AUC")
   points(x = .df.grid[.df.grid$rho==.rho.grid[.idx.grid], "N"], 
@@ -235,13 +274,24 @@ for(.idx.grid in 1:length(.rho.grid)){
 }
 
 ###############################################################################
+# User-specified design parameters when using input_means_d_0.csv
+# to calculate power
+###############################################################################
+.N.min <- 100
+.N.max <- 800
+.N.increment <- 25
+.rho.grid <- c(0.30, 0.60, 0.80)
+.rho.colors <- c("tomato", "darkolivegreen","cornflowerblue")
+.this.folder <- "sim_results_d_0"
+
+###############################################################################
 # Code for plotting when, in truth, Delta_Q > 0
 ###############################################################################
 
 # Plot sample size vs. power
 # Display plots for end-of-study means and AUC side-by-side
 
-op <- par(mfrow = c(1,2), pty="m")
+op <- par() # save default settings
 par(mfrow = c(1,2), pty="m")
 
 # Power: difference in end-of-study means
