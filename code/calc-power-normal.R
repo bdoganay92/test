@@ -263,7 +263,8 @@ for(.idx.vary.params in 1:nrow(.df.vary.params)){
        bias.diff.eos.means, bias.diff.AUC,
        diff.eos.means, diff.AUC,
        est.diff.eos.means, est.diff.AUC,
-       file = file.path(path.output_data, paste("normal_power_","_N_",input.N,"_rho_",input.rho,".RData", sep="")))
+       est.stderr.diff.eos.means, est.stderr.diff.AUC,
+       file = file.path(path.output_data, this.folder, paste("normal_power_","_N_",input.N,"_rho_",input.rho,".RData", sep="")))
   
   print(.idx.vary.params)
   rm(list = ls(all.names = FALSE))

@@ -265,7 +265,6 @@ for(.idx.vary.params in 1:nrow(.df.vary.params)){
     mutate(truth.var.est = (var(est.diff, na.rm=TRUE))) %>%
     select(datagen.params.N, datagen.params.rho, truth.var.est)
   
-  
   truth.var.est.diff.AUC <- left_join(est.diff.AUC, est.stderr.diff.AUC, by = c("datagen.params.N", "datagen.params.rho", "datagen.params.sim")) %>%
     rename(est.diff=estimates.x, est.stderr=estimates.y) %>%
     mutate(truth.var.est = (var(est.diff, na.rm=TRUE))) %>%
@@ -299,32 +298,11 @@ for(.idx.vary.params in 1:nrow(.df.vary.params)){
     summarise(power = mean(is.reject, na.rm=TRUE))
   
   ###############################################################################
-  # Now, power can be calculated
-  # Use parametric bootstrap
-  ###############################################################################
-  bootstrap.eos.means.LB <- quantile(est.diff.eos.means$estimates, .025)
-  bootstrap.eos.means.UB <- quantile(est.diff.eos.means$estimates, .975)
-  bootstrap.eos.means.test <- (est.diff.eos.means$estimates >=  bootstrap.eos.means.LB) & (est.diff.eos.means$estimates <= bootstrap.eos.means.UB)
-  bootstrap.eos.means.power <- 1-mean(bootstrap.eos.means.test)
-  
-  bootstrap.AUC.LB <- quantile(est.diff.AUC$estimates, .025)
-  bootstrap.AUC.UB <- quantile(est.diff.AUC$estimates, .975)
-  bootstrap.AUC.test <- (est.diff.AUC$estimates >=  bootstrap.AUC.LB) & (est.diff.AUC$estimates <= bootstrap.AUC.UB)
-  bootstrap.AUC.power <- 1-mean(bootstrap.AUC.test)
-  
-  ###############################################################################
   # Display power
   ###############################################################################
   print("power based on asymptotic distribution")
   print(power.diff.eos.means)
   print(power.diff.AUC)
-  
-  ###############################################################################
-  # Display power
-  ###############################################################################
-  print("power based on parametric bootstrap")
-  print(bootstrap.eos.means.power)
-  print(bootstrap.AUC.power)
   
   # Audio notification
   beep("mario")
@@ -335,8 +313,6 @@ for(.idx.vary.params in 1:nrow(.df.vary.params)){
        coverage.diff.eos.means, coverage.diff.AUC,
        diff.eos.means, diff.AUC,
        input.N, input.rho, input.n4,
-       bootstrap.eos.means.power,
-       bootstrap.AUC.power,
        file = file.path(path.output_data, paste("sensitivity_to_n4_with_params_","_N_",input.N,"_rho_",input.rho,"_n4_",input.n4,".RData", sep="")))
   
   print(.idx.vary.params)
