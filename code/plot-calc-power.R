@@ -3,72 +3,19 @@
 # to calculate power
 ###############################################################################
 .N.min <- 100
-.N.max <- 600
-.N.increment <- 25
-.rho.grid <- c(0.80)
+.N.max <- 700
+.N.increment <- 50
+.rho.grid <- c(0.30,0.80)
 .rho.colors <- c("goldenrod3")
-.this.folder <- "sim_results_d_-1"
-.this.method <- "normal"
 
-###############################################################################
-# Proceed with steps required to plot output of the script
-# calc-coverage-and-power.R
-#
-# Note: the call rm(list = ls(all.names = FALSE)) will remove all objects
-# in the current namespace except for those beginning with a "dot"
-# e.g., after the call rm(list = ls(all.names = FALSE)), the object
-# .path.output_data and .df.grid will still be available and will retain 
-# their value
-###############################################################################
-
-# .path.output_data is the location of the output of calc-coverage-and-power.R
-.path.output_data <- Sys.getenv("path.output_data")
-
-# Tabulate all possible combinations of N and rho to plot
-.df.grid <- expand.grid(N = seq(.N.min, .N.max, .N.increment), rho = .rho.grid)
-
-# Add columns to .df.grid
-.df.grid$power.diff.eos.means <- NA_real_
-.df.grid$power.diff.AUC <- NA_real_
-
-.df.grid$bootstrap.power.diff.eos.means <- NA_real_
-.df.grid$bootstrap.power.diff.AUC <- NA_real_
-
-.df.grid$bias.diff.eos.means.estimates <- NA_real_
-.df.grid$bias.diff.eos.means.stderr <- NA_real_
-
-.df.grid$bias.diff.AUC.estimates <- NA_real_
-.df.grid$bias.diff.AUC.stderr <- NA_real_
-
-# Go through each combination of values in .df.grid
-# and read in results obtained using calc-coverage-and-power.R
-for(.idx.grid in 1:nrow(.df.grid)){
-  input.N <- .df.grid[.idx.grid, "N"]
-  input.rho <- .df.grid[.idx.grid, "rho"]
-  load(file.path(.path.output_data, .this.folder, paste(.this.method,"_power_","_N_",input.N,"_rho_",input.rho,".RData", sep="")))
-  
-  # Fill in .df.grid
-  .df.grid[.idx.grid, "power.diff.eos.means"] <- power.diff.eos.means$power
-  .df.grid[.idx.grid, "power.diff.AUC"] <- power.diff.AUC$power
-  
-  .df.grid[.idx.grid, "bootstrap.power.diff.eos.means"] <- bootstrap.eos.means.power
-  .df.grid[.idx.grid, "bootstrap.power.diff.AUC"] <- bootstrap.AUC.power
-  
-  .df.grid[.idx.grid, "bias.diff.eos.means.estimates"] <- bias.diff.eos.means$ave.bias.diff
-  .df.grid[.idx.grid, "bias.diff.eos.means.stderr"] <- bias.diff.eos.means$ave.bias.stderr
-  
-  .df.grid[.idx.grid, "bias.diff.AUC.estimates"] <- bias.diff.AUC$ave.bias.diff
-  .df.grid[.idx.grid, "bias.diff.AUC.stderr"] <- bias.diff.AUC$ave.bias.stderr
-  
-  # Remove objects from namespace and proceed to next iteration of loop
-  rm(list = ls(all.names = FALSE))
-}
-
-View(.df.grid)
+.path.code <- Sys.getenv("path.code")
+source(file.path(.path.code, "calc-power-bootstrap.R"))
 
 ###############################################################################
 # Code for plotting when, in truth, Delta_Q = 0
 ###############################################################################
+
+.df.grid
 
 # Plot sample size vs. power
 # Display plots for end-of-study means and AUC side-by-side
@@ -95,7 +42,7 @@ for(.idx.grid in 1:length(.rho.grid)){
   
   title(main = "Difference in End-of-Study Means")
   points(x = .df.grid[.df.grid$rho==.rho.grid[.idx.grid], "N"], 
-         y = .df.grid[.df.grid$rho==.rho.grid[.idx.grid], "power.diff.eos.means"],
+         y = .df.grid[.df.grid$rho==.rho.grid[.idx.grid], "normal.power.diff.eos.means"],
          pch=21, 
          bg=.rho.colors[.idx.grid])
   
@@ -118,7 +65,7 @@ for(.idx.grid in 1:length(.rho.grid)){
   
   title(main = "Difference in AUC")
   points(x = .df.grid[.df.grid$rho==.rho.grid[.idx.grid], "N"], 
-         y = .df.grid[.df.grid$rho==.rho.grid[.idx.grid], "power.diff.AUC"], 
+         y = .df.grid[.df.grid$rho==.rho.grid[.idx.grid], "normal.power.diff.AUC"], 
          pch=21, 
          bg=.rho.colors[.idx.grid])
   
