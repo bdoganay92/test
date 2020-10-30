@@ -9,7 +9,6 @@ library(ggplot2)
 library(gridExtra)
 
 path.code <- Sys.getenv("path.code")
-path.input_data <- Sys.getenv("path.input_data")
 path.output_data <- Sys.getenv("path.output_data")
 
 source(file.path(path.code,"input-utils.R"))
@@ -55,7 +54,6 @@ ncore <- detectCores()
 cl <- makeCluster(ncore - 1)
 clusterSetRNGStream(cl, 102399)
 clusterExport(cl, c("path.code",
-                    "path.input_data",
                     "path.output_data",
                     "list.gridx"))
 clusterEvalQ(cl,
@@ -101,7 +99,6 @@ ncore <- detectCores()
 cl <- makeCluster(ncore - 1)
 clusterSetRNGStream(cl, 752043)
 clusterExport(cl, c("path.code",
-                    "path.input_data",
                     "path.output_data",
                     "list.df.observed",
                     "input.tot.time",

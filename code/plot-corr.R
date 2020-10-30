@@ -1,5 +1,8 @@
 path.output_data <- Sys.getenv("path.output_data")
-load(file.path(path.output_data, "sim_results_d_0","correspondence_between_rho_and_tau.RData"))
+this.folder <- "sim_study_main/sim_results_alternative"
+
+# Loading this RData file will place collect.correlation.tau in the global environment
+load(file.path(path.output_data, this.folder,"correspondence_between_rho_and_tau.RData"))
 
 # Get x-axis and y-axis limits of plots
 rho.min.plotval <- min(collect.correlation.tau$datagen.params.rho)

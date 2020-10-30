@@ -10,7 +10,6 @@ library(gridExtra)
 library(beepr)
 
 path.code <- Sys.getenv("path.code")
-path.input_data <- Sys.getenv("path.input_data")
 path.output_data <- Sys.getenv("path.output_data")
 
 source(file.path(path.code,"input-utils.R"))
@@ -22,13 +21,15 @@ environment(geemMod) <- asNamespace("geeM")
 ###############################################################################
 # User-specified design parameters
 ###############################################################################
+this.folder <- "sim_study_main/sim_results_alternative"
+
 input.rand.time <- 2
 input.tot.time <- 6
 input.cutoff <- 0
 
 # Means and proportion of zeros
-input.means <- read.csv(file.path(path.input_data, "input_means_d_0.csv"))  # input file: change to appropriate file
-input.prop.zeros  <- read.csv(file.path(path.input_data, "input_prop_zeros.csv"))  # input file: change to appropriate file
+input.means <- read.csv(file.path(path.output_data, this.folder, "input_means.csv"))  # input file: change to appropriate file
+input.prop.zeros  <- read.csv(file.path(path.output_data, this.folder, "input_prop_zeros.csv"))  # input file: change to appropriate file
 
 # Check that input data is in the correct format
 CheckInputData(input.df = input.means, rand.time = input.rand.time, tot.time = input.tot.time)
@@ -60,10 +61,10 @@ D.AUC <- cbind(L.AUC,-L.AUC)
 ###############################################################################
 # Other inputs required in simulation (not specified by user)
 ###############################################################################
-input.M <- 6000
-input.N <- 500
+input.M <- 1000
+input.N <- 1000
 input.n4 <- NA_real_
-list.input.rho <- as.list(seq(-0.10,1,0.05))
+list.input.rho <- as.list(seq(-0.05,1,0.05))
 
 ###############################################################################
 # Calculate correlation
@@ -96,8 +97,6 @@ for(i in 1:length(list.input.rho)){
   cl <- makeCluster(ncore - 1)
   clusterSetRNGStream(cl, 102399)
   clusterExport(cl, c("path.code",
-                      "path.input_data",
-                      "path.output_data",
                       "list.gridx"))
   clusterEvalQ(cl,
                {
@@ -251,5 +250,6 @@ print(collect.correlation.tau)
 beep("mario")
 
 # Save RData
-save(collect.correlation.tau, file = file.path(path.output_data, "correspondence_between_rho_and_tau.RData"))
+save(collect.correlation.tau, file = file.path(path.output_data, this.folder, "correspondence_between_rho_and_tau.RData"))
+
 

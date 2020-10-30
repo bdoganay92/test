@@ -1,5 +1,4 @@
-.df.vary.params <- expand.grid(rho = 0.30,
-                               N = 300)
+.df.vary.params <- expand.grid(rho = 0.80, N = seq(100,500,25))
 
 for(.idx.vary.params in 1:nrow(.df.vary.params)){
   
@@ -15,9 +14,7 @@ for(.idx.vary.params in 1:nrow(.df.vary.params)){
   library(beepr)
   
   path.code <- Sys.getenv("path.code")
-  path.input_data <- Sys.getenv("path.input_data")
   path.output_data <- Sys.getenv("path.output_data")
-  this.folder <- "sim_results_alternative"
   
   source(file.path(path.code,"input-utils.R"))
   source(file.path(path.code,"datagen-utils.R"))
@@ -28,6 +25,8 @@ for(.idx.vary.params in 1:nrow(.df.vary.params)){
   ###############################################################################
   # User-specified design parameters
   ###############################################################################
+  this.folder <- "sim_study_main/sim_results_alternative"
+  
   input.N <- .df.vary.params[.idx.vary.params, "N"]
   input.alpha <- 0.05
   
@@ -39,8 +38,8 @@ for(.idx.vary.params in 1:nrow(.df.vary.params)){
   input.rho <- .df.vary.params[.idx.vary.params, "rho"]
   
   # Means and proportion of zeros
-  input.means <- read.csv(file.path(path.input_data, "input_means.csv"))  # input file: change to appropriate file
-  input.prop.zeros  <- read.csv(file.path(path.input_data, "input_prop_zeros.csv"))  # input file: change to appropriate file
+  input.means <- read.csv(file.path(path.output_data, this.folder, "input_means.csv"))  # input file: change to appropriate file
+  input.prop.zeros  <- read.csv(file.path(path.output_data, this.folder, "input_prop_zeros.csv"))  # input file: change to appropriate file
   
   # Check that input data is in the correct format
   CheckInputData(input.df = input.means, rand.time = input.rand.time, tot.time = input.tot.time)
@@ -49,7 +48,7 @@ for(.idx.vary.params in 1:nrow(.df.vary.params)){
   ###############################################################################
   # Other inputs required in simulation (not specified by user)
   ###############################################################################
-  input.M <- 5000
+  input.M <- 1000
   input.n4 <- NA_real_
   use.working.corr <- "ar1"
   
@@ -94,7 +93,6 @@ for(.idx.vary.params in 1:nrow(.df.vary.params)){
   cl <- makeCluster(ncore - 1)
   clusterSetRNGStream(cl, 73556469)
   clusterExport(cl, c("path.code",
-                      "path.input_data",
                       "path.output_data",
                       "list.df.est.beta",
                       "list.C",
@@ -208,8 +206,7 @@ for(.idx.vary.params in 1:nrow(.df.vary.params)){
        file = file.path(path.output_data, this.folder, paste("hat_","N_",input.N,"_rho_",input.rho,".RData", sep="")))
     
   print(.idx.vary.params)
-  #rm(list = ls(all.names = FALSE))
+  rm(list = ls(all.names = FALSE))
 }
-
 
 
