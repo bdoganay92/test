@@ -7,7 +7,7 @@
 ###############################################################################
 # Calculate truth
 ###############################################################################
-.this.folder <- "sim_study_main/sim_results_null/below_truth"
+.this.folder <- "sim_study_supp/sim_size_test/low_zeros"
 
 .df.vary.params$truth.diff.eos.means <- NA_real_
 .df.vary.params$truth.diff.AUC <- NA_real_
@@ -77,6 +77,10 @@ for(.idx.vary.params in 1:nrow(.df.vary.params)){
 }
 
 
+
+print(.df.vary.params)
+
+# Save output
 save(.df.vary.params, file = file.path(.path.output_data, .this.folder, "truth.RData"))
 
 

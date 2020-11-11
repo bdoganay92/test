@@ -401,6 +401,5 @@ legend("topleft",
        cex = 0.80)
 
 
-par(op)
 
 

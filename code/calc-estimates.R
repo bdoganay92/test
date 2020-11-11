@@ -48,7 +48,7 @@ for(.idx.vary.params in 1:nrow(.df.vary.params)){
   ###############################################################################
   # Other inputs required in simulation (not specified by user)
   ###############################################################################
-  input.M <- 1000
+  input.M <- 5000
   input.n4 <- NA_real_
   use.working.corr <- "ar1"
   
