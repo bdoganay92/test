@@ -36,7 +36,7 @@ for(i in 1:6){
 
 print(input.dispersion.param)
 
-write.csv(input.dispersion.param, file.path(.path.output_data, .this.folder.null1, "calculated_dispersion_param.csv"))
+write.csv(input.dispersion.param, file.path(.path.output_data, .this.folder.null1, "calculated_dispersion_param.csv"), row.names = FALSE)
 
 # Begin steps -----------------------------------------------------------------
 input.means <- read.csv(file.path(.path.output_data, .this.folder.null2, "input_means.csv"))
@@ -60,7 +60,7 @@ for(i in 1:6){
 
 print(input.dispersion.param)
 
-write.csv(input.dispersion.param, file.path(.path.output_data, .this.folder.null2, "calculated_dispersion_param.csv"))
+write.csv(input.dispersion.param, file.path(.path.output_data, .this.folder.null2, "calculated_dispersion_param.csv"), row.names = FALSE)
 
 # Begin steps -----------------------------------------------------------------
 input.means <- read.csv(file.path(.path.output_data, .this.folder.null3, "input_means.csv"))
@@ -84,6 +84,6 @@ for(i in 1:6){
 
 print(input.dispersion.param)
 
-write.csv(input.dispersion.param, file.path(.path.output_data, .this.folder.null3, "calculated_dispersion_param.csv"))
+write.csv(input.dispersion.param, file.path(.path.output_data, .this.folder.null3, "calculated_dispersion_param.csv"), row.names = FALSE)
 
 
