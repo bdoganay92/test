@@ -1,12 +1,8 @@
 # About CountSMART
 
-Longitudinal count data having an excessive number of zeros (EZ) are often collected in a variety of health domains. This repository contains code to estimate sample size needed to compare dynamic treatment regimens using longitudinal count outcomes with EZ from a Sequential Multiple Assignment Randomized Trial (SMART). 
+Longitudinal count data having an excessive number of zeros (EZ) are often collected in a variety of health domains. This repository contains code to estimate sample size needed to compare dynamic treatment regimens using longitudinal count outcomes with EZ from a Sequential Multiple Assignment Randomized Trial (SMART). A pair of dynamic treatment regimens embedded in a planned SMART (aka. 'EDTRs') can be compared using differences in end-of-study means, or more generally, differences in a weighted average of means across various time points, <img src="https://render.githubusercontent.com/render/math?math=$\Delta_Q$">.
 
-<br/>
-A pair of dynamic treatment regimens $(a_1', a_2')$ and $(a_1'', a_2'')$ embedded in a planned SMART (aka. 'EDTRs') can be compared using differences in end-of-study means, or more generally, differences in a weighted average of means across various time points. More formally, these EDTRs can be compared using the criterion $\Delta_Q = \sum_{j=1}^T l_j \mu_{t_j}^{(a_1', a_2')} - \sum_{j=1}^T l_j \mu_{t_j}^{(a_1', a_2')}$, where $\mu_{t_j}^{(a_1, a_2)}$ represents the mean of a (potential) count outcome under $(a_1, a_2)$ at time $t_j$. 
-
-<br/>
-This repository contains code implementing a Monte Carlo simulation-based approach to estimate sample size required to attain power of $1-\eta$ to the test of the null $H_0:\Delta_Q=0$ against the alternative $H_a:\Delta_Q\neq0$ at type-I error $\alpha$. 
+This repository contains code implementing a Monte Carlo simulation-based approach to estimate sample size required to attain power of <img src="https://render.githubusercontent.com/render/math?math=$1-\eta$"> to the test of the null <img src="https://render.githubusercontent.com/render/math?math=$H_0:\Delta_Q=0$"> against the alternative <img src="https://render.githubusercontent.com/render/math?math=$H_a:\Delta_Q\neq0$"> at type-I error <img src="https://render.githubusercontent.com/render/math?math=$\alpha$">. 
 
 # About this repository
 
@@ -27,9 +23,9 @@ This repository contains code implementing a Monte Carlo simulation-based approa
 [calc-bias.R](https://github.com/jamieyap/CountSMART/tree/master/code/calc-bias.R) | Calculate bias in estimates of means and estimates of standard errors.
 [calc-covmat.R](https://github.com/jamieyap/CountSMART/tree/master/code/calc-covmat.R) | Calculate estimated covariance matrix.
 [calc-estimates.R](https://github.com/jamieyap/CountSMART/tree/master/code/calc-estimates.R) | Calculate estimates of parameters in a model for the mean trajectory of dynamic treatment regimens embedded in a SMART.
-[calc-params-curve.R](https://github.com/jamieyap/CountSMART/tree/master/code/calc-params-curve.R) | Implement simulation to estimate relationship between $\rho$ and $\tau_{AVE}$
+[calc-params-curve.R](https://github.com/jamieyap/CountSMART/tree/master/code/calc-params-curve.R) | Implement simulation to estimate relationship between <img src="https://render.githubusercontent.com/render/math?math=$\rho$"> and <img src="https://render.githubusercontent.com/render/math?math=$\tau_{AVE}$">
 [calc-truth-beta.R](https://github.com/jamieyap/CountSMART/tree/master/code/calc-truth-beta.R) | Calculate true value of parameters in a model for the mean trajectory of dynamic treatment regimens embedded in a SMART, implied by inputs provided to Monte Carlo simulation.
-[calc-truth-contrasts.R](https://github.com/jamieyap/CountSMART/tree/master/code/calc-truth-contrasts.R) | Calculate true value of$\Delta_Q$ in a model for the mean trajectory of dynamic treatment regimens embedded in a SMART, implied by inputs provided to Monte Carlo simulation.
+[calc-truth-contrasts.R](https://github.com/jamieyap/CountSMART/tree/master/code/calc-truth-contrasts.R) | Calculate true value of <img src="https://render.githubusercontent.com/render/math?math=$\Delta_Q$"> in a model for the mean trajectory of dynamic treatment regimens embedded in a SMART, implied by inputs provided to Monte Carlo simulation.
 [calc-truth-deltaQ.R](https://github.com/jamieyap/CountSMART/tree/master/code/calc-truth-deltaQ.R) | Wrapper for [calc-truth-beta.R](https://github.com/jamieyap/CountSMART/tree/master/code/calc-truth-beta.R) and [calc-truth-contrasts.R](https://github.com/jamieyap/CountSMART/tree/master/code/calc-truth-contrasts.R). Visualize true mean trajectory of each dynamic treatment regimen embedded in a SMART, implied by inputs provided to Monte Carlo simulation.
 [geemMod.R](https://github.com/jamieyap/CountSMART/tree/master/code/geemMod.R) | Modification of the `geem.R` script from the R package `geeM`: setting the additional argument `fullmat=TRUE` allows custom specification of working correlation matrix for each participant-time.
 
