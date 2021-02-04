@@ -35,14 +35,14 @@ plot(-1,
      xaxt="n",
      yaxt="n",
      xlab = "N",
-     ylab = "Empirical Type-I Error")
+     ylab = "Empirical Type-I Error Rate")
 
 axis(1, at = seq(100, 500, 100))
 axis(2, at = seq(.02, .08, 0.01))
 abline(h = .05, lty=2)
 
 title(main = "Difference in End-of-Study Means (Low Zeros)")
-points(df1$N, df1$power.eos.means, pch=21, bg = "cornflowerblue", col="black")
+points(df1$N, df1$power.eos.means, pch=21, bg = "cornflowerblue", col="black", cex=1.7)
 
 plot(-1, 
      type="n",
@@ -51,14 +51,14 @@ plot(-1,
      xaxt="n",
      yaxt="n",
      xlab = "N",
-     ylab = "Empirical Type-I Error")
+     ylab = "Empirical Type-I Error Rate")
 
 axis(1, at = seq(100, 500, 100))
 axis(2, at = seq(.02, .08, 0.01))
 abline(h = .05, lty=2)
 
 title(main = "Difference in End-of-Study Means (Moderate Zeros)")
-points(df2$N, df2$power.eos.means, pch=21, bg = "cornflowerblue", col="black")
+points(df2$N, df2$power.eos.means, pch=21, bg = "cornflowerblue", col="black", cex=1.7)
 
 plot(-1, 
      type="n",
@@ -67,14 +67,14 @@ plot(-1,
      xaxt="n",
      yaxt="n",
      xlab = "N",
-     ylab = "Empirical Type-I Error")
+     ylab = "Empirical Type-I Error Rate")
 
 axis(1, at = seq(100, 500, 100))
 axis(2, at = seq(.02, .08, 0.01))
 abline(h = .05, lty=2)
 
 title(main = "Difference in End-of-Study Means (High Zeros)")
-points(df3$N, df3$power.eos.means, pch=21, bg = "cornflowerblue", col="black")
+points(df3$N, df3$power.eos.means, pch=21, bg = "cornflowerblue", col="black", cex=1.7)
 
 plot(-1, 
      type="n",
@@ -90,7 +90,7 @@ axis(2, at = seq(.02, .08, 0.01))
 abline(h = .05, lty=2)
 
 title(main = "Difference in AUC (Low Zeros)")
-points(df1$N, df1$power.AUC, pch=21, bg = "cornflowerblue", col="black")
+points(df1$N, df1$power.AUC, pch=21, bg = "cornflowerblue", col="black", cex=1.7)
 
 plot(-1, 
      type="n",
@@ -106,7 +106,7 @@ axis(2, at = seq(.02, .08, 0.01))
 abline(h = .05, lty=2)
 
 title(main = "Difference in AUC (Moderate Zeros)")
-points(df2$N, df2$power.AUC, pch=21, bg = "cornflowerblue", col="black")
+points(df2$N, df2$power.AUC, pch=21, bg = "cornflowerblue", col="black", cex=1.7)
 
 plot(-1, 
      type="n",
@@ -122,7 +122,7 @@ axis(2, at = seq(.02, .08, 0.01))
 abline(h = .05, lty=2)
 
 title(main = "Difference in AUC (High Zeros)")
-points(df3$N, df3$power.AUC, pch=21, bg = "cornflowerblue", col="black")
+points(df3$N, df3$power.AUC, pch=21, bg = "cornflowerblue", col="black", cex=1.7)
 
 par(op)
 

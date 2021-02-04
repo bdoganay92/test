@@ -39,7 +39,7 @@ axis(2, at = seq(-1, 1, 0.10))
 abline(h = 0, lty=2)
 
 title(main = "Estimates of Difference in End-of-Study Means\n(Low Zeros)")
-points(df1$N, df1$bias.diff.eos.means, pch=21, bg = "darkgoldenrod", col="black")
+points(df1$N, df1$bias.diff.eos.means, pch=21, bg = "darkgoldenrod", col="black", cex=1.7)
 
 plot(-1, 
      type="n",
@@ -55,7 +55,7 @@ axis(2, at = seq(-1, 1, 0.10))
 abline(h = 0, lty=2)
 
 title(main = "Estimates of Difference in End-of-Study Means\n(Moderate Zeros)")
-points(df2$N, df2$bias.diff.eos.means, pch=21, bg = "darkgoldenrod", col="black")
+points(df2$N, df2$bias.diff.eos.means, pch=21, bg = "darkgoldenrod", col="black", cex=1.7)
 
 plot(-1, 
      type="n",
@@ -71,7 +71,7 @@ axis(2, at = seq(-1, 1, 0.10))
 abline(h = 0, lty=2)
 
 title(main = "Estimates of Difference in End-of-Study Means\n(High Zeros)")
-points(df3$N, df3$bias.diff.eos.means, pch=21, bg = "darkgoldenrod", col="black")
+points(df3$N, df3$bias.diff.eos.means, pch=21, bg = "darkgoldenrod", col="black", cex=1.7)
 
 plot(-1, 
      type="n",
@@ -87,7 +87,7 @@ axis(2, at = seq(-1, 1, 0.10))
 abline(h = 0, lty=2)
 
 title(main = "Estimates of Difference in AUC\n(Low Zeros)")
-points(df1$N, df1$bias.diff.AUC, pch=21, bg = "darkgoldenrod", col="black")
+points(df1$N, df1$bias.diff.AUC, pch=21, bg = "darkgoldenrod", col="black", cex=1.7)
 
 plot(-1, 
      type="n",
@@ -103,7 +103,7 @@ axis(2, at = seq(-1, 1, 0.10))
 abline(h = 0, lty=2)
 
 title(main = "Estimates of Difference in AUC\n(Moderate Zeros)")
-points(df2$N, df2$bias.diff.AUC, pch=21, bg = "darkgoldenrod", col="black")
+points(df2$N, df2$bias.diff.AUC, pch=21, bg = "darkgoldenrod", col="black", cex=1.7)
 
 plot(-1, 
      type="n",
@@ -119,7 +119,7 @@ axis(2, at = seq(-1, 1, 0.10))
 abline(h = 0, lty=2)
 
 title(main = "Estimates of Difference in AUC\n(High Zeros)")
-points(df3$N, df3$bias.diff.AUC, pch=21, bg = "darkgoldenrod", col="black")
+points(df3$N, df3$bias.diff.AUC, pch=21, bg = "darkgoldenrod", col="black", cex=1.7)
 
 par(op)
 
@@ -145,7 +145,7 @@ axis(2, at = seq(-1, 1, 0.10))
 abline(h = 0, lty=2)
 
 title(main = "Estimates of Standard Error of\nDifference in End-of-Study Means (Low Zeros)")
-points(df1$N, df1$bias.stderr.est.diff.eos.means, pch=21, bg = "darkgoldenrod", col="black")
+points(df1$N, df1$bias.stderr.est.diff.eos.means, pch=21, bg = "darkgoldenrod", col="black", cex=1.7)
 
 plot(-1, 
      type="n",
@@ -161,7 +161,7 @@ axis(2, at = seq(-1, 1, 0.10))
 abline(h = 0, lty=2)
 
 title(main = "Estimates of Standard Error of\nDifference in End-of-Study Means (Moderate Zeros)")
-points(df2$N, df2$bias.stderr.est.diff.eos.means, pch=21, bg = "darkgoldenrod", col="black")
+points(df2$N, df2$bias.stderr.est.diff.eos.means, pch=21, bg = "darkgoldenrod", col="black", cex=1.7)
 
 plot(-1, 
      type="n",
@@ -177,7 +177,7 @@ axis(2, at = seq(-1, 1, 0.10))
 abline(h = 0, lty=2)
 
 title(main = "Estimates of Standard Error of\nDifference in End-of-Study Means (High Zeros)")
-points(df3$N, df3$bias.stderr.est.diff.eos.means, pch=21, bg = "darkgoldenrod", col="black")
+points(df3$N, df3$bias.stderr.est.diff.eos.means, pch=21, bg = "darkgoldenrod", col="black", cex=1.7)
 
 plot(-1, 
      type="n",
@@ -193,7 +193,7 @@ axis(2, at = seq(-1, 1, 0.10))
 abline(h = 0, lty=2)
 
 title(main = "Estimates of Standard Error of\nDifference in AUC (Low Zeros)")
-points(df1$N, df1$bias.stderr.est.diff.AUC, pch=21, bg = "darkgoldenrod", col="black")
+points(df1$N, df1$bias.stderr.est.diff.AUC, pch=21, bg = "darkgoldenrod", col="black", cex=1.7)
 
 plot(-1, 
      type="n",
@@ -209,7 +209,7 @@ axis(2, at = seq(-1, 1, 0.10))
 abline(h = 0, lty=2)
 
 title(main = "Estimates of Standard Error of\nDifference in AUC (Moderate Zeros)")
-points(df2$N, df2$bias.stderr.est.diff.AUC, pch=21, bg = "darkgoldenrod", col="black")
+points(df2$N, df2$bias.stderr.est.diff.AUC, pch=21, bg = "darkgoldenrod", col="black", cex=1.7)
 
 plot(-1, 
      type="n",
@@ -225,7 +225,7 @@ axis(2, at = seq(-1, 1, 0.10))
 abline(h = 0, lty=2)
 
 title(main = "Estimates of Standard Error of\nDifference in AUC (High Zeros)")
-points(df3$N, df3$bias.stderr.est.diff.AUC, pch=21, bg = "darkgoldenrod", col="black")
+points(df3$N, df3$bias.stderr.est.diff.AUC, pch=21, bg = "darkgoldenrod", col="black", cex=1.7)
 
 
 par(op)
