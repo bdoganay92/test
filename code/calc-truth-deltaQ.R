@@ -20,7 +20,7 @@ environment(geemMod) <- asNamespace("geeM")
 ###############################################################################
 # User-specified design parameters
 ###############################################################################
-this.folder <- "sim_study_main/sim_results_alternative"
+this.folder <- "sim_sensitivity_group_four/sim_results_2"
 
 this.pair <- 2
 input.rand.time <- 2
@@ -71,6 +71,8 @@ print(diff.AUC.plusplus.minusplus)
 ###############################################################################
 # Plot EDTR mean trajectories
 ###############################################################################
+jpeg(file.path(path.output_data, this.folder, "plot_edtr_mean_trajectories.jpg"), width = 500, height = 500)
+
 plotdat <- data.frame(month = seq(1,input.tot.time,1),
                       mu.plusplus = u.plusplus,
                       mu.plusminus = u.plusminus,
@@ -92,7 +94,16 @@ axis(2, at = seq(0, 1+ceiling(max(plotdat[,2:ncol(plotdat)])), 0.5))
 title(main = "EDTR Mean Trajectories")
 
 lines(plotdat$month, plotdat$mu.plusplus, type = "o", lwd=3, col="darkgrey", lty=1)
-lines(plotdat$month, plotdat$mu.minusplus, type = "o", lwd=3, col="black", lty=2)
-lines(plotdat$month, plotdat$mu.plusplus, type = "o", lwd=3, col="goldenrod", lty=3)
-lines(plotdat$month, plotdat$mu.minusplus, type = "o", lwd=3, col="lightblue", lty=4)
+lines(plotdat$month, plotdat$mu.plusminus, type = "o", lwd=3, col="black", lty=2)
+lines(plotdat$month, plotdat$mu.minusplus, type = "o", lwd=3, col="goldenrod", lty=3)
+lines(plotdat$month, plotdat$mu.minusminus, type = "o", lwd=3, col="lightblue", lty=4)
+
+legend("topleft",
+       c("EDTR (+1,+1)","EDTR (+1,-1)","EDTR (-1,+1)","EDTR (-1,-1)"),
+       lty=c(1,2,3,4),
+       lwd=c(3,3,3,3),
+       col=c("darkgrey","black","goldenrod","lightblue"))
+
+dev.off()
+
 
