@@ -1,5 +1,5 @@
 ###############################################################################
-# Plot the elicited EDTR trajectories
+# Calculate value of dispersion parameter
 ###############################################################################
 .path.code <- Sys.getenv("path.code")
 source(file.path(.path.code,"input-utils.R"))
@@ -10,13 +10,13 @@ environment(geemMod) <- asNamespace("geeM")
 
 # Specify file paths
 .path.output_data <- Sys.getenv("path.output_data")
-.this.folder.null1 <- "sim_study_supp/sim_size_test/low_zeros"
-.this.folder.null2 <- "sim_study_supp/sim_size_test/mid_zeros"
-.this.folder.null3 <- "sim_study_supp/sim_size_test/high_zeros"
+.this.folder.1 <- "sim_size_test/low_zeros"
+.this.folder.2 <- "sim_size_test/moderate_zeros"
+.this.folder.3 <- "sim_size_test/high_zeros"
 
 # Begin steps -----------------------------------------------------------------
-input.means <- read.csv(file.path(.path.output_data, .this.folder.null1, "input_means.csv"))
-input.prop.zeros  <- read.csv(file.path(.path.output_data, .this.folder.null1, "input_prop_zeros.csv"))
+input.means <- read.csv(file.path(.path.output_data, .this.folder.1, "input_means.csv"))
+input.prop.zeros  <- read.csv(file.path(.path.output_data, .this.folder.1, "input_prop_zeros.csv"))
 this.pair <- 2
 input.rand.time <- 2
 input.tot.time <- 6
@@ -34,13 +34,16 @@ for(i in 1:6){
   }
 }
 
-print(input.dispersion.param)
 
-write.csv(input.dispersion.param, file.path(.path.output_data, .this.folder.null1, "calculated_dispersion_param.csv"), row.names = FALSE)
+input.dispersion.param.1 <- input.dispersion.param
+input.means.1 <- input.means
+input.prop.zeros.1 <- input.prop.zeros
+
+write.csv(input.dispersion.param, file.path(.path.output_data, .this.folder.1, "calculated_dispersion_param.csv"), row.names = FALSE)
 
 # Begin steps -----------------------------------------------------------------
-input.means <- read.csv(file.path(.path.output_data, .this.folder.null2, "input_means.csv"))
-input.prop.zeros  <- read.csv(file.path(.path.output_data, .this.folder.null2, "input_prop_zeros.csv"))
+input.means <- read.csv(file.path(.path.output_data, .this.folder.2, "input_means.csv"))
+input.prop.zeros  <- read.csv(file.path(.path.output_data, .this.folder.2, "input_prop_zeros.csv"))
 this.pair <- 2
 input.rand.time <- 2
 input.tot.time <- 6
@@ -58,13 +61,15 @@ for(i in 1:6){
   }
 }
 
-print(input.dispersion.param)
+input.dispersion.param.2 <- input.dispersion.param
+input.means.2 <- input.means
+input.prop.zeros.2 <- input.prop.zeros
 
-write.csv(input.dispersion.param, file.path(.path.output_data, .this.folder.null2, "calculated_dispersion_param.csv"), row.names = FALSE)
+write.csv(input.dispersion.param, file.path(.path.output_data, .this.folder.2, "calculated_dispersion_param.csv"), row.names = FALSE)
 
 # Begin steps -----------------------------------------------------------------
-input.means <- read.csv(file.path(.path.output_data, .this.folder.null3, "input_means.csv"))
-input.prop.zeros  <- read.csv(file.path(.path.output_data, .this.folder.null3, "input_prop_zeros.csv"))
+input.means <- read.csv(file.path(.path.output_data, .this.folder.3, "input_means.csv"))
+input.prop.zeros  <- read.csv(file.path(.path.output_data, .this.folder.3, "input_prop_zeros.csv"))
 this.pair <- 2
 input.rand.time <- 2
 input.tot.time <- 6
@@ -82,8 +87,11 @@ for(i in 1:6){
   }
 }
 
-print(input.dispersion.param)
+input.dispersion.param.3 <- input.dispersion.param
+input.means.3 <- input.means
+input.prop.zeros.3 <- input.prop.zeros
 
-write.csv(input.dispersion.param, file.path(.path.output_data, .this.folder.null3, "calculated_dispersion_param.csv"), row.names = FALSE)
+write.csv(input.dispersion.param, file.path(.path.output_data, .this.folder.3, "calculated_dispersion_param.csv"), row.names = FALSE)
+
 
 
