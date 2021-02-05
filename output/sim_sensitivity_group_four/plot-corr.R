@@ -1,10 +1,9 @@
 path.output_data <- Sys.getenv("path.output_data")
 
-
 ##########################################################################################
 # Loading this RData file will place collect.correlation.tau in the global environment
 ##########################################################################################
-this.folder <- "sim_size_test/low_zeros"
+this.folder <- "sim_sensitivity_group_four/sim_results_4"
 load(file.path(path.output_data, this.folder,"correspondence_between_rho_and_tau.RData"))
 
 jpeg(file.path(path.output_data, this.folder, "plot_correspondence_between_rho_and_tau_mean.jpeg"), width = 800, height = 800)
@@ -28,47 +27,26 @@ lines(x = collect.correlation.tau$datagen.params.rho, y = collect.correlation.ta
 points(x = collect.correlation.tau$datagen.params.rho, y = collect.correlation.tau$tau.mean, pch=21, bg = "darkgreen", col="black", cex=1.7)
 
 ##########################################################################################
-# Loading this RData file will place collect.correlation.tau in the global environment
-##########################################################################################
-this.folder <- "sim_size_test/moderate_zeros"
-load(file.path(path.output_data, this.folder,"correspondence_between_rho_and_tau.RData"))
-
-# Begin drawing lines corresponding to tau.mean
-lines(x = collect.correlation.tau$datagen.params.rho, y = collect.correlation.tau$tau.mean, type="l", col="darkblue", lwd=2, lty=3)
-points(x = collect.correlation.tau$datagen.params.rho, y = collect.correlation.tau$tau.mean, pch=21, bg = "darkblue", col="black", cex=1.7)
-
-##########################################################################################
-# Loading this RData file will place collect.correlation.tau in the global environment
-##########################################################################################
-this.folder <- "sim_size_test/high_zeros"
-load(file.path(path.output_data, this.folder,"correspondence_between_rho_and_tau.RData"))
-
-# Begin drawing lines corresponding to tau.mean
-lines(x = collect.correlation.tau$datagen.params.rho, y = collect.correlation.tau$tau.mean, type="l", col="darkred", lwd=2, lty=3)
-points(x = collect.correlation.tau$datagen.params.rho, y = collect.correlation.tau$tau.mean, pch=21, bg = "darkred", col="black", cex=1.7)
-
-##########################################################################################
 # Draw guide lines for targeted value of tau_mean
 ##########################################################################################
 abline(v=.80,lty=1,col="black")
-abline(v=.85,lty=1,col="black")
-abline(v=.90,lty=1,col="black")
 abline(h=.70,lty=1,col="black")
 
 ##########################################################################################
 # Finally, add legend
 ##########################################################################################
+
 title(main = "Correspondence between rho and tau_mean")
 
 legend("topleft", 
-       legend=c("Low Zeros", 
-                "Moderate Zeros", 
-                "High Zeros", 
-                "Dashed 45 degree diagonal line", 
+       legend=c("Dashed 45 degree diagonal line", 
                 "Solid horizontal or vertical lines to indicate which value of rho will yield approximately tau_mean=0.7"), 
-       col=c("darkgreen","blue","red","black","black"), 
-       lty=c(1,1,1,2,1), 
-       lwd=c(4,4,4,1,1),
+       col=c("black","black"), 
+       lty=c(2,1), 
+       lwd=c(1,1),
        cex = 1)
 
 dev.off()
+
+
+

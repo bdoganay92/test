@@ -21,7 +21,7 @@ environment(geemMod) <- asNamespace("geeM")
 ###############################################################################
 # User-specified design parameters
 ###############################################################################
-this.folder <- "sim_sensitivity_group_four/sim_results_2"
+this.folder <- "sim_sensitivity_group_four/sim_results_4"
 
 input.rand.time <- 2
 input.tot.time <- 6
@@ -94,7 +94,7 @@ for(i in 1:length(list.input.rho)){
   })
   
   ncore <- detectCores()
-  cl <- makeCluster(ncore-1)
+  cl <- makeCluster(ncore-2)
   clusterSetRNGStream(cl, 102399)
   clusterExport(cl, c("path.code",
                       "list.gridx"))
