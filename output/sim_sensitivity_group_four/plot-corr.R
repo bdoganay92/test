@@ -3,7 +3,7 @@ path.output_data <- Sys.getenv("path.output_data")
 ##########################################################################################
 # Loading this RData file will place collect.correlation.tau in the global environment
 ##########################################################################################
-this.folder <- "sim_sensitivity_group_four/sim_results_4"
+this.folder <- "sim_sensitivity_group_four/sim_results_9"
 load(file.path(path.output_data, this.folder,"correspondence_between_rho_and_tau.RData"))
 
 jpeg(file.path(path.output_data, this.folder, "plot_correspondence_between_rho_and_tau_mean.jpeg"), width = 800, height = 800)

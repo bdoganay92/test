@@ -1,6 +1,6 @@
 # Specify file paths
 .path.output_data <- Sys.getenv("path.output_data")
-.this.folder.alternative <- "sim_sensitivity_group_four/sim_results_1"
+.this.folder.alternative <- "sim_sensitivity_group_four/sim_results_9"
 
 load(file = file.path(.path.output_data, .this.folder.alternative, "power.RData"))
 plotdat <- .df.vary.params

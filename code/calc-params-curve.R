@@ -21,7 +21,7 @@ environment(geemMod) <- asNamespace("geeM")
 ###############################################################################
 # User-specified design parameters
 ###############################################################################
-this.folder <- "sim_sensitivity_group_four/sim_results_4"
+this.folder <- "sim_sensitivity_group_four/sim_results_9"
 
 input.rand.time <- 2
 input.tot.time <- 6

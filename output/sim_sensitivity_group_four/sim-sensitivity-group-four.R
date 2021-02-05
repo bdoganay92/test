@@ -1,6 +1,6 @@
 # Specify file paths
 .path.output_data <- Sys.getenv("path.output_data")
-.this.folder.alternative <- "sim_sensitivity_group_four/sim_results_1"
+.this.folder.alternative <- "sim_sensitivity_group_four/sim_results_9"
 
 .prop.responders.plusone <- 0.60  # Obtained via calc-truth-deltaQ.R
 .prop.responders.minusone <- 0.62  # Obtained via calc-truth-deltaQ.R

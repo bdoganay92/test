@@ -46,7 +46,7 @@ for(.idx.vary.params in 1:nrow(.df.vary.params)){
   ###############################################################################
   # User-specified design parameters
   ###############################################################################
-  this.folder <- "sim_sensitivity_group_four/sim_results_1"
+  this.folder <- "sim_sensitivity_group_four/sim_results_9"
   
   input.N <- .df.vary.params[.idx.vary.params, "N"]
   input.alpha <- 0.05
