@@ -1,3 +1,5 @@
+# path for this.folder is specified in another file, e.g., run-batch-calc-deltaQ.R
+
 library(dplyr)
 library(purrr)
 library(assertthat)
@@ -20,7 +22,6 @@ environment(geemMod) <- asNamespace("geeM")
 ###############################################################################
 # User-specified design parameters
 ###############################################################################
-this.folder <- "sim_sensitivity_group_four/sim_results_4"
 
 this.pair <- 2
 input.rand.time <- 2
@@ -63,10 +64,10 @@ D.AUC <- cbind(L.AUC,-L.AUC)
 source(file.path(path.code, "calc-truth-beta.R"))
 source(file.path(path.code, "calc-truth-contrasts.R"))
 
-print(p)
-print(q)
-print(diff.eos.means.plusplus.minusplus)
-print(diff.AUC.plusplus.minusplus)
+#print(p)
+#print(q)
+#print(diff.eos.means.plusplus.minusplus)
+#print(diff.AUC.plusplus.minusplus)
 
 ###############################################################################
 # Plot EDTR mean trajectories

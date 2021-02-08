@@ -1,3 +1,5 @@
+# path for this.folder is specified in another file, e.g., run-batch-calc-corr.R
+
 library(dplyr)
 library(purrr)
 library(assertthat)
@@ -21,7 +23,6 @@ environment(geemMod) <- asNamespace("geeM")
 ###############################################################################
 # User-specified design parameters
 ###############################################################################
-this.folder <- "sim_sensitivity_group_four/sim_results_9"
 
 input.rand.time <- 2
 input.tot.time <- 6
@@ -94,7 +95,7 @@ for(i in 1:length(list.input.rho)){
   })
   
   ncore <- detectCores()
-  cl <- makeCluster(ncore-2)
+  cl <- makeCluster(ncore-1)
   clusterSetRNGStream(cl, 102399)
   clusterExport(cl, c("path.code",
                       "list.gridx"))
