@@ -1,7 +1,7 @@
 # Specify file paths
 .path.output_data <- Sys.getenv("path.output_data")
 df.deltaQ <- read.csv(file.path(.path.output_data,"sim_sensitivity_group_four","truth-delta-Q.csv"))
-plot.this.rho <- 0.80
+plot.this.rho <- 0.15
 
 ###############################################################################
 # Plot power for detecting difference in end-of-study means
@@ -37,7 +37,11 @@ for(idx in c(0,1,2,3,4,5,6,7,8,9)){
   plotdat <- power.table[which(power.table$rho==plot.this.rho),]
   lines(plotdat$N, plotdat$power.eos.means, lty=2, col = palette[1+idx], lwd=0.5)  
   lines(plotdat$N, plotdat$power.eos.means, lty=2, col = palette[1+idx], lwd=5)  
-  points(plotdat$N, plotdat$power.eos.means, pch=21, bg = palette[1+idx], col="black", cex=2)       
+  points(plotdat$N, plotdat$power.eos.means, pch=21, bg = palette[1+idx], col="black", cex=2)   
+  
+  # Update power table
+  df.deltaQ[idx+1,"rho"] <- plot.this.rho
+  df.deltaQ[idx+1,"power.eos.means"] <- power.table[which(power.table$rho==plot.this.rho),"power.eos.means"][idx+1]
 }
 
 abline(h = 0.80, lty=2)
@@ -98,7 +102,11 @@ for(idx in c(0,1,2,3,4,5,6,7,8,9)){
   plotdat <- power.table[which(power.table$rho==plot.this.rho),]
   lines(plotdat$N, plotdat$power.AUC, lty=2, col = palette[1+idx], lwd=0.5)  
   lines(plotdat$N, plotdat$power.AUC, lty=2, col = palette[1+idx], lwd=5)  
-  points(plotdat$N, plotdat$power.AUC, pch=21, bg = palette[1+idx], col="black", cex=2)       
+  points(plotdat$N, plotdat$power.AUC, pch=21, bg = palette[1+idx], col="black", cex=2)  
+  
+  # Update power table
+  df.deltaQ[idx+1,"rho"] <- plot.this.rho
+  df.deltaQ[idx+1,"power.AUC"] <- power.table[which(power.table$rho==plot.this.rho),"power.AUC"][idx+1]
 }
 
 abline(h = 0.80, lty=2)
@@ -127,6 +135,6 @@ for(idx in 0:9){
 
 dev.off()
 
-
+write.csv(df.deltaQ, file.path(.path.output_data,"sim_vary_effect",paste("power_rho_",plot.this.rho,".csv",sep="")), row.names = FALSE)
 
 
