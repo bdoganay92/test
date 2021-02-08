@@ -1,7 +1,7 @@
 # Specify file paths
 .path.output_data <- Sys.getenv("path.output_data")
 df.deltaQ <- read.csv(file.path(.path.output_data,"sim_sensitivity_group_four","truth-delta-Q.csv"))
-plot.this.rho <- 0.15
+plot.this.rho <- 0.80
 
 ###############################################################################
 # Plot power for detecting difference in end-of-study means
@@ -31,7 +31,7 @@ plot(-1,
 axis(1, at = seq(100, 600, 50))
 axis(2, at = seq(0, 1, 0.10))
 
-for(idx in c(0,1,2,3,4,5,6,7,8)){
+for(idx in c(0,1,2,3,4,5,6,7,8,9)){
   .this.folder.alternative <- paste("sim_vary_effect/sim_results_", idx, sep="")
   load(file = file.path(.path.output_data, .this.folder.alternative, "power.RData"))
   plotdat <- power.table[which(power.table$rho==plot.this.rho),]
@@ -92,7 +92,7 @@ plot(-1,
 axis(1, at = seq(100, 600, 50))
 axis(2, at = seq(0, 1, 0.10))
 
-for(idx in c(0,1,2,3,4,5,6,7,8)){
+for(idx in c(0,1,2,3,4,5,6,7,8,9)){
   .this.folder.alternative <- paste("sim_vary_effect/sim_results_", idx, sep="")
   load(file = file.path(.path.output_data, .this.folder.alternative, "power.RData"))
   plotdat <- power.table[which(power.table$rho==plot.this.rho),]
