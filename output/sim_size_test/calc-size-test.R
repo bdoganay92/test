@@ -11,7 +11,6 @@
 # Power Calculation
 ###############################################################################
 
-.this.folder.alternative <- "sim_size_test/low_zeros"
 
 for(.idx.vary.params in 1:nrow(.df.vary.params)){
   

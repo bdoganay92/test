@@ -9,12 +9,15 @@
 .this.folder.2 <- "sim_size_test/moderate_zeros"
 .this.folder.3 <- "sim_size_test/high_zeros"
 
+# Output of calc-bias.R
 load(file = file.path(.path.output_data, .this.folder.1, "truth.RData"))
 df1 <- .df.vary.params
 
+# Output of calc-bias.R
 load(file = file.path(.path.output_data, .this.folder.2, "truth.RData"))
 df2 <- .df.vary.params
 
+# Output of calc-bias.R
 load(file = file.path(.path.output_data, .this.folder.3, "truth.RData"))
 df3 <- .df.vary.params
 

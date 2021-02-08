@@ -7,7 +7,10 @@
 ###############################################################################
 # Calculate truth
 ###############################################################################
-.this.folder <- "sim_study_supp/sim_size_test/low_zeros"
+
+# Change the value of .this.folder to either "sim_size_test/low_zeros", "sim_size_test/moderate_zeros", or "sim_size_test/high_zeros"
+
+.this.folder <- "sim_size_test/low_zeros"
 
 .df.vary.params$truth.diff.eos.means <- NA_real_
 .df.vary.params$truth.diff.AUC <- NA_real_

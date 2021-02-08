@@ -25,7 +25,6 @@ for(.idx.vary.params in 1:nrow(.df.vary.params)){
   ###############################################################################
   # User-specified design parameters
   ###############################################################################
-  this.folder <- "sim_size_test"
   
   input.N <- .df.vary.params[.idx.vary.params, "N"]
   input.alpha <- 0.05
@@ -38,8 +37,8 @@ for(.idx.vary.params in 1:nrow(.df.vary.params)){
   input.rho <- .df.vary.params[.idx.vary.params, "rho"]
   
   # Means and proportion of zeros
-  input.means <- read.csv(file.path(path.output_data, this.folder, "input_means.csv"))  # input file: change to appropriate file
-  input.prop.zeros  <- read.csv(file.path(path.output_data, this.folder, "input_prop_zeros.csv"))  # input file: change to appropriate file
+  input.means <- read.csv(file.path(path.output_data, .this.folder, "input_means.csv"))  # input file: change to appropriate file
+  input.prop.zeros  <- read.csv(file.path(path.output_data, .this.folder, "input_prop_zeros.csv"))  # input file: change to appropriate file
   
   # Check that input data is in the correct format
   CheckInputData(input.df = input.means, rand.time = input.rand.time, tot.time = input.tot.time)
@@ -203,7 +202,7 @@ for(.idx.vary.params in 1:nrow(.df.vary.params)){
   save(diff.eos.means, diff.AUC,
        est.diff.eos.means, est.diff.AUC,
        est.stderr.diff.eos.means, est.stderr.diff.AUC,
-       file = file.path(path.output_data, this.folder, paste("hat_","N_",input.N,"_rho_",input.rho,".RData", sep="")))
+       file = file.path(path.output_data, .this.folder, paste("hat_","N_",input.N,"_rho_",input.rho,".RData", sep="")))
     
   print(.idx.vary.params)
   rm(list = ls(all.names = FALSE))
