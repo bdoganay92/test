@@ -54,7 +54,15 @@ plot(x=-2,
      xlab="rho", 
      ylab="tau_mean")
 
-abline(a=0,b=1,lty=2)
+abline(v=0.15,lty=2)
+abline(v=0.55,lty=2)
+abline(v=0.80,lty=2)
+
+abline(h=0.09,lty=2)
+abline(h=0.42,lty=2)
+abline(h=0.70,lty=2)
+
+#abline(a=0,b=1,lty=2)
 axis(1, seq(0, 1, 0.10))
 axis(2, seq(0,1, 0.10))
   
@@ -69,12 +77,16 @@ for(idx in c(0,1,2,3,4,5,6,7,8,9)){
 }
 
 legend("topleft", 
-       legend=paste("Solid dots representing (rho,tau_MEAN) under Scenario ", 1+c(0,1,2,3,4,5,6,7,8,9), sep=""), 
+       legend=paste("Solid dots representing Scenario ", 1+c(0,1,2,3,4,5,6,7,8,9), sep=""), 
        pt.cex = 2, 
        pch=21, 
        pt.bg = palette[1+c(0,1,2,3,4,5,6,7,8,9)])
 
 title(main = "Across Scenarios 1-10, the relationship between rho and tau_MEAN\nremained largely the same, as shown by the position of solid dots")
+
+text(0.12+0.15, -0.02+0.09, labels = "(rho=0.15, tau_mean=0.09)", cex = 0.8, col = "red")
+text(0.12+0.55, -0.02+0.42, labels = "(rho=0.55, tau_mean=0.42)", cex = 0.8, col = "red")
+text(0.12+0.80, -0.02+0.70, labels = "(rho=0.80, tau_mean=0.70)", cex = 0.8, col = "red")
 
 dev.off()
 
