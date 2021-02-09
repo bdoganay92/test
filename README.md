@@ -34,14 +34,7 @@ This repository contains code implementing CountSMART methodology (the `code` fo
 ## 2. The `output` folder
 | <img height=0 width=350> File Name <img height=0 width=350> | <img height=0 width=800> Brief Description <img height=0 width=800> |
 |:------------------------------------------:|:--------------------------------------------------------------------------------------------------|
-[sim_study_main](https://github.com/jamieyap/CountSMART/tree/master/output/sim_study_main) | A directory containing a collection of scripts to execute the main simulation studies.
-[sim_study_supp](https://github.com/jamieyap/CountSMART/tree/master/output/sim_study_supp) | A directory containing a collection of scripts to execute supplementary simulation studies.
-
-## 3. The `examples` folder
-| <img height=0 width=350> File Name <img height=0 width=350> | <img height=0 width=800> Brief Description <img height=0 width=800> |
-|:------------------------------------------:|:--------------------------------------------------------------------------------------------------|
-[example_background.pdf](https://github.com/jamieyap/CountSMART/tree/master/examples/example_background.pdf) | Describe SMART design used in illustrative examples in [example_choosing_rho.pdf](https://github.com/jamieyap/CountSMART/tree/master/examples/example_choosing_rho.pdf) and [example_power_calc.pdf](https://github.com/jamieyap/CountSMART/tree/master/examples/example_power_calc.pdf).
-[example_choosing_rho.pdf](https://github.com/jamieyap/CountSMART/tree/master/examples/example_choosing_rho.pdf) | An example illustrating how to employ code in this repository to estimate relationship between <img src="https://render.githubusercontent.com/render/math?math=$\rho$"> and <img src="https://render.githubusercontent.com/render/math?math=$\tau_{AVE}$"> and select the value of <img src="https://render.githubusercontent.com/render/math?math=$\rho$"> to use in [example_power_calc.pdf](https://github.com/jamieyap/CountSMART/tree/master/examples/example_power_calc.pdf)
-[example_power_calc.pdf](https://github.com/jamieyap/CountSMART/tree/master/examples/example_power_calc.pdf) | An example illustrating how to employ code in this repository to calculate power.
-
+[sim_size_test](https://github.com/jamieyap/CountSMART/tree/master/output/sim_size_test) | A directory containing a collection of scripts to execute simulation studies concerning empirical type-I error rate.
+[sim_sensitivity_group_four](https://github.com/jamieyap/CountSMART/tree/master/output/sim_sensitivity_group_four) | A directory containing a collection of scripts to execute simulation studies investigating whether power is sensitive to a violation in our working assumption on the number of individuals who would not respond to either first-stage intervention option.
+[sim_vary_effect](https://github.com/jamieyap/CountSMART/tree/master/output/sim_vary_effect) | A directory containing a collection of scripts to execute simulation studies  investigating how power changes as specific choices of <img src="https://render.githubusercontent.com/render/math?math=$\Delta_Q$"> are increased across a grid of total sample sizes N=100, 150, 200, …, 550, 600.
 
