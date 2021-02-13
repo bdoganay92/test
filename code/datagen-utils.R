@@ -877,8 +877,8 @@ GenerateObservedYit <- function(df.list){
 
 SeqCorrelationPO <- function(df.list){
   
-  # Args:
-  #   df: ADDLATER
+  # About:
+  #   Calculate within-person correlation among potential outcomes
   
   datagen.params <- df.list$datagen.params
   df <- df.list$df.potential.Yit

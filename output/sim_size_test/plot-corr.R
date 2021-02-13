@@ -70,7 +70,7 @@ points(x = collect.correlation.tau$datagen.params.rho, y = collect.correlation.t
 ##########################################################################################
 # Finally, add legend
 ##########################################################################################
-title(main = "Correspondence between rho and tau_min or tau_max")
+title(main = "Across Scenarios 1-3, relationship between rho and tau_max, and rho and tau_min")
 
 legend("topleft", 
        legend=c("tau_max (Low Zeros)",  

@@ -10,15 +10,15 @@
 .this.folder.3 <- "sim_size_test/high_zeros"
 
 # Output of calc-bias.R
-load(file = file.path(.path.output_data, .this.folder.1, "truth.RData"))
+load(file = file.path(.path.output_data, .this.folder.1, "bias.RData"))
 df1 <- .df.vary.params
 
 # Output of calc-bias.R
-load(file = file.path(.path.output_data, .this.folder.2, "truth.RData"))
+load(file = file.path(.path.output_data, .this.folder.2, "bias.RData"))
 df2 <- .df.vary.params
 
 # Output of calc-bias.R
-load(file = file.path(.path.output_data, .this.folder.3, "truth.RData"))
+load(file = file.path(.path.output_data, .this.folder.3, "bias.RData"))
 df3 <- .df.vary.params
 
 ###############################################################################
@@ -30,14 +30,14 @@ par(mfcol = c(3,2), pty="m")
 
 plot(-1, 
      type="n",
-     xlim = c(100, 500),
+     xlim = c(100, 600),
      ylim = c(-1,1),
      xaxt="n",
      yaxt="n",
      xlab = "N",
      ylab = "Bias")
 
-axis(1, at = seq(100, 500, 100))
+axis(1, at = seq(100, 600, 100))
 axis(2, at = seq(-1, 1, 0.10))
 abline(h = 0, lty=2)
 
@@ -46,14 +46,14 @@ points(df1$N, df1$bias.diff.eos.means, pch=21, bg = "darkgoldenrod", col="black"
 
 plot(-1, 
      type="n",
-     xlim = c(100, 500),
+     xlim = c(100, 600),
      ylim = c(-1,1),
      xaxt="n",
      yaxt="n",
      xlab = "N",
      ylab = "Bias")
 
-axis(1, at = seq(100, 500, 100))
+axis(1, at = seq(100, 600, 100))
 axis(2, at = seq(-1, 1, 0.10))
 abline(h = 0, lty=2)
 
@@ -62,14 +62,14 @@ points(df2$N, df2$bias.diff.eos.means, pch=21, bg = "darkgoldenrod", col="black"
 
 plot(-1, 
      type="n",
-     xlim = c(100, 500),
+     xlim = c(100, 600),
      ylim = c(-1,1),
      xaxt="n",
      yaxt="n",
      xlab = "N",
      ylab = "Bias")
 
-axis(1, at = seq(100, 500, 100))
+axis(1, at = seq(100, 600, 100))
 axis(2, at = seq(-1, 1, 0.10))
 abline(h = 0, lty=2)
 
@@ -78,14 +78,14 @@ points(df3$N, df3$bias.diff.eos.means, pch=21, bg = "darkgoldenrod", col="black"
 
 plot(-1, 
      type="n",
-     xlim = c(100, 500),
+     xlim = c(100, 600),
      ylim = c(-1,1),
      xaxt="n",
      yaxt="n",
      xlab = "N",
      ylab = "Bias")
 
-axis(1, at = seq(100, 500, 100))
+axis(1, at = seq(100, 600, 100))
 axis(2, at = seq(-1, 1, 0.10))
 abline(h = 0, lty=2)
 
@@ -94,14 +94,14 @@ points(df1$N, df1$bias.diff.AUC, pch=21, bg = "darkgoldenrod", col="black", cex=
 
 plot(-1, 
      type="n",
-     xlim = c(100, 500),
+     xlim = c(100, 600),
      ylim = c(-1,1),
      xaxt="n",
      yaxt="n",
      xlab = "N",
      ylab = "Bias")
 
-axis(1, at = seq(100, 500, 100))
+axis(1, at = seq(100, 600, 100))
 axis(2, at = seq(-1, 1, 0.10))
 abline(h = 0, lty=2)
 
@@ -110,14 +110,14 @@ points(df2$N, df2$bias.diff.AUC, pch=21, bg = "darkgoldenrod", col="black", cex=
 
 plot(-1, 
      type="n",
-     xlim = c(100, 500),
+     xlim = c(100, 600),
      ylim = c(-1,1),
      xaxt="n",
      yaxt="n",
      xlab = "N",
      ylab = "Bias")
 
-axis(1, at = seq(100, 500, 100))
+axis(1, at = seq(100, 600, 100))
 axis(2, at = seq(-1, 1, 0.10))
 abline(h = 0, lty=2)
 
@@ -136,14 +136,14 @@ par(mfcol = c(3,2), pty="m")
 
 plot(-1, 
      type="n",
-     xlim = c(100, 500),
+     xlim = c(100, 600),
      ylim = c(-1,1),
      xaxt="n",
      yaxt="n",
      xlab = "N",
      ylab = "Bias")
 
-axis(1, at = seq(100, 500, 100))
+axis(1, at = seq(100, 600, 100))
 axis(2, at = seq(-1, 1, 0.10))
 abline(h = 0, lty=2)
 
@@ -152,14 +152,14 @@ points(df1$N, df1$bias.stderr.est.diff.eos.means, pch=21, bg = "darkgoldenrod", 
 
 plot(-1, 
      type="n",
-     xlim = c(100, 500),
+     xlim = c(100, 600),
      ylim = c(-1,1),
      xaxt="n",
      yaxt="n",
      xlab = "N",
      ylab = "Bias")
 
-axis(1, at = seq(100, 500, 100))
+axis(1, at = seq(100, 600, 100))
 axis(2, at = seq(-1, 1, 0.10))
 abline(h = 0, lty=2)
 
@@ -168,14 +168,14 @@ points(df2$N, df2$bias.stderr.est.diff.eos.means, pch=21, bg = "darkgoldenrod", 
 
 plot(-1, 
      type="n",
-     xlim = c(100, 500),
+     xlim = c(100, 600),
      ylim = c(-1,1),
      xaxt="n",
      yaxt="n",
      xlab = "N",
      ylab = "Bias")
 
-axis(1, at = seq(100, 500, 100))
+axis(1, at = seq(100, 600, 100))
 axis(2, at = seq(-1, 1, 0.10))
 abline(h = 0, lty=2)
 
@@ -184,14 +184,14 @@ points(df3$N, df3$bias.stderr.est.diff.eos.means, pch=21, bg = "darkgoldenrod", 
 
 plot(-1, 
      type="n",
-     xlim = c(100, 500),
+     xlim = c(100, 600),
      ylim = c(-1,1),
      xaxt="n",
      yaxt="n",
      xlab = "N",
      ylab = "Bias")
 
-axis(1, at = seq(100, 500, 100))
+axis(1, at = seq(100, 600, 100))
 axis(2, at = seq(-1, 1, 0.10))
 abline(h = 0, lty=2)
 
@@ -200,14 +200,14 @@ points(df1$N, df1$bias.stderr.est.diff.AUC, pch=21, bg = "darkgoldenrod", col="b
 
 plot(-1, 
      type="n",
-     xlim = c(100, 500),
+     xlim = c(100, 600),
      ylim = c(-1,1),
      xaxt="n",
      yaxt="n",
      xlab = "N",
      ylab = "Bias")
 
-axis(1, at = seq(100, 500, 100))
+axis(1, at = seq(100, 600, 100))
 axis(2, at = seq(-1, 1, 0.10))
 abline(h = 0, lty=2)
 
@@ -216,14 +216,14 @@ points(df2$N, df2$bias.stderr.est.diff.AUC, pch=21, bg = "darkgoldenrod", col="b
 
 plot(-1, 
      type="n",
-     xlim = c(100, 500),
+     xlim = c(100, 600),
      ylim = c(-1,1),
      xaxt="n",
      yaxt="n",
      xlab = "N",
      ylab = "Bias")
 
-axis(1, at = seq(100, 500, 100))
+axis(1, at = seq(100, 600, 100))
 axis(2, at = seq(-1, 1, 0.10))
 abline(h = 0, lty=2)
 

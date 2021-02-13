@@ -73,7 +73,7 @@ for(idx in c(0,1,2,3,4,5,6,7,8,9)){
 }
 
 
-title(main = "Across Scenarios 1-10, the relationship between rho and tau_max or tau_min\nremained largely the same, as shown by the position of solid dots and triangles")
+title(main = "Across Scenarios 1-10, relationship between rho and tau_max, and rho and tau_min")
 
 legend("topleft", 
        legend=c(paste("Solid dots representing tau_max in Scenario ", 1+c(0,1,2,3,4,5,6,7,8,9), sep=""),

@@ -2,7 +2,7 @@
 .path.output_data <- Sys.getenv("path.output_data")
 
 # Specify grid of values for which power is calculated
-.df.vary.params <- expand.grid(rho = 0.80, N = seq(100,500,25))
+.df.vary.params <- expand.grid(rho = 0.80, N = seq(100,600,25))
 
 .df.vary.params$power.eos.means <- NA_real_
 .df.vary.params$power.AUC <- NA_real_

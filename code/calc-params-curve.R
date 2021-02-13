@@ -223,7 +223,7 @@ for(i in 1:length(list.input.rho)){
   
   all.seq <- c(plus.r, plus.nr.plus, plus.nr.minus,
                minus.r, minus.nr.plus, minus.nr.minus)
-  tau.mean <- mean(all.seq, na.rm=TRUE)
+  
   tau.max <- max(all.seq, na.rm=TRUE)
   tau.min <- min(all.seq, na.rm=TRUE)
   
@@ -231,7 +231,7 @@ for(i in 1:length(list.input.rho)){
   stopCluster(cl)
   
   # Keep record of results
-  list.est.tau <- list(data.frame(datagen.params.rho = input.rho, tau.min = tau.min, tau.mean = tau.mean, tau.max = tau.max))
+  list.est.tau <- list(data.frame(datagen.params.rho = input.rho, tau.min = tau.min, tau.max = tau.max))
   collect.correlation.tau <- append(collect.correlation.tau, list.est.tau)
   
   # Prepare for next iteration
