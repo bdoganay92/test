@@ -1,4 +1,4 @@
-.df.vary.params <- expand.grid(rho = 0.80, N = seq(100,500,25))
+.df.vary.params <- expand.grid(rho = 0.80, N = seq(100,600,50))
 
 for(.idx.vary.params in 1:nrow(.df.vary.params)){
   
