@@ -22,9 +22,7 @@ This repository contains code implementing CountSMART methodology (the `code` fo
 
 | <img height=0 width=350> File Name <img height=0 width=350> | <img height=0 width=800> Brief Description <img height=0 width=800> |
 |:------------------------------------------:|:--------------------------------------------------------------------------------------------------|
-[calc-bias.R](https://github.com/jamieyap/CountSMART/tree/master/code/calc-bias.R) | Calculate bias in estimates of means and estimates of standard errors.
 [calc-covmat.R](https://github.com/jamieyap/CountSMART/tree/master/code/calc-covmat.R) | Calculate estimated covariance matrix.
-[calc-estimates.R](https://github.com/jamieyap/CountSMART/tree/master/code/calc-estimates.R) | Calculate estimates of parameters in a model for the mean trajectory of dynamic treatment regimens embedded in a SMART.
 [calc-params-curve.R](https://github.com/jamieyap/CountSMART/tree/master/code/calc-params-curve.R) | Implement simulation to estimate relationship between <img src="https://render.githubusercontent.com/render/math?math=$\rho$"> and <img src="https://render.githubusercontent.com/render/math?math=$\tau_{MEAN}$">
 [calc-truth-beta.R](https://github.com/jamieyap/CountSMART/tree/master/code/calc-truth-beta.R) | Calculate true value of parameters in a model for the mean trajectory of dynamic treatment regimens embedded in a SMART, implied by inputs provided to Monte Carlo simulation.
 [calc-truth-contrasts.R](https://github.com/jamieyap/CountSMART/tree/master/code/calc-truth-contrasts.R) | Calculate true value of <img src="https://render.githubusercontent.com/render/math?math=$\Delta_Q$"> in a model for the mean trajectory of dynamic treatment regimens embedded in a SMART, implied by inputs provided to Monte Carlo simulation.
