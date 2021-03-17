@@ -85,9 +85,9 @@ legend("topleft",
 
 
 
-text(0.12+0.15, 0, labels = "All Scenarios (rho=0.15, tau_max=0.11, tau_min=0.08)", cex = 0.8, col = "red")
-text(0.12+0.55, 0.27, labels = "All Scenarios (rho=0.55, tau_max=0.45, tau_min=0.31)", cex = 0.8, col = "red")
-text(0.07+0.80, 0.5, labels = "All Scenarios (rho=0.80, tau_max=0.73, tau_min=0.67)", cex = 0.8, col = "red")
+text(0.12+0.15, 0, labels = "All Scenarios (when rho=0.15: tau_max=0.11, tau_min=0.08)", cex = 0.8, col = "red")
+text(0.12+0.55, 0.27, labels = "All Scenarios (when rho=0.55: tau_max=0.45, tau_min=0.31)", cex = 0.8, col = "red")
+text(0.07+0.73, 0.4, labels = "All Scenarios (when rho=0.80: tau_max=0.73, tau_min=0.67)", cex = 0.8, col = "red")
 
 dev.off()
 
