@@ -35,19 +35,19 @@ text(10,1,paste("rho=",plot.this.rho), col="red",cex=2)
 
 for(idx in 0:9){
         if(idx<=2){
-                text(220,0.05+idx/18,paste("Scenario ",1+idx,": delta_EOS=",df.deltaQ$truth.delta.eos.means[idx+1],sep=""), col = palette[1+idx], cex=1)
+                text(220,0.05+idx/18,paste("delta=",df.deltaQ$truth.delta.eos.means[idx+1],sep=""), col = palette[1+idx], cex=2)
         }else if(idx>=3 & idx <=4){
-                text(220,0.05+idx/12,paste("Scenario ",1+idx,": delta_EOS=",df.deltaQ$truth.delta.eos.means[idx+1],sep=""), col = palette[1+idx], cex=1)
+                text(220,0.05+idx/12,paste("delta=",df.deltaQ$truth.delta.eos.means[idx+1],sep=""), col = palette[1+idx], cex=2)
         }else if(idx==5){
-                text(220,0.05+idx/11,paste("Scenario ",1+idx,": delta_EOS=",df.deltaQ$truth.delta.eos.means[idx+1],sep=""), col = palette[1+idx], cex=1)
+                text(220,0.05+idx/11,paste("delta=",df.deltaQ$truth.delta.eos.means[idx+1],sep=""), col = palette[1+idx], cex=2)
         }else if(idx==6){
-                text(220,0.05+idx/10.5,paste("Scenario ",1+idx,": delta_EOS=",df.deltaQ$truth.delta.eos.means[idx+1],sep=""), col = palette[1+idx], cex=1)
+                text(220,0.05+idx/10.5,paste("delta=",df.deltaQ$truth.delta.eos.means[idx+1],sep=""), col = palette[1+idx], cex=2)
         }else if(idx==7){
-                text(220,0.05+idx/10.5,paste("Scenario ",1+idx,": delta_EOS=",df.deltaQ$truth.delta.eos.means[idx+1],sep=""), col = palette[1+idx], cex=1)
+                text(220,0.05+idx/10.5,paste("delta=",df.deltaQ$truth.delta.eos.means[idx+1],sep=""), col = palette[1+idx], cex=2)
         }else if(idx==8){
-                text(220,0.05+idx/11,paste("Scenario ",1+idx,": delta_EOS=",df.deltaQ$truth.delta.eos.means[idx+1],sep=""), col = palette[1+idx], cex=1)
+                text(220,0.05+idx/11,paste("delta=",df.deltaQ$truth.delta.eos.means[idx+1],sep=""), col = palette[1+idx], cex=2)
         }else if(idx==9){
-                text(220,0.05+idx/11,paste("Scenario ",1+idx,": delta_EOS=",df.deltaQ$truth.delta.eos.means[idx+1],sep=""), col = palette[1+idx], cex=1)
+                text(220,0.05+idx/11,paste("delta=",df.deltaQ$truth.delta.eos.means[idx+1],sep=""), col = palette[1+idx], cex=2)
         }
 }
 
@@ -87,21 +87,21 @@ text(10,1,paste("rho=",plot.this.rho), col="red",cex=2)
 
 for(idx in 0:9){
         if(idx<=2){
-                text(220,0.05+idx/18,paste("Scenario ",1+idx,": delta_AUC=",df.deltaQ$truth.delta.AUC[idx+1],sep=""), col = palette[1+idx], cex=1)
+                text(220,0.05+idx/18,paste("delta=",df.deltaQ$truth.delta.AUC[idx+1],sep=""), col = palette[1+idx], cex=2)
         }else if(idx==3){
-                text(220,0.05+idx/12,paste("Scenario ",1+idx,": delta_AUC=",df.deltaQ$truth.delta.AUC[idx+1],sep=""), col = palette[1+idx], cex=1)
+                text(220,0.05+idx/12,paste("delta=",df.deltaQ$truth.delta.AUC[idx+1],sep=""), col = palette[1+idx], cex=2)
         }else if(idx==4){
-                text(220,0.05+idx/10,paste("Scenario ",1+idx,": delta_AUC=",df.deltaQ$truth.delta.AUC[idx+1],sep=""), col = palette[1+idx], cex=1)
+                text(220,0.05+idx/10,paste("delta=",df.deltaQ$truth.delta.AUC[idx+1],sep=""), col = palette[1+idx], cex=2)
         }else if(idx==5){
-                text(220,0.05+idx/9,paste("Scenario ",1+idx,": delta_AUC=",df.deltaQ$truth.delta.AUC[idx+1],sep=""), col = palette[1+idx], cex=1)
+                text(220,0.05+idx/9,paste("delta=",df.deltaQ$truth.delta.AUC[idx+1],sep=""), col = palette[1+idx], cex=2)
         }else if(idx==6){
-                text(220,0.05+idx/9,paste("Scenario ",1+idx,": delta_AUC=",df.deltaQ$truth.delta.AUC[idx+1],sep=""), col = palette[1+idx], cex=1)
+                text(220,0.05+idx/9,paste("delta=",df.deltaQ$truth.delta.AUC[idx+1],sep=""), col = palette[1+idx], cex=2)
         }else if(idx==7){
-                text(220,0.05+idx/9,paste("Scenario ",1+idx,": delta_AUC=",df.deltaQ$truth.delta.AUC[idx+1],sep=""), col = palette[1+idx], cex=1)
+                text(220,0.05+idx/9,paste("delta=",df.deltaQ$truth.delta.AUC[idx+1],sep=""), col = palette[1+idx], cex=2)
         }else if(idx==8){
-                text(220,0.05+idx/9.5,paste("Scenario ",1+idx,": delta_AUC=",df.deltaQ$truth.delta.AUC[idx+1],sep=""), col = palette[1+idx], cex=1)
+                text(220,0.05+idx/9.5,paste("delta=",df.deltaQ$truth.delta.AUC[idx+1],sep=""), col = palette[1+idx], cex=2)
         }else if(idx==9){
-                text(220,0.05+idx/10,paste("Scenario ",1+idx,": delta_AUC=",df.deltaQ$truth.delta.AUC[idx+1],sep=""), col = palette[1+idx], cex=1)
+                text(220,0.05+idx/10,paste("delta=",df.deltaQ$truth.delta.AUC[idx+1],sep=""), col = palette[1+idx], cex=2)
         }
 }
 

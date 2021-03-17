@@ -25,12 +25,12 @@ axis(2, seq(0,1, 0.10))
 collect.correlation.tau$diff <- collect.correlation.tau$tau.max - collect.correlation.tau$tau.min
 print(max(collect.correlation.tau$diff))
 
-# Begin drawing lines corresponding to tau.mean
+# Begin drawing lines corresponding to tau
 lines(x = collect.correlation.tau$datagen.params.rho, y = collect.correlation.tau$tau.max, type="l", col="darkgreen", lwd=2, lty=3)
-points(x = collect.correlation.tau$datagen.params.rho, y = collect.correlation.tau$tau.max, pch=21, bg = "darkgreen", col="black", cex=1.7)
+points(x = collect.correlation.tau$datagen.params.rho, y = collect.correlation.tau$tau.max, pch=21, bg = "darkgreen", col="black", cex=2.5)
 
 lines(x = collect.correlation.tau$datagen.params.rho, y = collect.correlation.tau$tau.min, type="l", col="darkgreen", lwd=2, lty=3)
-points(x = collect.correlation.tau$datagen.params.rho, y = collect.correlation.tau$tau.min, pch=24, bg = "darkgreen", col="black", cex=1)
+points(x = collect.correlation.tau$datagen.params.rho, y = collect.correlation.tau$tau.min, pch=24, bg = "darkgreen", col="black", cex=2.5)
 
 
 ##########################################################################################
@@ -42,12 +42,12 @@ load(file.path(path.output_data, this.folder,"correspondence_between_rho_and_tau
 collect.correlation.tau$diff <- collect.correlation.tau$tau.max - collect.correlation.tau$tau.min
 print(max(collect.correlation.tau$diff))
 
-# Begin drawing lines corresponding to tau.mean
+# Begin drawing lines corresponding to tau
 lines(x = collect.correlation.tau$datagen.params.rho, y = collect.correlation.tau$tau.max, type="l", col="darkblue", lwd=2, lty=3)
-points(x = collect.correlation.tau$datagen.params.rho, y = collect.correlation.tau$tau.max, pch=21, bg = "darkblue", col="black", cex=1.7)
+points(x = collect.correlation.tau$datagen.params.rho, y = collect.correlation.tau$tau.max, pch=21, bg = "darkblue", col="black", cex=2.5)
 
 lines(x = collect.correlation.tau$datagen.params.rho, y = collect.correlation.tau$tau.min, type="l", col="darkblue", lwd=2, lty=3)
-points(x = collect.correlation.tau$datagen.params.rho, y = collect.correlation.tau$tau.min, pch=24, bg = "darkblue", col="black", cex=1)
+points(x = collect.correlation.tau$datagen.params.rho, y = collect.correlation.tau$tau.min, pch=24, bg = "darkblue", col="black", cex=2.5)
 
 
 ##########################################################################################
@@ -59,12 +59,12 @@ load(file.path(path.output_data, this.folder,"correspondence_between_rho_and_tau
 collect.correlation.tau$diff <- collect.correlation.tau$tau.max - collect.correlation.tau$tau.min
 print(max(collect.correlation.tau$diff))
 
-# Begin drawing lines corresponding to tau.mean
+# Begin drawing lines corresponding to tau
 lines(x = collect.correlation.tau$datagen.params.rho, y = collect.correlation.tau$tau.max, type="l", col="darkred", lwd=2, lty=3)
-points(x = collect.correlation.tau$datagen.params.rho, y = collect.correlation.tau$tau.max, pch=21, bg = "darkred", col="black", cex=1.7)
+points(x = collect.correlation.tau$datagen.params.rho, y = collect.correlation.tau$tau.max, pch=21, bg = "darkred", col="black", cex=2.5)
 
 lines(x = collect.correlation.tau$datagen.params.rho, y = collect.correlation.tau$tau.min, type="l", col="darkred", lwd=2, lty=3)
-points(x = collect.correlation.tau$datagen.params.rho, y = collect.correlation.tau$tau.min, pch=24, bg = "darkred", col="black", cex=1)
+points(x = collect.correlation.tau$datagen.params.rho, y = collect.correlation.tau$tau.min, pch=24, bg = "darkred", col="black", cex=2.5)
 
 
 ##########################################################################################
@@ -83,11 +83,12 @@ legend("topleft",
        lty=c(3,3,3,3,3,3,2), 
        pch=c(21,21,21,24,24,24),
        pt.bg = c("darkgreen","darkblue","darkred","darkgreen","darkblue","darkred"),
-       cex = 1)
+       pt.cex = rep(3,6),
+       cex = 1.7)
 
 
-text(0.07+0.70, 0.2, labels = "Low Zeros (rho=0.80, tau_max=0.73, tau_min=0.67)", cex = 0.8, col = "red")
-text(0.07+0.70, 0.15, labels = "Moderate Zeros (rho=0.80, tau_max=0.71, tau_min=0.61)", cex = 0.8, col = "red")
-text(0.07+0.70, 0.10, labels = "High Zeros (rho=0.80, tau_max=0.71, tau_min=0.48)", cex = 0.8, col = "red")
+text(0.07+0.60, 0.04, labels = "Low Zeros (when rho=0.80: tau_max=0.73, tau_min=0.67)", cex = 1.3, col = "red")
+text(0.07+0.60, 0.00, labels = "Moderate Zeros (when rho=0.80: tau_max=0.71, tau_min=0.61)", cex = 1.3, col = "red")
+text(0.07+0.60, -0.04, labels = "High Zeros (when rho=0.80: tau_max=0.71, tau_min=0.48)", cex = 1.3, col = "red")
 
 dev.off()
