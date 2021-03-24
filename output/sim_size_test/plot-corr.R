@@ -9,6 +9,8 @@ load(file.path(path.output_data, this.folder,"correspondence_between_rho_and_tau
 
 jpeg(file.path(path.output_data, "sim_size_test/plot_correspondence_between_rho_and_tau_mean.jpeg"), width = 800, height = 800)
 
+par(mar = c(6, 5, 0.5, 0.5) + 0.1)  # Bottom, left, top, right
+
 # Set up plot region
 plot(x=-2, 
      type="n", 
@@ -17,10 +19,12 @@ plot(x=-2,
      xaxt="n", 
      yaxt="n", 
      xlab="rho", 
-     ylab="tau")
+     ylab="tau",
+     cex.lab = 2.5,
+     frame.plot = FALSE)
 
-axis(1, seq(0, 1, 0.10))
-axis(2, seq(0,1, 0.10))
+axis(1, seq(0, 1, 0.20), cex.axis=2.5, lwd = 5)
+axis(2, seq(0,1, 0.20), cex.axis=2.5, lwd = 5)
 
 collect.correlation.tau$diff <- collect.correlation.tau$tau.max - collect.correlation.tau$tau.min
 print(max(collect.correlation.tau$diff))
@@ -70,9 +74,9 @@ points(x = collect.correlation.tau$datagen.params.rho, y = collect.correlation.t
 ##########################################################################################
 # Finally, add legend
 ##########################################################################################
-title(main = "Across Scenarios 1-3, relationship between rho and tau_max, and rho and tau_min")
+#title(main = "Across Scenarios 1-3, relationship between rho and tau_max, and rho and tau_min")
 
-legend("topleft", 
+legend(-0.05, 1,
        legend=c("tau_max (Low Zeros)",  
                 "tau_max (Moderate Zeros)", 
                 "tau_max (High Zeros)", 

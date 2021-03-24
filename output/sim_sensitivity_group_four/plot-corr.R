@@ -40,6 +40,8 @@ jpeg(file.path(.path.output_data, "sim_sensitivity_group_four/plot_correspondenc
 palette <- c("darkgoldenrod","forestgreen","firebrick3","lightcoral","mistyrose1",
              "bisque3","lightblue4","steelblue4","wheat3","grey30")
 
+par(mar = c(6, 5, 0.5, 0.5) + 0.1)  # Bottom, left, top, right
+
 plot(x=-2, 
      type="n", 
      xlim=c(-.05,1), 
@@ -47,10 +49,12 @@ plot(x=-2,
      xaxt="n", 
      yaxt="n", 
      xlab="rho", 
-     ylab="tau")
+     ylab="tau",
+     cex.lab = 2.5,
+     frame.plot = FALSE)
 
-axis(1, seq(0, 1, 0.10))
-axis(2, seq(0,1, 0.10))
+axis(1, seq(0, 1, 0.20), cex.axis=2.5, lwd = 5)
+axis(2, seq(0,1, 0.20), cex.axis=2.5, lwd = 5)
   
 # Begin drawing lines corresponding to tau.max
 for(idx in c(0,1,2,3,4,5,6,7,8,9)){
@@ -73,21 +77,22 @@ for(idx in c(0,1,2,3,4,5,6,7,8,9)){
 }
 
 
-title(main = "Across Scenarios 1-10, relationship between rho and tau_max, and rho and tau_min")
+#title(main = "Across Scenarios 1-10, relationship between rho and tau_max, and rho and tau_min")
 
-legend("topleft", 
+legend(-0.07,1,
        legend=c(paste("Solid dots representing tau_max in Scenario ", 1+c(0,1,2,3,4,5,6,7,8,9), sep=""),
                 paste("Solid triangles representing tau_min in Scenario ", 1+c(0,1,2,3,4,5,6,7,8,9), sep="")), 
        pt.cex = 2, 
        pch=c(rep(21,10),rep(24,10)), 
        pt.bg = c(palette[1+c(0,1,2,3,4,5,6,7,8,9)],
-                 palette[1+c(0,1,2,3,4,5,6,7,8,9)]))
+                 palette[1+c(0,1,2,3,4,5,6,7,8,9)]),
+       cex = 1.17)
 
 
 
-text(0.12+0.15, 0, labels = "All Scenarios (when rho=0.15: tau_max=0.11, tau_min=0.08)", cex = 0.8, col = "red")
-text(0.12+0.55, 0.27, labels = "All Scenarios (when rho=0.55: tau_max=0.45, tau_min=0.31)", cex = 0.8, col = "red")
-text(0.07+0.73, 0.4, labels = "All Scenarios (when rho=0.80: tau_max=0.73, tau_min=0.67)", cex = 0.8, col = "red")
+text(0.45, 0, labels = "All Scenarios (when rho=0.15: tau_max=0.11, tau_min=0.08)", cex = 1.5, col = "red")
+text(0.45+0.18, 0.05, labels = "All Scenarios (when rho=0.55: tau_max=0.45, tau_min=0.31)", cex = 1.5, col = "red")
+text(0.45+0.20, 0.10, labels = "All Scenarios (when rho=0.80: tau_max=0.73, tau_min=0.67)", cex = 1.5, col = "red")
 
 dev.off()
 
