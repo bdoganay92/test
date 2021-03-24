@@ -6,7 +6,7 @@ df.deltaQ <- rep(list(df.deltaQ), each = length(seq(100,600,50)))
 df.deltaQ <- do.call(rbind, df.deltaQ)
 df.deltaQ$N <- rep(seq(100,600,50), each = 10)
 
-plot.this.rho <- 0.80
+plot.this.rho <- 0.55
 
 ###############################################################################
 # Plot power for detecting difference in end-of-study means
@@ -18,7 +18,7 @@ palette <- c("darkgoldenrod","forestgreen","firebrick3","lightcoral","mistyrose1
              "bisque3","lightblue4","steelblue4","wheat3","grey30")
 
 
-par(mar = c(5, 4, 0.5, 0.5) + 0.1)  # Bottom, left, top, right
+par(mar = c(6, 5, 0.5, 0.5) + 0.1)  # Bottom, left, top, right
 
 plot(-1, 
      type="n",
@@ -27,11 +27,13 @@ plot(-1,
      xaxt="n",
      yaxt="n",
      xlab = "Total sample size N",
-     ylab = "Power")
+     ylab = "Power", 
+     cex.lab = 2.5,
+     frame.plot = FALSE)
 
 
-axis(1, at = seq(100, 600, 50))
-axis(2, at = seq(0, 1, 0.10))
+axis(1, at = seq(100, 600, 100), cex.axis=2.5, lwd = 5)
+axis(2, at = seq(0, 1, 0.10), cex.axis=2.5, lwd = 5)
 
 for(idx in c(0,1,2,3,4,5,6,7,8,9)){
   .this.folder.alternative <- paste("sim_vary_effect/sim_results_", idx, sep="")
@@ -81,11 +83,8 @@ jpeg(file.path(.path.output_data, "sim_vary_effect", paste("plot_power_AUC_",plo
 palette <- c("darkgoldenrod","forestgreen","firebrick3","lightcoral","mistyrose1",
              "bisque3","lightblue4","steelblue4","wheat3","grey30")
 
-# -----------------------------------------------------------------------------
-# Plot for rho = 0.80
-# -----------------------------------------------------------------------------
 
-par(mar = c(5, 4, 0.5, 0.5) + 0.1)  # Bottom, left, top, right
+par(mar = c(6, 5, 0.5, 0.5) + 0.1)  # Bottom, left, top, right
 
 plot(-1, 
      type="n",
@@ -94,11 +93,14 @@ plot(-1,
      xaxt="n",
      yaxt="n",
      xlab = "Total sample size N",
-     ylab = "Power")
+     ylab = "Power", 
+     cex.lab = 2.5,
+     frame.plot = FALSE)
 
 
-axis(1, at = seq(100, 600, 50))
-axis(2, at = seq(0, 1, 0.10))
+axis(1, at = seq(100, 600, 100), cex.axis=2.5, lwd = 5)
+axis(2, at = seq(0, 1, 0.10), cex.axis=2.5, lwd = 5)
+
 
 for(idx in c(0,1,2,3,4,5,6,7,8,9)){
   .this.folder.alternative <- paste("sim_vary_effect/sim_results_", idx, sep="")

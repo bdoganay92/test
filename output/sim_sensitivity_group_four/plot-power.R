@@ -6,7 +6,7 @@ plot.this.rho <- 0.80
 jpeg(file.path(.path.output_data, "sim_sensitivity_group_four", "plot_sensitivty_power_eos_means.jpeg"), width = 930, height = 900)
 
 op <- par() # save default settings
-par(mar = c(5, 4, 0.5, 0.5) + 0.1)  # Bottom, left, top, right
+par(mar = c(6, 5, 0.5, 0.5) + 0.1)  # Bottom, left, top, right
 palette <- c("darkgoldenrod","forestgreen","firebrick3","lightcoral","mistyrose1",
              "bisque3","lightblue4","steelblue4","wheat3","grey30")
 
@@ -17,10 +17,13 @@ plot(-1,
      xaxt="n",
      yaxt="n",
      xlab = "Number of individuals in Group 4 (n4)",
-     ylab = "Power")
+     ylab = "Power", 
+     cex.lab = 2.5,
+     frame.plot = FALSE)
 
-axis(1, at = seq(0, 190, 10))
-axis(2, at = seq(0, 1, 0.10))
+axis(1, at = seq(0, 200, 30), cex.axis=2.5, lwd = 5)
+axis(2, at = seq(0, 1, 0.10), cex.axis=2.5, lwd = 5)
+
 
 for(idx in c(0,1,2,3,4,5,6,7,8,9)){
         .this.folder.alternative <- paste("sim_sensitivity_group_four/sim_results_", idx, sep="")
@@ -58,7 +61,7 @@ dev.off()
 jpeg(file.path(.path.output_data, "sim_sensitivity_group_four", "plot_sensitivty_power_AUC.jpeg"), width = 930, height = 900)
 
 op <- par() # save default settings
-par(mar = c(5, 4, 0.5, 0.5) + 0.1)  # Bottom, left, top, right
+par(mar = c(6, 5, 0.5, 0.5) + 0.1)  # Bottom, left, top, right
 palette <- c("darkgoldenrod","forestgreen","firebrick3","lightcoral","mistyrose1",
              "bisque3","lightblue4","steelblue4","wheat3","grey30")
 
@@ -69,10 +72,12 @@ plot(-1,
      xaxt="n",
      yaxt="n",
      xlab = "Number of individuals in Group 4 (n4)",
-     ylab = "Power")
+     ylab = "Power", 
+     cex.lab = 2.5,
+     frame.plot = FALSE)
 
-axis(1, at = seq(0, 190, 10))
-axis(2, at = seq(0, 1, 0.10))
+axis(1, at = seq(0, 200, 30), cex.axis=2.5, lwd = 5)
+axis(2, at = seq(0, 1, 0.10), cex.axis=2.5, lwd = 5)
 
 for(idx in c(0,1,2,3,4,5,6,7,8,9)){
         .this.folder.alternative <- paste("sim_sensitivity_group_four/sim_results_", idx, sep="")
