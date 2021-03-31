@@ -6,7 +6,7 @@ CountSMART is about a Monte Carlo simulation-based approach developed to estimat
 
 # About this repository
 
-This repository contains code implementing CountSMART methodology (the `code` folder), simulation studies examining the validity of the approach (the `output` folder), and examples of how to apply CountSMART methodology to planning SMARTs with longitudinal count outcomes with EZ (the `examples` folder).
+This repository contains code implementing CountSMART methodology (the `code` folder) and simulation studies examining the validity of the approach (the `output` folder).
 
 ## 1. The `code` folder
 
