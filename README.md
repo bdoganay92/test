@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/212328991.svg)](https://zenodo.org/badge/latestdoi/212328991)
+
 # About CountSMART
 
 Longitudinal count data having an excessive number of zeros (EZ) are often collected in a variety of health domains. This repository contains code to estimate sample size needed to compare dynamic treatment regimens using longitudinal count outcomes with EZ from a Sequential Multiple Assignment Randomized Trial (SMART). A pair of dynamic treatment regimens embedded in a planned SMART (aka. 'EDTRs') can be compared using differences in end-of-study means, or more generally, differences in a weighted average of means across various time points, which we denote as <img src="https://render.githubusercontent.com/render/math?math=$\Delta_Q$">; _Q_ is simply shorthand for 'quantity', e.g., <img src="https://render.githubusercontent.com/render/math?math=$\Delta_{EOS}$"> denotes the quantity _difference in end-of-study means_.
