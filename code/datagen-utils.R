@@ -104,6 +104,177 @@ eCol <- function(i,n){
   return(evec)
 }
 
+CheckPositiveDefinite <- function(tot.time, rand.time, rho, corr.str, other.corr.params=NA_real_){
+  
+  ###########################################################################
+  # Construct correlation matrix (for Z_{it}'s) for each group
+  ###########################################################################
+  
+  # Calculate dimensions of correlation matrices among four groups
+  corrdim.01 <- 2*tot.time - 1
+  corrdim.02 <- 3*tot.time - rand.time - 1
+  corrdim.03 <- 3*tot.time - rand.time - 1
+  corrdim.04 <- 4*tot.time - 2*rand.time - 1
+  list.corrmat <- list(group.01=NULL, group.02=NULL, group.03=NULL, group.04=NULL)
+  
+  if(corr.str == "exch"){
+    use.this.corrmat <- ExchangeableMat(m = tot.time, rho = rho)
+    other.corr.params <- ifelse(is.na(other.corr.params), rho, other.corr.params)
+  }else if(corr.str == "ar1"){
+    use.this.corrmat <- AR1Mat(m = tot.time, rho = rho)
+    other.corr.params <- ifelse(is.na(other.corr.params), rho, other.corr.params)
+  }else{
+    print("Must enter valid corr.type")
+  }
+  
+  # ---------------------------------------------------------------------------
+  # Group 1 
+  # ---------------------------------------------------------------------------
+  
+  # Initialize matrix to correct size
+  mat <- IdentityMat(m=corrdim.01)  
+  mat <- ifelse(mat==0, NA, mat)
+  
+  # This is the 1st sub-matrix we will fill in
+  # Fill in sub-matrix for time t_2 to t_{rand.time} corresponding to ETS (+1) at the 1st randomization
+  # Also fill in sub-matrix for time t_{rand.time+1} all the way through t_{tot.time} corresponding to ETS (+1,1,0) after 2nd randomization
+  # Include t_1 so that we may conveniently use the functions ExchangeableMat() or AR1Mat()
+  mat[c(1, 2:rand.time, (2*rand.time):(tot.time+rand.time-1)), 
+      c(1, 2:rand.time, (2*rand.time):(tot.time+rand.time-1))] <- use.this.corrmat
+  # This is the 2nd sub-matrix we will fill in
+  # Fill in sub-matrix for time t_2 to t_{rand.time} corresponding to ETS for which -1 was offered at the 1st randomization
+  # Also fill in sub-matrix for time t_{rand.time+1} all the way through t_{tot.time} corresponding to ETS (-1,1,0) after 2nd randomization
+  # Include t_1 so that we may conveniently use the functions ExchangeableMat() or AR1Mat()
+  mat[c(1, (rand.time+1):(2*rand.time-1), (tot.time+rand.time):(2*tot.time-1)), 
+      c(1, (rand.time+1):(2*rand.time-1), (tot.time+rand.time):(2*tot.time-1))] <- use.this.corrmat
+  
+  # Store resulting matrix
+  mat <- ifelse(is.na(mat), other.corr.params, mat)
+  list.corrmat$group.01 <- mat
+  
+  # ---------------------------------------------------------------------------
+  # Group 2
+  # ---------------------------------------------------------------------------
+  
+  # Initialize matrix to correct size
+  mat <- IdentityMat(m=corrdim.02)  
+  mat <- ifelse(mat==0, NA, mat)
+  
+  # This is the 1st sub-matrix we will fill in
+  # Fill in sub-matrix for time t_2 to t_{rand.time} corresponding to ETS (+1) at the 1st randomization
+  # Also fill in sub-matrix for time t_{rand.time+1} all the way through t_{tot.time} corresponding to ETS (+1,1,0) after 2nd randomization
+  # Include t_1 so that we may conveniently use the functions ExchangeableMat() or AR1Mat()
+  mat[c(1, 2:rand.time, (2*rand.time):(tot.time+rand.time-1)),
+      c(1, 2:rand.time, (2*rand.time):(tot.time+rand.time-1))] <- use.this.corrmat
+  
+  # This is the 2nd sub-matrix we will fill in
+  # Fill in sub-matrix for time t_2 to t_{rand.time} corresponding to ETS for which -1 was offered at the 1st randomization
+  # Also fill in sub-matrix for time t_{rand.time+1} all the way through t_{tot.time} corresponding to ETS (-1,0,+1) after 2nd randomization
+  # Include t_1 so that we may conveniently use the functions ExchangeableMat() or AR1Mat()
+  mat[c(1, (rand.time+1):(2*rand.time-1), (tot.time+rand.time):(2*tot.time-1)),
+      c(1, (rand.time+1):(2*rand.time-1), (tot.time+rand.time):(2*tot.time-1))] <- use.this.corrmat
+  
+  # This is the 3rd sub-matrix we will fill in
+  # Fill in sub-matrix for time t_2 to t_{rand.time} corresponding to ETS for which -1 was offered at the 1st randomization
+  # Also fill in sub-matrix for time t_{rand.time+1} all the way through t_{tot.time} corresponding to ETS (-1,0,-1) after 2nd randomization
+  # Include t_1 so that we may conveniently use the functions ExchangeableMat() or AR1Mat()
+  mat[c(1, (rand.time+1):(2*rand.time-1), (2*tot.time):(3*tot.time-rand.time-1)),
+      c(1, (rand.time+1):(2*rand.time-1), (2*tot.time):(3*tot.time-rand.time-1))] <- use.this.corrmat
+  
+  # Store resulting matrix
+  mat <- ifelse(is.na(mat), other.corr.params, mat)
+  list.corrmat$group.02 <- mat
+  
+  # ---------------------------------------------------------------------------
+  # Group 3
+  # ---------------------------------------------------------------------------
+  
+  # Initialize matrix to correct size
+  mat <- IdentityMat(m=corrdim.03)  
+  mat <- ifelse(mat==0, NA, mat)
+  
+  # This is the 1st sub-matrix we will fill in
+  # Fill in sub-matrix for time t_2 to t_{rand.time} corresponding to ETS for which +1 was offered at the 1st randomization
+  # Also fill in sub-matrix for time t_{rand.time+1} all the way through t_{tot.time} corresponding to ETS (+1,0,+1) after 2nd randomization
+  # Include t_1 so that we may conveniently use the functions ExchangeableMat() or AR1Mat()
+  mat[c(1, 2:rand.time, (2*rand.time):(tot.time+rand.time-1)),
+      c(1, 2:rand.time, (2*rand.time):(tot.time+rand.time-1))] <- use.this.corrmat
+  
+  # This is the 2nd sub-matrix we will fill in
+  # Fill in sub-matrix for time t_2 to t_{rand.time} corresponding to ETS for which +1 was offered at the 1st randomization
+  # Also fill in sub-matrix for time t_{rand.time+1} all the way through t_{tot.time} corresponding to ETS (+1,0,-1) after 2nd randomization
+  # Include t_1 so that we may conveniently use the functions ExchangeableMat() or AR1Mat()
+  mat[c(1, 2:rand.time, (tot.time+rand.time):(2*tot.time-1)),
+      c(1, 2:rand.time, (tot.time+rand.time):(2*tot.time-1))] <- use.this.corrmat
+  
+  # This is the 3rd sub-matrix we will fill in
+  # Fill in sub-matrix for time t_2 to t_{rand.time} corresponding to ETS (-1) at the 1st randomization
+  # Also fill in sub-matrix for time t_{rand.time+1} all the way through t_{tot.time} corresponding to ETS (-1,1,0) after 2nd randomization
+  # Include t_1 so that we may conveniently use the functions ExchangeableMat() or AR1Mat()
+  mat[c(1, (rand.time+1):(2*rand.time-1), (2*tot.time):(3*tot.time-rand.time-1)),
+      c(1, (rand.time+1):(2*rand.time-1), (2*tot.time):(3*tot.time-rand.time-1))] <- use.this.corrmat
+  
+  # Store resulting matrix
+  mat <- ifelse(is.na(mat), other.corr.params, mat)
+  list.corrmat$group.03 <- mat
+  
+  # ---------------------------------------------------------------------------
+  # Group 4
+  # ---------------------------------------------------------------------------
+  
+  # Initialize matrix to correct size
+  mat <- IdentityMat(m=corrdim.04)
+  mat <- ifelse(mat==0, NA, mat)
+  
+  # This is the 1st sub-matrix we fill in
+  # Fill in sub-matrix for time t_2 to t_{rand.time} corresponding to ETS for which +1 was offered at the 1st randomization
+  # Also fill in sub-matrix for time t_{rand.time+1} all the way through t_{tot.time} corresponding to ETS (+1,0,+1) after 2nd randomization
+  # Include t_1 so that we may conveniently use the functions ExchangeableMat() or AR1Mat()
+  mat[c(1, 2:rand.time, (2*rand.time):(tot.time+rand.time-1)),
+      c(1, 2:rand.time, (2*rand.time):(tot.time+rand.time-1))] <- use.this.corrmat
+  
+  # This is the 2nd sub-matrix we fill in
+  # Fill in sub-matrix for time t_2 to t_{rand.time} corresponding to ETS for which +1 was offered at the 1st randomization
+  # Also fill in sub-matrix for time t_{rand.time+1} all the way through t_{tot.time} corresponding to ETS (+1,0,-1) after 2nd randomization
+  # Include t_1 so that we may conveniently use the functions ExchangeableMat() or AR1Mat()
+  mat[c(1, 2:rand.time, (tot.time+rand.time):(2*tot.time-1)),
+      c(1, 2:rand.time, (tot.time+rand.time):(2*tot.time-1))] <- use.this.corrmat
+  
+  # This is the 3rd sub-matrix we fill in
+  # Fill in sub-matrix for time t_2 to t_{rand.time} corresponding to ETS for which -1 was offered at the 1st randomization
+  # Also fill in sub-matrix for time t_{rand.time+1} all the way through t_{tot.time} corresponding to ETS (-1,0,+1) after 2nd randomization
+  # Include t_1 so that we may conveniently use the functions ExchangeableMat() or AR1Mat()
+  mat[c(1, (rand.time+1):(2*rand.time-1), (2*tot.time):(3*tot.time-rand.time-1)),
+      c(1, (rand.time+1):(2*rand.time-1), (2*tot.time):(3*tot.time-rand.time-1))] <- use.this.corrmat
+  
+  # This is the 4th sub-matrix we fill in
+  # Fill in sub-matrix for time t_2 to t_{rand.time} corresponding to ETS for which -1 was offered at the 1st randomization
+  # Also fill in sub-matrix for time t_{rand.time+1} all the way through t_{tot.time} corresponding to ETS (-1,0,-1) after 2nd randomization
+  # Include t_1 so that we may conveniently use the functions ExchangeableMat() or AR1Mat()
+  mat[c(1, (rand.time+1):(2*rand.time-1), (3*tot.time-rand.time):(4*tot.time-2*rand.time-1)),
+      c(1, (rand.time+1):(2*rand.time-1), (3*tot.time-rand.time):(4*tot.time-2*rand.time-1))] <- use.this.corrmat
+  
+  # Store resulting matrix
+  mat <- ifelse(is.na(mat), other.corr.params, mat)
+  list.corrmat$group.04 <- mat
+  
+  ###########################################################################
+  # Now, check whether the correlation matrix (of the U_{it}'s) corresponding
+  # to each group is positive definite
+  ###########################################################################
+  this.group.01 <- sum(eigen(list.corrmat$group.01)$values < 0)
+  this.group.02 <- sum(eigen(list.corrmat$group.02)$values < 0)
+  this.group.03 <- sum(eigen(list.corrmat$group.03)$values < 0)
+  this.group.04 <- sum(eigen(list.corrmat$group.04)$values < 0)
+  
+  # this.group.XX > 0 if its corresponding correlation matrix is NOT positive definite
+  # this.group.XX = 0 if its corresponding correlation matrix is positive definite
+  any.group <- (this.group.01 > 0) + (this.group.02 > 0) + (this.group.03 > 0) + (this.group.04 > 0)
+  
+  return(any.group)
+}
+
+
 SolveForSigmaSquared <- function(input.mu, input.prop.zeros){
   
   # Requires library: rootSolve
@@ -718,20 +889,163 @@ ByGroupToLongData <- function(Y.group, n.group, group, tot.time, rand.time){
   return(reshaped.df.group)
 }
 
-GeneratePotentialYit <- function(sim, N, tot.time, rand.time, cutoff, rho, input.prop.zeros, input.means, input.n4=NA_real_){
+GeneratePotentialYit <- function(sim, N, tot.time, rand.time, cutoff, rho, input.prop.zeros, input.means, input.n4=NA_real_, corr.str="exch", other.corr.params=NA_real_){
+  
+  ###########################################################################
+  # Construct correlation matrix (for Z_{it}'s) for each group
+  ###########################################################################
   
   # Calculate dimensions of correlation matrices among four groups
   corrdim.01 <- 2*tot.time - 1
   corrdim.02 <- 3*tot.time - rand.time - 1
   corrdim.03 <- 3*tot.time - rand.time - 1
   corrdim.04 <- 4*tot.time - 2*rand.time - 1
-  
-  # Create correlation matrix for each group
   list.corrmat <- list(group.01=NULL, group.02=NULL, group.03=NULL, group.04=NULL)
-  list.corrmat$group.01 <- ExchangeableMat(m = corrdim.01, rho = rho)
-  list.corrmat$group.02 <- ExchangeableMat(m = corrdim.02, rho = rho)
-  list.corrmat$group.03 <- ExchangeableMat(m = corrdim.03, rho = rho)
-  list.corrmat$group.04 <- ExchangeableMat(m = corrdim.04, rho = rho)
+  
+  if(corr.str == "exch"){
+    use.this.corrmat <- ExchangeableMat(m = tot.time, rho = rho)
+    other.corr.params <- ifelse(is.na(other.corr.params), rho, other.corr.params)
+  }else if(corr.str == "ar1"){
+    use.this.corrmat <- AR1Mat(m = tot.time, rho = rho)
+    other.corr.params <- ifelse(is.na(other.corr.params), rho, other.corr.params)
+  }else{
+    print("Must enter valid corr.type")
+  }
+  
+  # ---------------------------------------------------------------------------
+  # Group 1 
+  # ---------------------------------------------------------------------------
+  
+  # Initialize matrix to correct size
+  mat <- IdentityMat(m=corrdim.01)  
+  mat <- ifelse(mat==0, NA, mat)
+  
+  # This is the 1st sub-matrix we will fill in
+  # Fill in sub-matrix for time t_2 to t_{rand.time} corresponding to ETS (+1) at the 1st randomization
+  # Also fill in sub-matrix for time t_{rand.time+1} all the way through t_{tot.time} corresponding to ETS (+1,1,0) after 2nd randomization
+  # Include t_1 so that we may conveniently use the functions ExchangeableMat() or AR1Mat()
+  mat[c(1, 2:rand.time, (2*rand.time):(tot.time+rand.time-1)), 
+      c(1, 2:rand.time, (2*rand.time):(tot.time+rand.time-1))] <- use.this.corrmat
+  # This is the 2nd sub-matrix we will fill in
+  # Fill in sub-matrix for time t_2 to t_{rand.time} corresponding to ETS for which -1 was offered at the 1st randomization
+  # Also fill in sub-matrix for time t_{rand.time+1} all the way through t_{tot.time} corresponding to ETS (-1,1,0) after 2nd randomization
+  # Include t_1 so that we may conveniently use the functions ExchangeableMat() or AR1Mat()
+  mat[c(1, (rand.time+1):(2*rand.time-1), (tot.time+rand.time):(2*tot.time-1)), 
+      c(1, (rand.time+1):(2*rand.time-1), (tot.time+rand.time):(2*tot.time-1))] <- use.this.corrmat
+  
+  # Store resulting matrix
+  mat <- ifelse(is.na(mat), other.corr.params, mat)
+  list.corrmat$group.01 <- mat
+  
+  # ---------------------------------------------------------------------------
+  # Group 2
+  # ---------------------------------------------------------------------------
+  
+  # Initialize matrix to correct size
+  mat <- IdentityMat(m=corrdim.02)  
+  mat <- ifelse(mat==0, NA, mat)
+  
+  # This is the 1st sub-matrix we will fill in
+  # Fill in sub-matrix for time t_2 to t_{rand.time} corresponding to ETS (+1) at the 1st randomization
+  # Also fill in sub-matrix for time t_{rand.time+1} all the way through t_{tot.time} corresponding to ETS (+1,1,0) after 2nd randomization
+  # Include t_1 so that we may conveniently use the functions ExchangeableMat() or AR1Mat()
+  mat[c(1, 2:rand.time, (2*rand.time):(tot.time+rand.time-1)),
+      c(1, 2:rand.time, (2*rand.time):(tot.time+rand.time-1))] <- use.this.corrmat
+  
+  # This is the 2nd sub-matrix we will fill in
+  # Fill in sub-matrix for time t_2 to t_{rand.time} corresponding to ETS for which -1 was offered at the 1st randomization
+  # Also fill in sub-matrix for time t_{rand.time+1} all the way through t_{tot.time} corresponding to ETS (-1,0,+1) after 2nd randomization
+  # Include t_1 so that we may conveniently use the functions ExchangeableMat() or AR1Mat()
+  mat[c(1, (rand.time+1):(2*rand.time-1), (tot.time+rand.time):(2*tot.time-1)),
+      c(1, (rand.time+1):(2*rand.time-1), (tot.time+rand.time):(2*tot.time-1))] <- use.this.corrmat
+  
+  # This is the 3rd sub-matrix we will fill in
+  # Fill in sub-matrix for time t_2 to t_{rand.time} corresponding to ETS for which -1 was offered at the 1st randomization
+  # Also fill in sub-matrix for time t_{rand.time+1} all the way through t_{tot.time} corresponding to ETS (-1,0,-1) after 2nd randomization
+  # Include t_1 so that we may conveniently use the functions ExchangeableMat() or AR1Mat()
+  mat[c(1, (rand.time+1):(2*rand.time-1), (2*tot.time):(3*tot.time-rand.time-1)),
+      c(1, (rand.time+1):(2*rand.time-1), (2*tot.time):(3*tot.time-rand.time-1))] <- use.this.corrmat
+  
+  # Store resulting matrix
+  mat <- ifelse(is.na(mat), other.corr.params, mat)
+  list.corrmat$group.02 <- mat
+  
+  # ---------------------------------------------------------------------------
+  # Group 3
+  # ---------------------------------------------------------------------------
+  
+  # Initialize matrix to correct size
+  mat <- IdentityMat(m=corrdim.03)  
+  mat <- ifelse(mat==0, NA, mat)
+  
+  # This is the 1st sub-matrix we will fill in
+  # Fill in sub-matrix for time t_2 to t_{rand.time} corresponding to ETS for which +1 was offered at the 1st randomization
+  # Also fill in sub-matrix for time t_{rand.time+1} all the way through t_{tot.time} corresponding to ETS (+1,0,+1) after 2nd randomization
+  # Include t_1 so that we may conveniently use the functions ExchangeableMat() or AR1Mat()
+  mat[c(1, 2:rand.time, (2*rand.time):(tot.time+rand.time-1)),
+      c(1, 2:rand.time, (2*rand.time):(tot.time+rand.time-1))] <- use.this.corrmat
+  
+  # This is the 2nd sub-matrix we will fill in
+  # Fill in sub-matrix for time t_2 to t_{rand.time} corresponding to ETS for which +1 was offered at the 1st randomization
+  # Also fill in sub-matrix for time t_{rand.time+1} all the way through t_{tot.time} corresponding to ETS (+1,0,-1) after 2nd randomization
+  # Include t_1 so that we may conveniently use the functions ExchangeableMat() or AR1Mat()
+  mat[c(1, 2:rand.time, (tot.time+rand.time):(2*tot.time-1)),
+      c(1, 2:rand.time, (tot.time+rand.time):(2*tot.time-1))] <- use.this.corrmat
+  
+  # This is the 3rd sub-matrix we will fill in
+  # Fill in sub-matrix for time t_2 to t_{rand.time} corresponding to ETS (-1) at the 1st randomization
+  # Also fill in sub-matrix for time t_{rand.time+1} all the way through t_{tot.time} corresponding to ETS (-1,1,0) after 2nd randomization
+  # Include t_1 so that we may conveniently use the functions ExchangeableMat() or AR1Mat()
+  mat[c(1, (rand.time+1):(2*rand.time-1), (2*tot.time):(3*tot.time-rand.time-1)),
+      c(1, (rand.time+1):(2*rand.time-1), (2*tot.time):(3*tot.time-rand.time-1))] <- use.this.corrmat
+  
+  # Store resulting matrix
+  mat <- ifelse(is.na(mat), other.corr.params, mat)
+  list.corrmat$group.03 <- mat
+  
+  # ---------------------------------------------------------------------------
+  # Group 4
+  # ---------------------------------------------------------------------------
+  
+  # Initialize matrix to correct size
+  mat <- IdentityMat(m=corrdim.04)
+  mat <- ifelse(mat==0, NA, mat)
+  
+  # This is the 1st sub-matrix we fill in
+  # Fill in sub-matrix for time t_2 to t_{rand.time} corresponding to ETS for which +1 was offered at the 1st randomization
+  # Also fill in sub-matrix for time t_{rand.time+1} all the way through t_{tot.time} corresponding to ETS (+1,0,+1) after 2nd randomization
+  # Include t_1 so that we may conveniently use the functions ExchangeableMat() or AR1Mat()
+  mat[c(1, 2:rand.time, (2*rand.time):(tot.time+rand.time-1)),
+      c(1, 2:rand.time, (2*rand.time):(tot.time+rand.time-1))] <- use.this.corrmat
+  
+  # This is the 2nd sub-matrix we fill in
+  # Fill in sub-matrix for time t_2 to t_{rand.time} corresponding to ETS for which +1 was offered at the 1st randomization
+  # Also fill in sub-matrix for time t_{rand.time+1} all the way through t_{tot.time} corresponding to ETS (+1,0,-1) after 2nd randomization
+  # Include t_1 so that we may conveniently use the functions ExchangeableMat() or AR1Mat()
+  mat[c(1, 2:rand.time, (tot.time+rand.time):(2*tot.time-1)),
+      c(1, 2:rand.time, (tot.time+rand.time):(2*tot.time-1))] <- use.this.corrmat
+  
+  # This is the 3rd sub-matrix we fill in
+  # Fill in sub-matrix for time t_2 to t_{rand.time} corresponding to ETS for which -1 was offered at the 1st randomization
+  # Also fill in sub-matrix for time t_{rand.time+1} all the way through t_{tot.time} corresponding to ETS (-1,0,+1) after 2nd randomization
+  # Include t_1 so that we may conveniently use the functions ExchangeableMat() or AR1Mat()
+  mat[c(1, (rand.time+1):(2*rand.time-1), (2*tot.time):(3*tot.time-rand.time-1)),
+      c(1, (rand.time+1):(2*rand.time-1), (2*tot.time):(3*tot.time-rand.time-1))] <- use.this.corrmat
+  
+  # This is the 4th sub-matrix we fill in
+  # Fill in sub-matrix for time t_2 to t_{rand.time} corresponding to ETS for which -1 was offered at the 1st randomization
+  # Also fill in sub-matrix for time t_{rand.time+1} all the way through t_{tot.time} corresponding to ETS (-1,0,-1) after 2nd randomization
+  # Include t_1 so that we may conveniently use the functions ExchangeableMat() or AR1Mat()
+  mat[c(1, (rand.time+1):(2*rand.time-1), (3*tot.time-rand.time):(4*tot.time-2*rand.time-1)),
+      c(1, (rand.time+1):(2*rand.time-1), (3*tot.time-rand.time):(4*tot.time-2*rand.time-1))] <- use.this.corrmat
+  
+  # Store resulting matrix
+  mat <- ifelse(is.na(mat), other.corr.params, mat)
+  list.corrmat$group.04 <- mat
+  
+  ###########################################################################
+  # Specify parameters of Negative Binomial distribution
+  ###########################################################################
   
   # input.means contains mean outcome under each treatment sequence
   # from time 1 until tot.time
