@@ -55,18 +55,7 @@ WeightAndReplicate <- function(list.df, tot.time){
   return(out.list)
 }
 
-AnalyzeData <- function(list.df, tot.time, rand.time, working.corr="independence"){
-  
-  # Args:
-  #   df.replicated.observed.Yit: ADDLATER
-  #   tot.time: ADDLATER
-  #   rand.time: ADDLATER
-  
-  # ---------------------------------------------------------------------------
-  # Check validity of inputs
-  # ---------------------------------------------------------------------------
-  
-  #ADDLATER
+AnalyzeData <- function(list.df, tot.time, rand.time, working.corr){
   
   # ---------------------------------------------------------------------------
   # Begin tasks

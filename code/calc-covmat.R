@@ -20,25 +20,38 @@ environment(geemMod) <- asNamespace("geeM")
 # Note that 
 #   - input.M
 #   - input.rand.time, input.tot.time, 
-#   - input.N
-#   - input.rho
 #   - input.cutoff
+#   - input.N
+#   - input.n4
+#   - input.rho
+#   - input.corr.str
+#   - input.other.corr.params
 #   - input.means, input.prop.zeros
-#   - use.working.corr
 # need to be specified prior to running the code below
 
 # -----------------------------------------------------------------------------
-# Combine all inputs into a grid
+# Combine inputs which may vary from simulation-to-simulation into a grid
 # -----------------------------------------------------------------------------
 gridx <- expand.grid(nsim=1:input.M, 
                      input.N=input.N,
-                     input.rand.time=input.rand.time, 
-                     input.tot.time=input.tot.time,
-                     input.cutoff=input.cutoff,
                      input.rho=input.rho,
-                     input.n4=input.n4)
+                     input.n4=input.n4,
+                     input.corr.str=input.corr.str,
+                     input.other.corr.params=input.other.corr.params,
+                     stringsAsFactors = FALSE)
 
-list.gridx <- apply(gridx, 1, as.list)
+list.gridx <- list()
+for(j in 1:nrow(gridx)){
+  curr_list <- list(nsim = gridx[j, "nsim"],
+                    input.N = gridx[j, "input.N"],
+                    input.rho = gridx[j, "input.rho"],
+                    input.n4 = gridx[j, "input.n4"],
+                    input.corr.str = gridx[j, "input.corr.str"],
+                    input.other.corr.params = gridx[j, "input.other.corr.params"])
+  
+  list.gridx <- append(list.gridx, list(curr_list))
+}
+
 list.gridx <- lapply(list.gridx, function(this.list, 
                                           means=input.means,
                                           prop.zeros=input.prop.zeros){
@@ -55,7 +68,9 @@ cl <- makeCluster(ncore - 1)
 clusterSetRNGStream(cl, 102399)
 clusterExport(cl, c("path.code",
                     "path.output_data",
-                    "list.gridx"))
+                    "list.gridx",
+                    "input.tot.time", "input.rand.time", "input.cutoff"))
+
 clusterEvalQ(cl,
              {
                library(dplyr)
@@ -73,13 +88,15 @@ list.df.potential <- parLapply(cl=cl,
                                fun=function(this.gridx){
                                  df <- GeneratePotentialYit(sim=this.gridx$nsim, 
                                                             N=this.gridx$input.N, 
-                                                            tot.time=this.gridx$input.tot.time, 
-                                                            rand.time=this.gridx$input.rand.time, 
-                                                            cutoff=this.gridx$input.cutoff, 
+                                                            tot.time=input.tot.time, 
+                                                            rand.time=input.rand.time, 
+                                                            cutoff=input.cutoff, 
                                                             rho=this.gridx$input.rho, 
                                                             input.prop.zeros=this.gridx$input.prop.zeros, 
                                                             input.means=this.gridx$input.means,
-                                                            input.n4=this.gridx$input.n4)
+                                                            input.n4=this.gridx$input.n4,
+                                                            corr.str=this.gridx$input.corr.str, 
+                                                            other.corr.params=this.gridx$input.other.corr.params)
                                  return(df)
                                })
 
@@ -128,10 +145,12 @@ list.df.est.beta <- parLapply(cl = cl,
                               fun = AnalyzeData, 
                               tot.time = input.tot.time, 
                               rand.time = input.rand.time,
-                              working.corr = use.working.corr)
+                              working.corr = "ar1")
 
 
 
 stopCluster(cl)
 
 remove(list.df.observed, list.df.wr)
+
+

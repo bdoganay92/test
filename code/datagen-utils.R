@@ -1202,6 +1202,11 @@ SeqCorrelationPO <- function(df.list){
     reshape(data = ., timevar = "t", idvar = "id", direction = "wide") %>%
     select(-id)
   
+  # Note: if response status is defined as regarding those individuals whose 
+  # count outcome at rand.time is equal to zero, then the variance of
+  # the count outcome at rand.time among those individuals who meet this 
+  # criteria is zero (since the value of the count outcome at rand.time for
+  # all these individuals is equal to zero).
   cormat.plus.r <- suppressWarnings(cor(widedat.plus.r))
   
   # Sequence (+1,0,+1)
@@ -1223,6 +1228,11 @@ SeqCorrelationPO <- function(df.list){
     reshape(data = ., timevar = "t", idvar = "id", direction = "wide") %>%
     select(-id)
   
+  # Note: if response status is defined as regarding those individuals whose 
+  # count outcome at rand.time is equal to zero, then the variance of
+  # the count outcome at rand.time among those individuals who meet this 
+  # criteria is zero (since the value of the count outcome at rand.time for
+  # all these individuals is equal to zero).
   cormat.minus.r <- suppressWarnings(cor(widedat.minus.r))
   
   # Sequence (-1,0,+1)
