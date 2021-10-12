@@ -33,5 +33,9 @@ This repository contains code implementing CountSMART methodology (the `code` fo
 | <img height=0 width=350> File Name <img height=0 width=350> | <img height=0 width=800> Brief Description <img height=0 width=800> |
 |:------------------------------------------:|:--------------------------------------------------------------------------------------------------|
 [sim_size_test](https://github.com/jamieyap/CountSMART/tree/master/output/sim_size_test) | A directory containing a collection of scripts to execute simulation studies concerning empirical type-I error rate.
-[sim_vary_effect](https://github.com/jamieyap/CountSMART/tree/master/output/sim_vary_effect) | A directory containing a collection of scripts to execute simulation studies  investigating how power changes as specific choices of <img src="https://render.githubusercontent.com/render/math?math=$\Delta_Q$"> are increased across a grid of total sample sizes N=100, 150, 200, …, 550, 600.
+[sim_vary_effect](https://github.com/jamieyap/CountSMART/tree/master/output/sim_vary_effect) | A directory containing a collection of scripts to execute simulation studies  investigating how power changes as specific choices of <img src="https://render.githubusercontent.com/render/math?math=$\Delta_Q$"> are increased across a grid of total sample sizes N=100, 150, 200, …, 550
+[sim_vary_n4](https://github.com/jamieyap/CountSMART/tree/master/output/sim_vary_n4) | A directory containing a collection of scripts to execute simulation studies investigating whether power is sensitive to a violation in our working assumption on the number of individuals who would not respond to either first-stage intervention option.
+
+
+
 
