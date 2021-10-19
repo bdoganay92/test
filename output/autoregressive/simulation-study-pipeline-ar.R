@@ -187,10 +187,23 @@
 # remove(list = ls())
 
 
-###############################################################################
-# Calculate power for fixed value of means and proportion of zeros within
-# this.folder while varying total sample size and rho
-###############################################################################
+# ###############################################################################
+# # Calculate power for fixed value of means and proportion of zeros within
+# # this.folder while varying total sample size and rho
+# ###############################################################################
+# 
+# path.output_data <- Sys.getenv("path.output_data")
+# this.folder <- "autoregressive"
+# N <- 500
+# p <- .40
+# q <- .40
+# 
+# path.code <- Sys.getenv("path.code")
+# source(file.path(path.code,"calc-possible-n4.R"))
+# 
+# # Clean up environment
+# remove(list = ls())
+
 path.output_data <- Sys.getenv("path.output_data")
 this.folder <- "autoregressive"
 
@@ -198,9 +211,7 @@ for(i in 1:10){
   this.scenario <- paste("sim_vary_n4/sim_results_", i, sep="")
   
   use.N <- 500
-  cap <- min(c(use.N * (1 - 0.40), use.N * (1 - 0.40)))
-  cap <- floor(cap)
-  use.grid <- expand.grid(n4 = seq(0, cap, 10))
+  use.grid <- expand.grid(n4 = seq(100, 300, 50))
   dat.all.results <- data.frame(n4 = rep(NA_real_, nrow(use.grid)),
                                 power.diff.eos.means = rep(NA_real_, nrow(use.grid)),
                                 power.diff.AUC = rep(NA_real_, nrow(use.grid)),
