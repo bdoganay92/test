@@ -358,7 +358,7 @@ path.output_data <- Sys.getenv("path.output_data")
 for(i in 1:3){
   # Input parameters
   input.M <- 5000
-  input.N <- 5000
+  input.N <- 1000
   input.rand.time <- 2
   input.tot.time <- 6
   input.cutoff <- 0
@@ -389,7 +389,7 @@ path.output_data <- Sys.getenv("path.output_data")
 for(i in 1:10){
   # Input parameters
   input.M <- 5000
-  input.N <- 5000
+  input.N <- 1000
   input.rand.time <- 2
   input.tot.time <- 6
   input.cutoff <- 0
