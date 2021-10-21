@@ -24,7 +24,6 @@ environment(geemMod) <- asNamespace("geeM")
 #   - input.rand.time, input.tot.time, 
 #   - input.cutoff
 #   - input.corr.str
-#   - input.other.corr.params
 #   - min.rho, max.rho
 #   - this.folder
 #   - this.scenario
@@ -35,8 +34,8 @@ environment(geemMod) <- asNamespace("geeM")
 ###############################################################################
 
 # Means and proportion of zeros
-input.means <- read.csv(file.path(path.output_data, this.folder, "input_means.csv"))  # input file: change to appropriate file
-input.prop.zeros  <- read.csv(file.path(path.output_data, this.folder, "input_prop_zeros.csv"))  # input file: change to appropriate file
+input.means <- read.csv(file.path(path.output_data, this.folder, this.scenario, "input_means.csv"))  # input file: change to appropriate file
+input.prop.zeros  <- read.csv(file.path(path.output_data, this.folder, this.scenario, "input_prop_zeros.csv"))  # input file: change to appropriate file
 
 # Check that input data is in the correct format
 CheckInputData(input.df = input.means, rand.time = input.rand.time, tot.time = input.tot.time)
@@ -77,8 +76,6 @@ list.input.rho <- as.list(seq(min.rho, max.rho, 0.05))
 collect.correlation.tau <- list()
 collect.seq.cormat <- list()
 
-begin.time <- Sys.time()
-
 for(i in 1:length(list.input.rho)){
   input.rho <- list.input.rho[[i]]
   
@@ -88,7 +85,7 @@ for(i in 1:length(list.input.rho)){
                        input.rho=input.rho,
                        input.n4=input.n4,
                        input.corr.str=input.corr.str,
-                       input.other.corr.params=input.other.corr.params,
+                       input.other.corr.params=input.rho/2,
                        stringsAsFactors = FALSE)
   
   list.gridx <- list()
@@ -128,6 +125,8 @@ for(i in 1:length(list.input.rho)){
                  source(file.path(path.code, "datagen-utils.R"))
                  source(file.path(path.code, "analysis-utils.R"))
                })
+  
+  start.time <- Sys.time()
   
   list.df.potential <- parLapply(cl=cl,
                                  X=list.gridx,
@@ -251,7 +250,11 @@ for(i in 1:length(list.input.rho)){
   tau.min <- min(all.seq, na.rm=TRUE)
   
   # Keep record of results
-  list.est.tau <- list(data.frame(datagen.params.rho = input.rho, tau.min = tau.min, tau.max = tau.max))
+  end.time <- Sys.time()
+  elapsed.secs <- difftime(time1 = end.time, time2 = start.time, units = "secs")
+  elapsed.secs <- as.numeric(elapsed.secs)
+  
+  list.est.tau <- list(data.frame(datagen.params.rho = input.rho, tau.min = tau.min, tau.max = tau.max, elapsed.secs = elapsed.secs))
   collect.correlation.tau <- append(collect.correlation.tau, list.est.tau)
   
   # Keep record of results
@@ -271,8 +274,6 @@ for(i in 1:length(list.input.rho)){
   remove(list.df.potential, list.gridx)
 }
 
-end.time <- Sys.time()
-
 collect.correlation.tau <- do.call(rbind, collect.correlation.tau)
   
 ###############################################################################
@@ -283,8 +284,4 @@ print(collect.correlation.tau)
 # Audio notification
 beep("mario")
 
-# Save RData
-save(collect.correlation.tau, 
-     collect.seq.cormat,
-     file = file.path(path.output_data, this.folder, this.scenario, "correspondence_between_rho_and_tau.RData"))
 
