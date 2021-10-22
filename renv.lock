@@ -4,7 +4,7 @@
     "Repositories": [
       {
         "Name": "CRAN",
-        "URL": "https://cran.rstudio.com"
+        "URL": "https://repo.miserver.it.umich.edu/cran"
       }
     ]
   },
@@ -127,6 +127,13 @@
       "Source": "Repository",
       "Repository": "CRAN",
       "Hash": "f239251d3439c51865e54457b10ede4f"
+    },
+    "ggcorrplot": {
+      "Package": "ggcorrplot",
+      "Version": "0.1.3",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Hash": "5d6f67b947e0962cf93208f139acd475"
     },
     "ggplot2": {
       "Package": "ggplot2",
