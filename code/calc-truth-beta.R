@@ -39,9 +39,9 @@ gamma.vec[gamma.idx.plus.nr.plus] <- log(input.means.plus.nr.plus) - gamma.vec[1
 gamma.vec[gamma.idx.plus.nr.minus] <- log(input.means.plus.nr.minus) - gamma.vec[1]
 gamma.vec[gamma.idx.minus.nr.plus] <- log(input.means.minus.nr.plus) - gamma.vec[1]
 gamma.vec[gamma.idx.minus.nr.minus] <- log(input.means.minus.nr.minus) - gamma.vec[1]
-#gamma.vec <- bind_cols(gamma.vec)
-#gamma.vec <- t(gamma.vec)
-gamma.vec <- as.matrix(gammaa.vec)
+
+gamma.vec <- as.numeric(gamma.vec)
+gamma.vec <- as.matrix(gamma.vec)
 row.names(gamma.vec) <- paste("gamma",1:(6*input.tot.time-4*input.rand.time-1),sep=".")
 
 # Calculate response probabilities
