@@ -5,7 +5,7 @@ tau4 <- round(curr.list$tau.max^4, 2)
 tau5 <- round(curr.list$tau.max^5, 2)
 
 use.colors <- c("forestgreen", "darkgoldenrod1", "lightskyblue1")
-use.title <- paste("tau = ", tau, ", tau^2 = ", tau2, ", tau^3 = ", tau3, ", tau^4 = ", tau4, ", tau^5 = ", tau5, sep="")
+use.title <- ""
 
 adjust_plot <- theme(panel.border = element_blank(), 
                      panel.grid.major = element_blank(),

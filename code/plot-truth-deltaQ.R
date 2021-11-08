@@ -11,7 +11,6 @@ library(mvtnorm)
 library(geeM)
 library(parallel)
 library(ggplot2)
-library(gridExtra)
 
 path.code <- Sys.getenv("path.code")
 path.output_data <- Sys.getenv("path.output_data")
