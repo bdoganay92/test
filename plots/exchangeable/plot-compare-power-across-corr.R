@@ -47,8 +47,8 @@ for(increment in seq(100,550,10)){
 }
 
 all.yloc <- NULL
-all.rho <- c(0.2, 0.6)
-linestyle <- c(3,1)
+all.rho <- c(0.2, 0.4, 0.6)
+linestyle <- c(3,4,1)
 
 for(i in these.scenarios){
   this.scenario <- paste("sim_vary_effect/sim_results_", i, sep="")
@@ -85,7 +85,7 @@ for(i in 1:length(all.deltaQ)){
   text(x = 580, y = all.yloc[i], paste("delta=", round(all.deltaQ[i], 2),sep=""), col = palette[these.scenarios[i]], cex = 1.8, adj = 0)
 }
 
-legend(x = 100, y = 1, c("rho = 0.6","rho = 0.2"), lty = c(1,3), lwd = c(3,3), cex = 1.5)
+legend(x = 100, y = 1, c("rho = 0.2","rho = 0.4","rho=0.6"), lty = c(3,4,1), lwd = c(3,3,3), cex = 1.5)
 
 dev.off()
 
@@ -122,8 +122,8 @@ for(increment in seq(100,550,10)){
 }
 
 all.yloc <- NULL
-all.rho <- c(0.2, 0.6)
-linestyle <- c(3,1)
+all.rho <- c(0.2, 0.4, 0.6)
+linestyle <- c(3,4,1)
 
 for(i in these.scenarios){
   this.scenario <- paste("sim_vary_effect/sim_results_", i, sep="")
@@ -160,7 +160,7 @@ for(i in 1:length(all.deltaQ)){
   text(x = 580, y = all.yloc[i], paste("delta=", round(all.deltaQ[i], 2),sep=""), col = palette[these.scenarios[i]], cex = 1.8, adj = 0)
 }
 
-legend(x = 100, y = 1, c("rho = 0.6","rho = 0.2"), lty = c(1,3), lwd = c(3,3), cex = 1.5)
+legend(x = 100, y = 1, c("rho = 0.2","rho = 0.4","rho=0.6"), lty = c(3,4,1), lwd = c(3,3), cex = 1.5)
 
 dev.off()
 
