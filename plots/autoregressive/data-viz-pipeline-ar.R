@@ -68,3 +68,13 @@ source(file.path(path.plots, this.folder, "corrviz-sim-vary-eta.R"))
 remove(list = ls())
 
 
+###############################################################################
+# Visualize simulation study results
+###############################################################################
+path.plots <- Sys.getenv("path.plots")
+this.folder <- "autoregressive"
+source(file.path(path.plots, this.folder, "plot-compare-power-across-corr.R"))
+remove(list = ls())
+
+
+
