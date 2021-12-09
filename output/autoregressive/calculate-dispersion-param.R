@@ -28,6 +28,8 @@ write.csv(dat.disp, file.path(path.output_data, this.folder, "base_case/dispersi
 # Calculate value of dispersion parameter for cases within sim_vary_effect
 ###############################################################################
 
+list.dat <- list()
+
 for(idx.scenario in 1:10){
   dat.mu <- read.csv(file.path(path.output_data, this.folder, "sim_vary_effect", paste("sim_results", idx.scenario, sep="_"), "input_means.csv"))
   dat.tau <- read.csv(file.path(path.output_data, this.folder, "sim_vary_effect", paste("sim_results", idx.scenario, sep="_"), "input_prop_zeros.csv"))
@@ -44,12 +46,24 @@ for(idx.scenario in 1:10){
     }
   }
   
+  list.dat <- append(list.dat, list(dat.disp))
   write.csv(dat.disp, file.path(path.output_data, this.folder, "sim_vary_effect", paste("sim_results", idx.scenario, sep="_"), "dispersion_parameter.csv"))
 }
+
+list.pct <- list()
+
+for(i in 2:10){
+  dat.pct <- (list.dat[[i]][,2:7] - list.dat[[1]][,2:7])/list.dat[[1]][,2:7]
+  list.pct <- append(list.pct, list(dat.pct))
+}
+
+print(list.pct)
 
 ###############################################################################
 # Calculate value of dispersion parameter for cases within sim_size_test
 ###############################################################################
+
+list.dat <- list()
 
 for(idx.scenario in 1:3){
   dat.mu <- read.csv(file.path(path.output_data, this.folder, "sim_size_test", paste("sim_results", idx.scenario, sep="_"), "input_means.csv"))
@@ -67,6 +81,16 @@ for(idx.scenario in 1:3){
     }
   }
   
+  list.dat <- append(list.dat, list(dat.disp))
   write.csv(dat.disp, file.path(path.output_data, this.folder, "sim_size_test", paste("sim_results", idx.scenario, sep="_"), "dispersion_parameter.csv"))
 }
+
+list.pct <- list()
+
+for(i in 2:3){
+  dat.pct <- (list.dat[[i]][,2:7] - list.dat[[1]][,2:7])/list.dat[[1]][,2:7]
+  list.pct <- append(list.pct, list(dat.pct))
+}
+
+print(list.pct)
 
