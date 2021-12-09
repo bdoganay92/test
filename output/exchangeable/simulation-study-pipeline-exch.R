@@ -1,43 +1,43 @@
-# ###############################################################################
-# # Create simulation scenarios
-# ###############################################################################
-# path.output_data <- Sys.getenv("path.output_data")
-# this.folder <- "exchangeable"
-# source(file.path(path.output_data, this.folder, "create-scenarios-exch.R"))
-# 
-# 
-# ###############################################################################
-# # Check which values of rho will result in a positive definite
-# # correlation matrix (for Z_{it}'s)
-# ###############################################################################
-# 
-# # Fix other.corr.params and increase rho from 0 to 1 --------------------------
-# path.code <- Sys.getenv("path.code")
-# source(file.path(path.code,"datagen-utils.R"))
-# 
-# input.rand.time <- 2
-# input.tot.time <- 6
-# 
-# list.check.pd.results <- list()
-# 
-# for(curr.rho in seq(from = 0, to = 1, by = 0.05)){
-#   pd <- CheckPositiveDefinite(tot.time = input.tot.time,
-#                               rand.time = input.rand.time,
-#                               rho = curr.rho,
-#                               corr.str = "exch",
-#                               other.corr.params = curr.rho/2)
-#   
-#   # If pd==0, then positive definite, else, if pd!=0, then not positive definite
-#   list.check.pd.results <- append(list.check.pd.results,
-#                                   list(data.frame(rho = curr.rho, is.pd = 1*(pd==0))))
-# }
-# 
-# check.pd.results <- do.call(rbind, list.check.pd.results)
-# print(check.pd.results)
-# 
-# # Clean up environment
-# remove(list = ls())
-# 
+###############################################################################
+# Create simulation scenarios
+###############################################################################
+path.output_data <- Sys.getenv("path.output_data")
+this.folder <- "exchangeable"
+source(file.path(path.output_data, this.folder, "create-scenarios-exch.R"))
+
+
+###############################################################################
+# Check which values of rho will result in a positive definite
+# correlation matrix (for Z_{it}'s)
+###############################################################################
+
+# Fix other.corr.params and increase rho from 0 to 1 --------------------------
+path.code <- Sys.getenv("path.code")
+source(file.path(path.code,"datagen-utils.R"))
+
+input.rand.time <- 2
+input.tot.time <- 6
+
+list.check.pd.results <- list()
+
+for(curr.rho in seq(from = 0, to = 1, by = 0.05)){
+  pd <- CheckPositiveDefinite(tot.time = input.tot.time,
+                              rand.time = input.rand.time,
+                              rho = curr.rho,
+                              corr.str = "exch",
+                              other.corr.params = curr.rho/2)
+
+  # If pd==0, then positive definite, else, if pd!=0, then not positive definite
+  list.check.pd.results <- append(list.check.pd.results,
+                                  list(data.frame(rho = curr.rho, is.pd = 1*(pd==0))))
+}
+
+check.pd.results <- do.call(rbind, list.check.pd.results)
+print(check.pd.results)
+
+# Clean up environment
+remove(list = ls())
+
 
 ###############################################################################
 # Calculate power for fixed value of means and proportion of zeros within
