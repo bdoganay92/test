@@ -89,3 +89,5 @@ Note that 'paths.R' is included in the '.gitignore' file, preventing any user-sp
 [data-viz-pipeline-exch.R](https://github.com/jamieyap/CountSMART/tree/master/plots/exchangeable/data-viz-pipeline-exch.R) | A script to document and run steps in the data visualization pipeline.
 [plot-sim-vary-effect.R](https://github.com/jamieyap/CountSMART/tree/master/plots/exchangeable/plot-sim-vary-effect.R) | A script to plot results in [sim_vary_effect](https://github.com/jamieyap/CountSMART/tree/master/output/exchangeable/sim_vary_effect)
 
+TEST
+
